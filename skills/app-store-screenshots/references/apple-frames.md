@@ -1,6 +1,6 @@
 # Apple frame setup
 
-The editor uses original Apple PNG bezels for iPhone and iPad. Import your local copies before you export an Apple device deck. The source images are not included in this repository.
+The editor uses original Apple PNG bezels by default for all iPhone and iPad device layouts. Import your local copies once on each computer. Later projects get the files automatically when the editor starts. The source images are not included in the public repository.
 
 ## Import
 
@@ -19,7 +19,13 @@ In the customer editor project, run:
 npm run frames:import -- "/path/to/Apple Device Frames"
 ```
 
-The command checks all three file hashes before it copies the files to `public/device-frames/`. It does not resize or modify them. If a hash differs, obtain the matching original or measure the new asset and update its metadata. Do not bypass the check with a resized image. Reload an open editor after import.
+The command checks all three file hashes before it copies the files to `public/device-frames/` and an operator-local cache. It does not resize or modify them. If a hash differs, obtain the matching original or measure the new asset and update its metadata. Do not bypass the check with a resized image. Reload an open editor after import.
+
+On macOS, the cache is `~/Library/Application Support/app-store-screenshots/device-frames/`. Windows uses the local application data folder; Linux uses the XDG data folder. `SCREENSHOT_FRAME_CACHE_DIR` can select a different local cache. Do not point it at shared network storage.
+
+Each start checks the project copies. If they are missing or changed, the launcher restores the exact originals from the local cache. A complete project works without that cache or the original download folder. The server also checks frame hashes before it serves them. Export stops if a required frame cannot load. There is no substitute Apple frame. Deliberate text-only layouts and Play Store feature graphics still have no device.
+
+For a local skill installation, import into its `template/` folder once. New projects copied from that local template then include the files immediately. A skill update can replace that folder; the separate local cache lets new projects restore the files on startup.
 
 Apple's source assets have a separate license. They are not covered by this repository's MIT license. Keep them local and out of commits, public packages, and shared source archives. Each teammate must obtain and import their own copies under Apple's terms. Follow [Apple's product image guidelines](https://developer.apple.com/app-store/marketing/guidelines/) for the finished composition.
 

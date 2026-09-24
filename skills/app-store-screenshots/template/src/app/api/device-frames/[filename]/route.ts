@@ -1,4 +1,5 @@
 import { readFile } from "node:fs/promises";
+import { createHash } from "node:crypto";
 import path from "node:path";
 import { APPLE_FRAMES } from "@/lib/apple-frames";
 import { accessError } from "@/lib/local-access";
@@ -9,11 +10,15 @@ export async function GET(req: Request, context: { params: Promise<{ filename: s
   const denied = accessError(req);
   if (denied) return denied;
   const { filename } = await context.params;
-  if (!Object.values(APPLE_FRAMES).some((frame) => frame.filename === filename)) {
+  const frame = Object.values(APPLE_FRAMES).find((frame) => frame.filename === filename);
+  if (!frame) {
     return new Response("Unknown frame", { status: 404 });
   }
   try {
     const bytes = await readFile(path.join(process.cwd(), "public/device-frames", filename));
+    if (createHash("sha256").update(bytes).digest("hex") !== frame.sha256) {
+      return new Response("The frame differs from the measured original. Import it again.", { status: 409 });
+    }
     return new Response(new Uint8Array(bytes), { headers: {
       "Content-Type": "image/png", "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff",
     } });

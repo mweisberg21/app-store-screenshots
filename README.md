@@ -74,7 +74,7 @@ npm run dev
 
 Open the private link printed in the terminal. For another port, use `npm run dev -- --port 3001`.
 
-For Apple decks, obtain the original assets and follow [Apple frame setup](skills/app-store-screenshots/references/apple-frames.md). The importer supports iPhone 17 Pro Max and iPad Pro 13-inch (M5) in portrait and landscape. Android decks do not need this import.
+For Apple decks, obtain the original assets and follow [Apple frame setup](skills/app-store-screenshots/references/apple-frames.md) once per computer. The importer supports iPhone 17 Pro Max and iPad Pro 13-inch (M5) in portrait and landscape. It includes verified copies in the project and a local cache. Later projects get the originals automatically on startup and use them by default. Android decks do not need this import.
 
 ## Local access and customer files
 

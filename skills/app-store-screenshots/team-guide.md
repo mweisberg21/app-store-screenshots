@@ -32,7 +32,7 @@ Use [customer-brief.example.md](customer-brief.example.md) for the brief. A bran
 
 ## Editor workflow
 
-For Apple decks, first follow [Apple frame setup](references/apple-frames.md). Obtain your own originals from Apple and run `npm run frames:import -- "/path/to/Apple Device Frames"` in the customer project. This imports the iPhone and iPad bezels without changes. Keep the source files local; do not add them to a shared source archive.
+For Apple decks, follow [Apple frame setup](references/apple-frames.md) once per computer. Obtain your own originals from Apple and run `npm run frames:import -- "/path/to/Apple Device Frames"` in the editor project or the installed skill's `template/` folder. This includes the unchanged files locally and saves a local cache. Later projects get the frames automatically on startup and use them by default. Keep the source files local; do not add them to a shared source archive.
 
 1. Start the project with `npm ci`, then `npm run dev`.
 2. Open the private link from the terminal.

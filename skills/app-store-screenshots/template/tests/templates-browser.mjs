@@ -17,7 +17,7 @@ const server = net.createServer();
 await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
 const port = server.address().port;
 await new Promise(resolve => server.close(resolve));
-for (const name of ['scripts', 'package.json', 'next.config.mjs', 'app-store-screenshots.json', 'public']) await cp(path.join(source,name), path.join(directory,name), {recursive:true});
+for (const name of ['scripts', 'src', 'package.json', 'next.config.mjs', 'app-store-screenshots.json', 'public']) await cp(path.join(source,name), path.join(directory,name), {recursive:true});
 const fixture = JSON.parse(await readFile(path.join(directory,'app-store-screenshots.json'),'utf8'));
 fixture.slidesByDevice.iphone = fixture.slidesByDevice.iphone.slice(0,1);
 fixture.device = 'iphone';
@@ -74,12 +74,12 @@ try {
   for(const frame of Object.values(appleFrames)) {
     const file=path.join(directory,'public/device-frames',frame.filename);
     const original=await readFile(file);
-    assert.equal((await fetch(origin+'/device-frames/'+frame.filename)).status,401);
-    const delivered=await fetch(origin+'/device-frames/'+frame.filename,{headers});
+    assert.equal((await fetch(origin+'/api/device-frames/'+frame.filename)).status,401);
+    const delivered=await fetch(origin+'/api/device-frames/'+frame.filename,{headers});
     assert.equal(delivered.status,200);
     assert.deepEqual(Buffer.from(await delivered.arrayBuffer()),original,'frame route returns unchanged bytes');
   }
-  assert.equal((await fetch(origin+'/device-frames/not-a-frame.png',{headers})).status,404);
+  assert.equal((await fetch(origin+'/api/device-frames/not-a-frame.png',{headers})).status,404);
   // Artificial fixtures test crop geometry without customer material.
   const fixtures=await page.evaluate(()=>{
     function paint(kind) {

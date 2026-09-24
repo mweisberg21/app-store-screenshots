@@ -69,7 +69,7 @@ npm run dev
 
 Use Node.js 22 or newer. Open the exact private `/unlock#...` link printed by the launcher. For a different port, use `npm run dev -- --port 3001`.
 
-For Apple decks, read [references/apple-frames.md](references/apple-frames.md). Import the user's original Apple files with `npm run frames:import -- "/path/to/Apple Device Frames"`, then reload the editor. Use the measured original bezel above the app capture. Do not draw substitute Apple hardware, add a second camera, or modify the source PNG. Keep Apple's source assets local and out of shared tool packages. If files are missing, prepare the deck and report the required import; do not claim that Apple export is ready.
+For Apple decks, read [references/apple-frames.md](references/apple-frames.md). Original Apple bezels are the default for every device layout. Keep the local template's `public/device-frames/` files when copying it into a customer project. The launcher checks these files and restores them from the local cache when needed. If neither source is ready, import the user's originals once with `npm run frames:import -- "/path/to/Apple Device Frames"`, then reload. This also prepares the local cache for future projects. Use the measured original bezel above the capture. Do not draw substitute Apple hardware, add a second camera, or modify the source PNG. Keep Apple's source assets local and out of shared tool packages. If files are missing, prepare the deck and report the required import; do not claim that Apple export is ready.
 
 The launcher binds to `127.0.0.1` and creates a session token on each start. Use `npm run dev` or `npm start`; do not bypass it. Each teammate runs a local copy. Do not share the private link, expose a tunnel, or deploy this as a shared website.
 

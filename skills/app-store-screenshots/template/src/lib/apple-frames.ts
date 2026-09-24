@@ -10,7 +10,7 @@ export function appleFrame(device: Device, orientation: Orientation): AppleFrame
 }
 
 export function framePath(frame: AppleFrame): string {
-  return `/device-frames/${frame.filename}`;
+  return `/api/device-frames/${frame.filename}`;
 }
 
 // Older decks can contain a saved box with different device proportions.
