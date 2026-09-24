@@ -1,13 +1,30 @@
 ---
 name: app-store-screenshots
-description: Create customer-branded App Store and Google Play screenshots from real app captures. Use for store listing images, screenshot decks, local editor setup, localization, and PNG export. Includes brand intake, restrained design defaults, and export checks.
+description: Create and optimize customer-branded App Store and Google Play screenshots from real app captures. Use for listing strategy, screenshot decks, Uscreen customer apps, local editor setup, localization, and PNG export. Includes asset check-ins and feature verification.
 ---
 
 # App Store Screenshots
 
 Build a local screenshot editor from `template/`. Use the customer's real app screens and brand to make a clear listing. Each slide connects one useful benefit to visible evidence in the app.
 
-Source: `mweisberg21/app-store-screenshots`. Keep the original MIT license and author credit. This workflow is self-contained; teammates do not need other design skills.
+Source: `mweisberg21/app-store-screenshots`. Keep the original MIT license and author credit. This workflow is self-contained; teammates do not need other design or ASO skills. ASO means App Store optimization. Here, its purpose is to help the right visitor understand the app and decide to download it.
+
+## Ask for assets throughout the work
+
+At each user-facing stage below, ask about assets before making choices that depend on them. Use this opening question: **"Do you have any assets you want to provide, specific screenshots, logos, colors, etcetera?"** Then make later questions specific to the current stage. These are requests for useful input, not extra permission gates.
+
+| Stage | Asset check-in |
+| --- | --- |
+| Start the brief | Ask the opening question. Offer to use attachments, local paths, a brand guide, or an existing approved project. |
+| Plan the feature sequence | Ask which app areas matter most, and whether the user has captures for them. Offer a short capture list for missing screens. |
+| Build the first slide | Name the assets already supplied. Ask for any preferred logo variant, font, colors, creator photo, content art, or background image. |
+| Add each new feature or revise a slide | Ask whether there is a better capture, featured video, photo, or other asset for that part of the app. Group related slides in one check-in. |
+| Add devices or languages | Ask for matching iPad/Android captures, localized UI, approved translations, or local artwork. |
+| Prepare final exports | Ask whether any image, logo, color, capture, or copy must be replaced before delivery. |
+
+Record each answer and pending item in the brief. Show what is already available; do not ask the user to supply the same file again. Offer three simple paths: provide assets, use existing assets, or get help with captures. Respect an explicit request to use existing files throughout or to stop further questions. Otherwise, keep the stage check-ins. For a narrow edit, use only the stages it touches.
+
+Give the user time to answer. Continue independent work while input is pending; do not treat silence as asset approval. Keep dependent choices marked as drafts. If required captures are missing, give a specific capture list and keep final delivery pending. Ask for files in the host's normal chat or attachment flow; do not use a text-only question tool to request file uploads. Never ask for passwords or access tokens.
 
 ## 1. Read the project and customer brief
 
@@ -16,21 +33,25 @@ Use `rg --files` to find the project file, package file, screenshot assets, and 
 - Preserve existing copy, assets, devices, languages, and brand settings.
 - For an upgrade, read [references/migration.md](references/migration.md). Never replace a customer deck with starter content.
 - Use a separate project folder for each customer. Never mix assets from different customers.
-- Use information already supplied. Ask only for missing facts that affect the result. Do not repeat a full questionnaire.
+- Read information already supplied, including `app-marketing-context.md` when present. Keep it as context; verify claims against the current app. Use the stage check-ins above without repeating the full brief.
 
 Record these facts in `customer-brief.md`, using [customer-brief.example.md](customer-brief.example.md):
 
-1. App name, audience, and primary user task.
+1. App name, audience, primary user task, and listing goal. Read the current listing if supplied; confirm the target market and any campaign audience.
 2. Real screenshot paths and the feature shown in each image.
 3. Customer brand source: approved colors, logo, type, website, or brand guide. Read the supplied source. Do not derive a palette from the app category alone.
 4. Features in priority order, with evidence that each exists in this customer's app.
 5. Required store, devices, languages, and intended slide count.
 
-For uScreen work, verify every claim against that customer's app. Do not assume every app supports downloads, casting, live events, community, or a subscription feature. Use approved customer images and copy. Keep private customer material out of this public tool repository.
+For Uscreen work, read [references/uscreen-mobile-features.md](references/uscreen-mobile-features.md) before suggesting features or captures. It maps member benefits to app screens and explains platform limits. Verify every proposed feature in this customer's native app, version, and member access state. Mark each as verified, unavailable, or needs evidence. Use the customer's brand and content; do not apply Uscreen branding to every app. Keep private customer material out of this public tool repository.
+
+Prioritize the customer's content, teachers, programs, playback, community, and live experiences where supported. Do not propose downloads as a screenshot topic or use them to fill a spare slot. Include a download slide only when the user explicitly requests one.
 
 If brand material is missing, use the neutral starter while preparing the structure. Mark the brand choice as unresolved. Do not invent a final identity. If captures are missing, prepare the brief and list the captures needed. Do not fabricate app UI.
 
 ## 2. Choose a direction from the customer material
+
+For an App Store deck, read [references/aso-screenshot-playbook.md](references/aso-screenshot-playbook.md) before writing the sequence. Record each slide's visitor need, benefit, real capture, and evidence. Put the strongest useful experience first. Match the number of slides to the evidence and brief; do not force ten slides or a promotional closer. Check Google Play's own current rules for a Play deck; Apple rules do not establish Play compliance.
 
 Read [references/listing-design-research.md](references/listing-design-research.md) for the observed patterns, three template types, and their limits. Use App screen by default. Use Creator with app for an approved creator photo. Use Content library for two to four approved catalog images. Each template still requires a real app capture.
 
@@ -52,9 +73,9 @@ Apply these design rules:
 - Start in isolated mode. Use Connected mode only for a deliberate composition. Every exported slide must remain understandable on its own.
 - Add an effect only when the brand or content gives it a clear purpose. There is no decoration quota. Remove unused badges, glow, blurred shapes, gradient text, and generic icons.
 - Keep one type decision consistent across the set. Use approved local font files when exact brand typography matters. Do not assume a suggested font is installed.
-- Review the first complete slide at full size and at 160–220 pixels wide before expanding the set. Report the design choices and unresolved input. Continue with that direction unless the user asked to approve it first.
+- Review the first complete slide at full size and at 160–220 pixels wide before expanding the set. Report the design choices and unresolved input. Make the first-slide asset check-in, then carry the chosen design through the set. Honor any pending asset input or requested design approval.
 
-Named styles in [style-prompts.md](style-prompts.md) are optional references. Open one only when the user explicitly selects it. Its effects, decorative counts, and fixed slide sequence never override the customer brief or these rules. Do not choose the nearest preset by category.
+Named styles in [style-prompts.md](style-prompts.md) are optional references. Open one only when the user explicitly selects it. Its effects, decorative counts, invented sample UI, and fixed slide sequence never override real captures, the feature evidence, asset check-ins, or these rules. Do not choose the nearest preset by category.
 
 ## 3. Create the local editor
 
@@ -121,6 +142,7 @@ Inspect every language at export size. Check long words, line breaks, and right-
 Before delivery:
 
 - Confirm every claim against the customer's app and brief.
+- Check the planned benefit-to-capture sequence. Verify access conditions for featured paid content; do not imply that a paid membership or purchase is free.
 - Remove placeholders and private account data.
 - Inspect full-resolution PNGs and thumbnails.
 - Check text bounds, contrast, device crop, screenshot visibility, and each Connected-mode seam.
@@ -131,8 +153,10 @@ Apple requires screenshots to show the app in use; text overlays can explain it.
 
 ## 6. Export and hand off
 
+Complete the final asset check-in. Resolve required replacements before calling the set final. If feedback is pending, label exports as drafts.
+
 Choose the device, then **Export bundle**. Fix items in the export review dialog and try again. Repeat for the devices in the brief. Store-image paths are `<platform>/<device>/<WxH>/<locale>/NN-<layout>.png`. The bundle also includes `review/<locale>.png`, a contact sheet for review. Do not upload review sheets to the store.
 
 Keep the brief, project JSON, assets, local fonts, and editor version together in the customer's approved project location. Never commit customer assets to the public tool fork. Do not submit or publish a listing unless the user asks.
 
-Report exported devices and languages, output files, completed checks, and unresolved decisions. Give the private start link only to the local operator. See [team-guide.md](team-guide.md) for teammate setup.
+Report exported devices and languages, output files, completed checks, and unresolved decisions. Include the slide-to-feature list so the teammate can trace each claim to its capture. If optimization is in scope, propose one test hypothesis and a metric; do not claim a conversion gain from appearance alone. Give the private start link only to the local operator. See [team-guide.md](team-guide.md) for teammate setup.

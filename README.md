@@ -9,6 +9,8 @@ This fork retains Parth Jadhav's MIT license and author credit. It adds local ac
 - [Team guide](skills/app-store-screenshots/team-guide.md): setup, a reusable request, and customer handoff.
 - [Customer brief](skills/app-store-screenshots/customer-brief.example.md): brand sources, features, assets, devices, and languages.
 - [Design research](skills/app-store-screenshots/references/listing-design-research.md): six current listing references and three template types.
+- [ASO playbook](skills/app-store-screenshots/references/aso-screenshot-playbook.md): audience, feature evidence, screenshot order, localization, and measured tests.
+- [Uscreen capture guide](skills/app-store-screenshots/references/uscreen-mobile-features.md): member features, useful screens, and customer-specific checks.
 - [Skill instructions](skills/app-store-screenshots/SKILL.md): the complete agent workflow.
 - [Apple frame setup](skills/app-store-screenshots/references/apple-frames.md): import original iPhone and iPad bezels for local use.
 
@@ -37,8 +39,10 @@ Choose **Creator with app** when a teacher or creator is central to the service.
 
 Use Node.js 22 or newer and a coding agent with local file and command access, such as Codex or Claude Code.
 
+These team changes are on `improve-brand-defaults` in [draft PR 1](https://github.com/mweisberg21/app-store-screenshots/pull/1). Use the branch-specific command below while the PR is open. A default-branch install still gets the older version.
+
 ```bash
-npx skills add mweisberg21/app-store-screenshots -g
+npx skills add https://github.com/mweisberg21/app-store-screenshots/tree/improve-brand-defaults/skills/app-store-screenshots -g
 ```
 
 Choose the supported agent in the installer. The skill includes its design instructions and template; no additional design skill is required.
@@ -46,7 +50,7 @@ Choose the supported agent in the installer. The skill includes its design instr
 Manual shared install:
 
 ```bash
-git clone https://github.com/mweisberg21/app-store-screenshots
+git clone --branch improve-brand-defaults --single-branch https://github.com/mweisberg21/app-store-screenshots
 mkdir -p ~/.agents/skills
 cp -R app-store-screenshots/skills/app-store-screenshots ~/.agents/skills/
 ```
@@ -61,9 +65,14 @@ Use a separate folder for each customer. Supply the brief and approved captures,
 Use app-store-screenshots for this customer.
 Read customer-brief.md and the real captures first.
 Use the customer's brand and verified features.
+Ask for assets at each stage and help me capture missing app sections.
+Prioritize content, teachers, programs, and the member experience.
+Do not suggest download slides unless I ask for them.
 Create one complete slide, then extend the design to the set.
 Check every exported image at full size and thumbnail size.
 ```
+
+The bundled skill asks about assets at the brief, feature plan, first slide, new feature, device/language, and final export stages. It carries previous answers forward and supports an explicit request to use existing files throughout. These prompts run in the agent conversation; the editor does not enforce them.
 
 After the agent creates the project:
 

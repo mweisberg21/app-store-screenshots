@@ -6,13 +6,15 @@ Use one local project for each customer. The customer's brand controls the scree
 
 Use an agent that can read local files, run Node.js, and open a browser, such as Codex or Claude Code. See the [Codex skill documentation](https://developers.openai.com/codex/skills/) and [Claude Code skill documentation](https://code.claude.com/docs/en/skills).
 
-Install the fork:
+The current team version is on the `improve-brand-defaults` branch in [draft PR 1](https://github.com/mweisberg21/app-store-screenshots/pull/1). A default-branch install does not include these changes yet. Install this draft with:
 
 ```bash
-npx skills add mweisberg21/app-store-screenshots -g
+npx skills add https://github.com/mweisberg21/app-store-screenshots/tree/improve-brand-defaults/skills/app-store-screenshots -g
 ```
 
 Choose your supported agent in the installer. Use Node.js 22 or newer. The skill includes the design rules and template; no extra design plugin or image generation account is required.
+
+The bundle has one entry skill plus supporting guides. It includes an [ASO playbook](references/aso-screenshot-playbook.md), a [Uscreen feature and capture guide](references/uscreen-mobile-features.md), design research, and local editor instructions. The agent reads the relevant guide as it plans the work. It does not need another ASO skill installed.
 
 ## Start a customer project
 
@@ -22,6 +24,10 @@ Create an empty folder in your approved customer work area. Open it in your agen
 Use app-store-screenshots to create a listing for this customer.
 Read customer-brief.md and the supplied app captures first.
 Use the customer's approved brand and verified features.
+Plan the sequence around the audience and the customer's content.
+Ask for assets at each stage. Keep a record of files already supplied.
+Help me capture the app sections needed to support each message.
+Do not suggest download slides unless I ask for them.
 Start with one complete slide, then extend the same design to the set.
 Keep the actual app content readable. Do not invent claims or add
 decorative effects without a reason from the customer material.
@@ -29,6 +35,16 @@ Run the local editor, check the exported PNGs, and list missing input.
 ```
 
 Use [customer-brief.example.md](customer-brief.example.md) for the brief. A brand guide or current website helps the agent choose colors and type. App captures show which features can be claimed. The app icon is needed for the Play Store feature graphic.
+
+## What the agent will ask
+
+It starts with: "Do you have any assets you want to provide, specific screenshots, logos, colors, etcetera?"
+
+It then asks for relevant assets when it plans features, makes the first slide, adds a feature, adds a device or language, and prepares final exports. It names the files it already has. You can provide more files, ask for capture help, or tell it to use the existing files. You can also tell it to use those files throughout and stop further asset questions.
+
+For each planned image, the agent records the member benefit, real app screen, device, language, and claim evidence. If a capture is missing, it gives a short capture list with the app area and state needed. It does not invent a feature to complete the deck.
+
+For Uscreen apps, start with the customer's content, teachers, programs, playback, community, and live experiences where supported. Confirm the features in that customer's native app. Downloads are excluded from suggested sequences unless requested. Do not assume a feature exists on mobile because it appears on the website or an admin page.
 
 ## Editor workflow
 
@@ -42,6 +58,8 @@ For Apple decks, follow [Apple frame setup](references/apple-frames.md) once per
 5. Add more screens and the required translations.
 6. Select **Export bundle**. Resolve any missing content shown in the review dialog.
 7. Open the review sheet in `review/<locale>.png` to check image order. Inspect each separate store PNG at full size and as a thumbnail. Ask the assigned customer reviewer to check the result.
+
+The asset check-ins happen in the agent conversation. They are skill instructions, not forced dialogs in the editor. Direct manual use of the editor does not run them.
 
 Use a matching iPhone or iPad capture. The automatic checks cover completeness, Apple capture proportions, headline contrast, and measured text overflow. They do not verify product claims, translation quality, element overlap, image crops, or current store rules. Keep those checks in the delivery review.
 

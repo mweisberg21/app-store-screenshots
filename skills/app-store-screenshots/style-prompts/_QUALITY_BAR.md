@@ -2,6 +2,8 @@
 
 The customer brief and the design rules in `SKILL.md` take priority over every style sheet. Style sheets are historical references for explicit requests, not default recipes.
 
+The [ASO playbook](../references/aso-screenshot-playbook.md), verified feature plan, and stage asset check-ins still apply when a style is selected. Ignore instructions to draw sample app UI, insert sample claims, or replace original Apple frames with a stylized device. Use the customer's real captures and local original frames. Do not propose download slides unless the user asks for them.
+
 ## Keep the customer visible
 
 - Use the customer's actual app captures and approved brand material.

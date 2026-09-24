@@ -59,10 +59,10 @@ For a five-image starting set:
 1. Primary benefit, supported by the strongest app screen.
 2. Discover the content or program.
 3. Watch, listen, or use the core feature.
-4. A verified detail, such as saved content, downloads, or progress.
+4. The teacher, a distinctive program, or another verified content benefit.
 5. Another strong verified benefit, such as community or a program structure.
 
-Change the order to match the customer's strongest evidence. Use fewer images when there are fewer useful claims. There is no required feature wall, logo closer, dark slide, or connected composition.
+Change the order to match the customer's strongest evidence. Use fewer images when there are fewer useful claims. There is no required feature wall, logo closer, dark slide, or connected composition. The team's current preference excludes download slides unless the user explicitly requests one. Use the [ASO playbook](aso-screenshot-playbook.md) to connect the sequence to the visitor's needs and feature evidence.
 
 ## Official format requirements are separate
 
