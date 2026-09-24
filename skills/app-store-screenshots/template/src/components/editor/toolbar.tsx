@@ -27,6 +27,7 @@ import type { Device, Orientation } from "@/lib/types";
 
 type Props = {
   brandControl: React.ReactNode;
+  backgroundControl: React.ReactNode;
   appName: string;
   setAppName: (v: string) => void;
   connectedCanvas: boolean;
@@ -78,6 +79,7 @@ export function Toolbar(props: Props) {
       />
 
       {props.brandControl}
+      {props.backgroundControl}
 
       <span aria-hidden className="mx-1 h-5 w-px bg-border" />
 

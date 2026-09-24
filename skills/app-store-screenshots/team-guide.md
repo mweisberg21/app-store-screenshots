@@ -37,6 +37,7 @@ For Apple decks, follow [Apple frame setup](references/apple-frames.md) once per
 1. Start the project with `npm ci`, then `npm run dev`.
 2. Open the private link from the terminal.
 3. Set the app name. Use **Brand** to set colors, type, alignment, and the app icon. New projects use large, centered headlines.
+   Use **Background** for a solid, gradient, or image background. Choose the project default or one screen. Preview the crop and text color, then apply. See [background controls](references/backgrounds.md).
 4. Choose **App screen**, **Creator with app**, or **Content library**. Add a real app screenshot and one clear headline. Add an approved creator photo or two to four catalog images when the template needs them. Use crop controls to keep faces and titles clear.
 5. Add more screens and the required translations.
 6. Select **Export bundle**. Resolve any missing content shown in the review dialog.

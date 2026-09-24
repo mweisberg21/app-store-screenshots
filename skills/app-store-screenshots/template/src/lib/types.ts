@@ -61,6 +61,16 @@ export type TextElement = {
 export type ImageCrop = { x: number; y: number; zoom: number };
 export type ImageAsset = { src: string; crop?: ImageCrop };
 
+export type GradientBackground = {
+  kind: "gradient"; textColor?: string;
+  style: "linear" | "radial"; angle: number; center: { x: number; y: number };
+  stops: { color: string; position: number }[];
+};
+export type Background =
+  | { kind: "solid"; color: string; textColor?: string }
+  | GradientBackground
+  | { kind: "image"; image: ImageAsset; fit: "cover" | "contain"; color: string; tint: { color: string; opacity: number }; textColor?: string };
+
 export type Slide = {
   id: string;
   layout: SlideLayout;
@@ -70,6 +80,7 @@ export type Slide = {
   screenshotSecondary?: string; // for two-devices layout — may contain {locale}
   photo?: ImageAsset;
   artworks?: ImageAsset[];
+  background?: Background;
   inverted?: boolean;         // dark background variant
   // Per-element overrides; when present, replaces layout default placement.
   transforms?: Partial<Record<BuiltInElementId, ElementTransform>>;
@@ -95,6 +106,7 @@ export type Theme = {
   muted: string;
   fontFamily?: string;
   textAlign?: "left" | "center";
+  background?: Background;
 };
 
 export type BrandStyle = {
@@ -109,6 +121,7 @@ export type ProjectState = {
   appName: string;
   themeId: string;
   brand?: BrandStyle;
+  background?: Background;
   // v1 projects render as isolated screens until the user opts into connected crops.
   connectedCanvas: boolean;
   // Locales this project targets. Drives the toolbar dropdown and bulk export.

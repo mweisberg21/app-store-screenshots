@@ -35,6 +35,7 @@ export function BrandSettings({ state, onApply, disabled }: {
             </div>)}
           </div>
           <p className="text-xs text-muted-foreground">Use six-digit hex colors from the customer’s brand guide.</p>
+          {state.background && <p className="text-xs text-muted-foreground">The Background picker has a custom project background. These brand colors remain available when you reset that background.</p>}
           <ScreenshotPicker label="App icon" value={icon} onChange={setIcon} />
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">

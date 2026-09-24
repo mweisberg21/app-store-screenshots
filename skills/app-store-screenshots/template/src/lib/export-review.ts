@@ -1,4 +1,5 @@
-import { contrastRatio, projectTheme } from "./brand";
+import { projectTheme } from "./brand";
+import { backgroundContrast, backgroundText, effectiveBackground } from "./background";
 import { resolveScreenshot } from "./locale";
 import type { ProjectState } from "./types";
 import { appleFrame, framePath } from "./apple-frames";
@@ -20,10 +21,10 @@ export function reviewExport(state: ProjectState, imageFailed: (path: string) =>
   const theme = projectTheme(state);
   for (const [index, slide] of slides.entries()) {
     const base = { slideId: slide.id };
-    const bg = slide.inverted ? theme.bgAlt : theme.bg;
-    const fg = slide.inverted ? theme.fgAlt : theme.fg;
-    if (contrastRatio(bg, fg) < 4.5) {
-      issues.push({ ...base, message: `Screen ${index + 1}: increase headline contrast in Brand settings (target 4.5:1).` });
+    const background = effectiveBackground(slide, theme);
+    const contrast = backgroundContrast(background, backgroundText(slide, theme));
+    if (contrast !== null && contrast < 4.5) {
+      issues.push({ ...base, message: `Screen ${index + 1}: increase headline contrast in Background or Brand settings (target 4.5:1).` });
     }
     for (const locale of state.locales) {
       const prefix = `Screen ${index + 1} · ${locale.toUpperCase()}`;
@@ -39,6 +40,7 @@ export function reviewExport(state: ProjectState, imageFailed: (path: string) =>
       const paths: [string, string | undefined][] = feature
         ? [["app icon", state.appIcon]]
         : slide.layout === "no-device" ? [] : [["screenshot", slide.screenshot]];
+      if (background.kind === "image") paths.push(["background image", background.image.src]);
       if (!feature && slide.layout === "two-devices") paths.push(["back screenshot", slide.screenshotSecondary]);
       if (!feature && slide.layout === "creator") paths.push(["creator photo", slide.photo?.src]);
       if (!feature && slide.layout === "content-library") {

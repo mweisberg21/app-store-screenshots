@@ -30,6 +30,8 @@ import { img } from "@/lib/image-cache";
 import { pickText, resolveScreenshot } from "@/lib/locale";
 import { artworkRects, mediaTemplateRects } from "@/lib/template-layout";
 import { CroppedImage } from "./cropped-image";
+import { effectiveBackground, themeForSlide } from "@/lib/background";
+import { BackgroundLayer } from "./background-layer";
 import {
   AndroidPhone,
   AndroidTabletL,
@@ -499,7 +501,7 @@ export function SlideCanvas({
         overflow: "hidden",
       }}
     >
-      <SlideBackground slide={slide} cW={cW} cH={cH} theme={theme} />
+      <BackgroundLayer background={effectiveBackground(slide, theme)} locale={locale} />
       <SlideElements
         slide={slide}
         device={device}
@@ -605,7 +607,7 @@ export function DeckCanvas({
               overflow: "hidden",
             }}
           >
-            <SlideBackground slide={slide} cW={cW} cH={cH} theme={theme} />
+            <BackgroundLayer background={effectiveBackground(slide, theme)} locale={locale} />
             {showGuides && <ScreenGuide cW={cW} cH={cH} index={index} active={active} />}
           </div>
         );
@@ -668,34 +670,6 @@ export function DeckCanvas({
   );
 }
 
-function SlideBackground({
-  slide,
-  cW,
-  cH,
-  theme,
-}: {
-  slide: Slide;
-  cW: number;
-  cH: number;
-  theme: Theme;
-}) {
-  const inverted = !!slide.inverted;
-  return (
-    <div
-      style={{
-        position: "absolute",
-        inset: 0,
-        overflow: "hidden",
-        background: inverted ? theme.bgAlt : theme.bg,
-        pointerEvents: "none",
-        userSelect: "none",
-        color: inverted ? theme.fgAlt : theme.fg,
-      }}
-    >
-    </div>
-  );
-}
-
 function ScreenGuide({
   cW,
   cH,
@@ -744,7 +718,7 @@ function ScreenGuide({
 function FeatureGraphicCanvas({
   slide,
   cW,
-  theme,
+  theme: baseTheme,
   locale,
   appName,
   appIcon,
@@ -760,6 +734,7 @@ function FeatureGraphicCanvas({
   editable?: boolean;
   edit?: EditHandlers;
 }) {
+  const theme = themeForSlide(slide, baseTheme);
   return (
     <div
       style={{
@@ -775,6 +750,7 @@ function FeatureGraphicCanvas({
         color: slide.inverted ? theme.fgAlt : theme.fg,
       }}
     >
+      <BackgroundLayer background={effectiveBackground(slide, theme)} locale={locale} />
       <div style={{ display: "flex", alignItems: "center", gap: cW * 0.03, zIndex: 2 }}>
         {appIcon && img(appIcon) ? (
           <img
@@ -832,7 +808,7 @@ function SlideElements({
   slide,
   device,
   orientation,
-  theme,
+  theme: baseTheme,
   locale,
   editable,
   edit,
@@ -859,6 +835,7 @@ function SlideElements({
   boundsH: number;
   allowCrossScreen: boolean;
 }) {
+  const theme = themeForSlide(slide, baseTheme);
   const screenshot = resolveScreenshot(slide.screenshot, locale);
   const screenshotSecondary = resolveScreenshot(slide.screenshotSecondary, locale);
   const { cW, cH, Frame, frameAspect, defaults } = getSlideGeometry(slide, device, orientation);

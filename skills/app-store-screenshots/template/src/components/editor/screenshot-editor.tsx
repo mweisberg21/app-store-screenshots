@@ -12,6 +12,8 @@ import { detectPlatform, nid } from "@/lib/defaults";
 import { isBuiltInElementId, isTextElementId, textElementKey } from "@/lib/elements";
 import { didFail, imageSize, preloadImages } from "@/lib/image-cache";
 import { appleFrame, framePath } from "@/lib/apple-frames";
+import { applyBackground } from "@/lib/background";
+import { BackgroundSettings } from "./background-settings";
 import { resolveScreenshot, writeLocalized } from "@/lib/locale";
 import { useProject } from "@/lib/storage";
 import type {
@@ -85,6 +87,9 @@ export function ScreenshotEditor() {
     const frame = appleFrame(state.device, state.orientation);
     if (frame) paths.add(framePath(frame));
     if (state.appIcon) paths.add(state.appIcon);
+    if (state.background?.kind === "image") {
+      for (const locale of state.locales) paths.add(resolveScreenshot(state.background.image.src, locale));
+    }
     // Preload every locale variant so bulk export doesn't race image loads.
     const allSlides: Slide[] = Object.values(state.slidesByDevice).flat();
     for (const s of allSlides) {
@@ -98,7 +103,7 @@ export function ScreenshotEditor() {
       }
     }
     return Array.from(paths).sort();
-  }, [state.slidesByDevice, state.appIcon, state.locales, state.device, state.orientation]);
+  }, [state.slidesByDevice, state.appIcon, state.locales, state.device, state.orientation, state.background]);
   const assetSig = assetPaths.join("|");
 
   React.useEffect(() => {
@@ -313,6 +318,7 @@ export function ScreenshotEditor() {
           target.tagName === "TEXTAREA" ||
           (target as HTMLElement).isContentEditable);
       if (exporting) return;
+      if (target?.closest('[role="dialog"]')) return;
 
       if (e.key === "Escape") {
         setSelectedElement(null);
@@ -571,6 +577,9 @@ export function ScreenshotEditor() {
     <div className="flex h-screen flex-col overflow-hidden bg-background">
       <Toaster position="top-right" richColors closeButton />
       <Toolbar
+        backgroundControl={<BackgroundSettings state={state} slide={activeSlide} disabled={busy} onApply={(scope, background, replaceOverrides) => {
+          if (activeSlide) setState(prev => applyBackground(prev, scope, activeSlide.id, background, replaceOverrides));
+        }} />}
         brandControl={<BrandSettings state={state} disabled={busy} onApply={(brand, appIcon) => setState((p) => ({ ...p, brand, appIcon }))} />}
         appName={state.appName}
         setAppName={(v) => setState((p) => ({ ...p, appName: v }))}

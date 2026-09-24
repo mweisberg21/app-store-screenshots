@@ -19,14 +19,14 @@ export function brandForProject(state: Pick<ProjectState, "brand" | "themeId">):
   return { background: theme.bg, foreground: theme.fg, font: "sans", alignment: theme.textAlign ?? "center" };
 }
 
-export function projectTheme(state: Pick<ProjectState, "brand" | "themeId">): Theme {
+export function projectTheme(state: Pick<ProjectState, "brand" | "themeId" | "background">): Theme {
   const theme = themeById(state.themeId);
-  if (!state.brand) return theme;
+  if (!state.brand) return { ...theme, background: state.background };
   const brand = state.brand;
   return {
     ...theme, name: "Customer brand", bg: brand.background, fg: brand.foreground,
     bgAlt: brand.foreground, fgAlt: brand.background, accent: brand.foreground,
-    fontFamily: BRAND_FONTS[brand.font].family, textAlign: brand.alignment,
+    fontFamily: BRAND_FONTS[brand.font].family, textAlign: brand.alignment, background: state.background,
   };
 }
 

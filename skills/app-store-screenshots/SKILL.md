@@ -85,6 +85,7 @@ The first-run project has one empty screen per device. It is a starting point, n
 4. Write a short headline supported by the capture. Add screens only when there is another useful point.
 5. Choose a template that protects the important part of the capture. Keep device proportions and critical UI intact.
 6. For Creator with app, add the creator photo. For Content library, add two to four catalog images. Use horizontal crop, vertical crop, and zoom to keep faces and text visible. The portrait creator template puts the phone over the lower part of the photo; keep faces clear of it.
+7. Use **Background** when the brief calls for a different surface. Read [references/backgrounds.md](references/backgrounds.md). Choose a solid color, linear/radial gradient, or approved background image. Set the project default or one screen override. Keep the solid starter unless the brand or user calls for another background. Review the real template in the picker before applying. Use fill, fit, crop, zoom, and tint to protect headline readability.
 
 An agent can set these values in `app-store-screenshots.json`. Use structured JSON edits. The optional `brand` object is:
 
@@ -112,6 +113,8 @@ Keep existing custom themes during migration. For new projects, prefer saved `br
 Set `locales` and `locale` from the brief. Do not assume English if the customer supplied another language. Screenshot paths can include `{locale}`, such as `/screenshots/iphone/{locale}/01.png`.
 
 Preview can show fallback copy while work is incomplete. Final export requires the headline, each used label, and added text in every target language. It checks required images, Apple capture proportions, basic headline contrast, and browser-measured text overflow for every target language. Shorten overflowing text or enlarge its frame. These checks do not prove correct translation, safe element overlap, image crop, or store approval.
+
+Solid and gradient contrast checks use the selected background. Image backgrounds require visual review of the text against the image. Check each language and orientation; the image crop can change with screen proportions. Missing background images block export.
 
 Inspect every language at export size. Check long words, line breaks, and right-to-left text. Do not claim RTL layout support from translated text alone. Use a fluent reviewer where needed.
 

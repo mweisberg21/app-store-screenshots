@@ -15,6 +15,7 @@ This fork retains Parth Jadhav's MIT license and author credit. It adds local ac
 ## What the editor does
 
 - Saves customer background, text color, headline type, and alignment through **Brand** controls.
+- Adds a **Background** picker for solid colors, linear/radial gradients, and uploaded images. Preview crop, zoom, fit, tint, and text color before applying to the project or one screen. See [background controls](skills/app-store-screenshots/references/backgrounds.md).
 - Provides App screen, Creator with app, and Content library templates.
 - Keeps creator photos and catalog artwork separate from app captures, with saved crop and zoom controls.
 - Shows real captures in locally imported Apple iPhone and iPad bezels, or generic Android frames.

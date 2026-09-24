@@ -40,6 +40,6 @@ export function artworkRects(region: TemplateRect, count: number): TemplateRect[
 }
 
 export function slideImagePaths(slide: Slide): string[] {
-  return [slide.screenshot, slide.screenshotSecondary, slide.photo?.src, ...(slide.artworks || []).map((art) => art.src)]
+  return [slide.screenshot, slide.screenshotSecondary, slide.photo?.src, slide.background?.kind === "image" ? slide.background.image.src : undefined, ...(slide.artworks || []).map((art) => art.src)]
     .filter((path): path is string => !!path);
 }

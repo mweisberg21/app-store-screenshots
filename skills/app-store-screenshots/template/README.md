@@ -64,6 +64,8 @@ Portrait creator layouts place the app view over the lower part of the photo. Us
 
 ## Brand and export review
 
+The toolbar's **Background** picker supports solid colors, linear/radial gradients with two to five stops, and PNG/JPG uploads. Image controls include fill or fit, crop position, zoom, base color, and tint. Set a project default or a screen override. The live preview uses the real template. Apply saves the change; Cancel discards it. Reset can restore project or brand inheritance. See [background controls](../references/backgrounds.md).
+
 Use **Brand** in the toolbar to set customer background and text colors, headline type, alignment, and app icon. The values are saved in the project and applied across devices and languages. Local font stacks need no external font request. Exact customer fonts require licensed local files and an update to the selected stack in `src/lib/brand.ts`.
 
 New projects use centered headlines at 13% of the canvas's shorter side. This is about 41% larger than the previous default. Existing explicit alignment choices remain in effect. Keep copy short and review each line break.
@@ -73,6 +75,8 @@ The starter has one empty screen per device, no marketing filler, and no saved d
 Export stops for missing headlines, incomplete translations, missing or unavailable required images, mismatched Apple capture proportions, insufficient basic headline contrast, and text that exceeds its frame. Text is measured in the browser for every target language before capture. Preview fallback text does not count as a completed translation. These checks do not detect all overlaps, cropping errors, or translation errors. Inspect every PNG.
 
 The bundle includes `review/<locale>.png`, a contact sheet made from the exported images in order. Use it for review. Upload only the separate full-resolution store images.
+
+For custom backgrounds, the contrast check uses the selected solid color or samples the gradient. Uploaded backgrounds need visual contrast review. Their missing or unreadable files block export. New background fields are optional, so old project files retain their appearance.
 
 ## Customizing
 
@@ -100,3 +104,5 @@ The bundle includes `review/<locale>.png`, a contact sheet made from the exporte
 Import the three Apple frame files, then run `npm run build` and `node tests/templates-browser.mjs` in an environment with the Playwright package and Google Chrome. If Playwright is supplied by an external runtime, set `PLAYWRIGHT_MODULE` to that runtime's module path. Pass an output directory as the first argument to retain test review sheets. The test uses an isolated temporary project and synthetic app images; it does not modify customer projects.
 
 The check covers photo and catalog uploads, crop changes and persistence, template changes, library add/remove, English and German export, text overflow, iPad portrait and landscape export, review sheets, frame route access, unchanged frame bytes, and camera pixels in the exported iPhone image. It does not establish design approval for a real customer.
+
+Run `node tests/backgrounds-browser.mjs` with the same setup for background controls. It checks cancellation, undo/redo, reload, gradient stops and center, image upload/crop/fit/tint, project and screen scope, export pixels, and a missing-image failure. An optional output directory retains screenshots of the picker and exported review images.
