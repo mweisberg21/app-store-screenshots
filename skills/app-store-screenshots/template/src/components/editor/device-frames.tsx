@@ -1,6 +1,6 @@
 "use client";
 import * as React from "react";
-import { PHONE_SCREEN } from "@/lib/constants";
+import { APPLE_FRAMES, framePath, type AppleFrame } from "@/lib/apple-frames";
 import { img } from "@/lib/image-cache";
 
 type FrameProps = {
@@ -11,41 +11,35 @@ type FrameProps = {
   hideEmpty?: boolean;
 };
 
-// iPhone — uses pre-measured mockup.png overlay
-export function Phone({ src, alt = "", style, hideEmpty }: FrameProps) {
+// The screenshot is below one unchanged, transparent Apple product bezel.
+// The measured aperture mask preserves the original rounded screen boundary.
+export function Phone(props: FrameProps) {
+  return <AppleDevice {...props} frame={APPLE_FRAMES["iphone-17-pro-max"]} />;
+}
+
+export function IPad(props: FrameProps) {
+  return <AppleDevice {...props} frame={APPLE_FRAMES["ipad-pro-13-portrait"]} />;
+}
+
+export function IPadLandscape(props: FrameProps) {
+  return <AppleDevice {...props} frame={APPLE_FRAMES["ipad-pro-13-landscape"]} />;
+}
+
+function AppleDevice({ src, alt = "", style, hideEmpty, frame }: FrameProps & { frame: AppleFrame }) {
   const resolved = img(src);
+  const overlay = img(framePath(frame));
+  const { screen } = frame;
   return (
-    <div style={{ position: "relative", aspectRatio: "1022 / 2082", ...style }}>
-      <img
-        src={img("/mockup.png")}
-        alt=""
-        style={{ display: "block", width: "100%", height: "100%" }}
-        draggable={false}
-      />
-      <div
-        style={{
-          position: "absolute",
-          zIndex: 10,
-          overflow: "hidden",
-          left: `${PHONE_SCREEN.L}%`,
-          top: `${PHONE_SCREEN.T}%`,
-          width: `${PHONE_SCREEN.W}%`,
-          height: `${PHONE_SCREEN.H}%`,
-          borderRadius: `${PHONE_SCREEN.RX}% / ${PHONE_SCREEN.RY}%`,
-          background: "#111",
-        }}
-      >
-        {resolved ? (
-          <img
-            src={resolved}
-            alt={alt}
-            style={{ display: "block", width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }}
-            draggable={false}
-          />
-        ) : hideEmpty ? null : (
-          <EmptySlot />
-        )}
+    <div data-apple-frame={frame.filename} style={{ position: "relative", aspectRatio: `${frame.width} / ${frame.height}`, ...style }}>
+      <div data-device-screen style={{
+        position: "absolute", overflow: "hidden",
+        left: `${screen.x / frame.width * 100}%`, top: `${screen.y / frame.height * 100}%`,
+        width: `${screen.width / frame.width * 100}%`, height: `${screen.height / frame.height * 100}%`,
+        clipPath: `polygon(${screen.clip})`, background: "#000",
+      }}>
+        {resolved ? <img src={resolved} alt={alt} draggable={false} style={{ display: "block", width: "100%", height: "100%", objectFit: "contain" }} /> : hideEmpty ? null : <EmptySlot />}
       </div>
+      {overlay ? <img data-device-bezel src={overlay} alt="" draggable={false} style={{ position: "absolute", inset: 0, display: "block", width: "100%", height: "100%", pointerEvents: "none" }} /> : !hideEmpty ? <div style={{ position: "absolute", inset: 0, display: "grid", placeItems: "center", padding: "12%", background: "#ececec", color: "#202020", fontSize: 42, textAlign: "center" }}>Import the Apple frame files</div> : null}
     </div>
   );
 }
@@ -199,62 +193,6 @@ export function AndroidTabletL({ src, alt = "", style, hideEmpty }: FrameProps) 
             width: "95.6%",
             height: "93%",
             borderRadius: "1.6% / 2.5%",
-            overflow: "hidden",
-            background: "#000",
-          }}
-        >
-          {resolved ? (
-            <img
-              src={resolved}
-              alt={alt}
-              style={{ display: "block", width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }}
-              draggable={false}
-            />
-          ) : hideEmpty ? null : (
-            <EmptySlot />
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export function IPad({ src, alt = "", style, hideEmpty }: FrameProps) {
-  const resolved = img(src);
-  return (
-    <div style={{ position: "relative", aspectRatio: "770 / 1000", ...style }}>
-      <div
-        style={{
-          width: "100%",
-          height: "100%",
-          borderRadius: "5% / 3.6%",
-          background: "linear-gradient(180deg, #2C2C2E 0%, #1C1C1E 100%)",
-          position: "relative",
-          overflow: "hidden",
-          boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.1), 0 8px 40px rgba(0,0,0,0.6)",
-        }}
-      >
-        <div
-          style={{
-            position: "absolute",
-            top: "1.2%",
-            left: "50%",
-            transform: "translateX(-50%)",
-            width: "0.9%",
-            height: "0.65%",
-            borderRadius: "50%",
-            background: "#111113",
-            zIndex: 20,
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            left: "4%",
-            top: "2.8%",
-            width: "92%",
-            height: "94.4%",
-            borderRadius: "2.2% / 1.6%",
             overflow: "hidden",
             background: "#000",
           }}

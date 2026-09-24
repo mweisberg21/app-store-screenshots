@@ -16,13 +16,13 @@ export function mediaTemplateRects(cW: number, cH: number, frameAspect: number, 
       device: { x: cW * 0.94 - width, y: cH * 0.95 - height, width, height },
     };
   }
-  const top = cH * (landscape ? 0.36 : 0.32);
+  const top = cH * (landscape ? 0.40 : 0.32);
   const bottom = cH * 0.93;
   const regionH = bottom - top;
   const deviceW = Math.min(cW * 0.46, regionH * frameAspect);
   const deviceH = deviceW / frameAspect;
   return {
-    caption: { x: cW * 0.08, y: cH * 0.06, width: cW * 0.84, height: cH * (landscape ? 0.25 : 0.22) },
+    caption: { x: cW * 0.08, y: cH * 0.06, width: cW * 0.84, height: cH * (landscape ? 0.30 : 0.22) },
     media: { x: cW * 0.08, y: top, width: cW * 0.36, height: regionH },
     device: { x: cW * 0.48 + (cW * 0.46 - deviceW) / 2, y: top + (regionH - deviceH) / 2, width: deviceW, height: deviceH },
   };

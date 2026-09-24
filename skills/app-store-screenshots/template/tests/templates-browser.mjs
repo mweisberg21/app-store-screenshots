@@ -7,6 +7,7 @@ import net from 'node:net';
 import { createRequire } from 'node:module';
 import { writeFile } from 'node:fs/promises';
 const require = createRequire(process.cwd() + '/package.json');
+const sharp = require('sharp');
 const JSZip = require('jszip');
 const { chromium } = await import(process.env.PLAYWRIGHT_MODULE || 'playwright');
 let browser;
@@ -68,6 +69,17 @@ try {
   const resultDir = process.argv[2] || path.join(directory, 'review-results');
   const {mkdir}=await import('node:fs/promises');
   await mkdir(resultDir,{recursive:true});
+  // Original Apple assets are local imports and are never stored in this test.
+  const appleFrames=JSON.parse(await readFile(path.join(source,'src/lib/apple-frames.json'),'utf8'));
+  for(const frame of Object.values(appleFrames)) {
+    const file=path.join(directory,'public/device-frames',frame.filename);
+    const original=await readFile(file);
+    assert.equal((await fetch(origin+'/device-frames/'+frame.filename)).status,401);
+    const delivered=await fetch(origin+'/device-frames/'+frame.filename,{headers});
+    assert.equal(delivered.status,200);
+    assert.deepEqual(Buffer.from(await delivered.arrayBuffer()),original,'frame route returns unchanged bytes');
+  }
+  assert.equal((await fetch(origin+'/device-frames/not-a-frame.png',{headers})).status,404);
   // Artificial fixtures test crop geometry without customer material.
   const fixtures=await page.evaluate(()=>{
     function paint(kind) {
@@ -126,6 +138,7 @@ try {
   await page.getByRole('textbox',{name:'Brand background',exact:true}).fill('#F6EEE3');
   await page.getByRole('textbox',{name:'Brand foreground',exact:true}).fill('#262D24');
   await page.getByLabel('Headline type',{exact:true}).selectOption('serif');
+  await page.getByLabel('Headline alignment',{exact:true}).selectOption('center');
   await page.getByRole('button',{name:'Apply brand',exact:true}).click();
   let testProject=await saved(s=>s.brand?.font==='serif');
   const captions=[['Browse your classes','Deine Kurse entdecken'],['Meet your teacher','Lerne deine Lehrerin kennen'],['Choose your program','Wähle dein Programm']];
@@ -144,7 +157,64 @@ try {
   assert.equal(store.length,24);assert.equal(reviews.length,2);
   for(const f of store){const d=await f.async('nodebuffer');const [,w,h]=f.name.match(/\/(\d+)x(\d+)\//);assert.equal(d.readUInt32BE(16),Number(w));assert.equal(d.readUInt32BE(20),Number(h));}
   for(const f of reviews)await writeFile(path.join(resultDir,path.basename(f.name)),await f.async('nodebuffer'));
-  testProject.brand={background:'#1B252E',foreground:'#FFF8E8',font:'sans',alignment:'left'};
+  // Inspect the Apple bezel in an actual exported PNG, including the camera island.
+  const exported=await zip.file('ios/iphone/1320x2868/en/01-device-bottom.png').async('nodebuffer');
+  await writeFile(path.join(resultDir,'iphone-full.png'),exported);
+  const rendered=await sharp(exported).ensureAlpha().raw().toBuffer({resolveWithObject:true});
+  const f=appleFrames['iphone-17-pro-max'];
+  const deviceHeight=2868*0.65,deviceWidth=deviceHeight*f.width/f.height;
+  const left=(1320-deviceWidth)/2,top=2868*0.96-deviceHeight;
+  function pixel(x,y){const n=(Math.round(y)*rendered.info.width+Math.round(x))*4;return [...rendered.data.subarray(n,n+3)];}
+  const island=pixel(left+deviceWidth*0.5,top+deviceHeight*(166/3000));
+  assert.ok(Math.max(...island)<35,'original Dynamic Island remains above screenshot');
+  const appBelow=pixel(left+deviceWidth*0.5,top+deviceHeight*(320/3000));
+  assert.ok(appBelow[1]>appBelow[0]+10,'app content appears below the camera');
+  const outerCorner=pixel(left+deviceWidth*0.055,top+deviceHeight*0.005);
+  assert.ok(outerCorner[0]>200&&outerCorner[1]>180,'screenshot does not spill into transparent outside corners');
+  const centered=await page.locator('main [data-text-content]').first().evaluate(el=>getComputedStyle(el).textAlign);
+  assert.equal(centered,'center');
+  const headlineSize=await page.locator('main [data-text-content] [data-text-leaf]').last().evaluate(el=>parseFloat(getComputedStyle(el).fontSize));
+  assert.ok(headlineSize>=171,'headline uses the larger default');
+  console.log('iPhone exports passed.');
+
+  // iPad needs a real tablet-shaped capture. First prove that phone input is rejected.
+  testProject.locales=['en'];testProject.locale='en';testProject.device='ipad';testProject.orientation='portrait';
+  testProject.slidesByDevice.ipad=structuredClone(testProject.slidesByDevice.iphone);
+  await put(testProject);
+  await page.getByRole('button',{name:'Export bundle',exact:true}).click();
+  await page.getByText(/Use a capture with 2064 × 2752 proportions/).first().waitFor();
+  await page.getByRole('button',{name:'Back to editor'}).click();
+  async function tabletAsset(width,height) {
+    const dataUrl=await page.evaluate(({width,height})=>{
+      const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;
+      const c=canvas.getContext('2d');c.fillStyle='#f7f4eb';c.fillRect(0,0,width,height);
+      c.fillStyle='#253d33';c.fillRect(0,0,width,250);c.fillStyle='white';c.font='bold 70px sans-serif';c.fillText('TEST APP · iPAD',80,155);
+      const gap=70,col=(width-gap*3)/2,cardH=Math.min(650,(height-450)/2);
+      ['Sample class','Sample program','Saved content','Sample lesson'].forEach((label,i)=>{
+        const x=gap+(i%2)*(col+gap),y=340+Math.floor(i/2)*(cardH+150);
+        c.fillStyle=['#aabcab','#d8b288','#758e92','#b1a795'][i];c.fillRect(x,y,col,cardH);
+        c.fillStyle='#253d33';c.font='50px sans-serif';c.fillText(label,x,y+cardH+75);
+      });
+      return canvas.toDataURL('image/png');
+    },{width,height});
+    const response=await page.request.post(origin+'/api/upload',{headers:{Origin:origin},data:{dataUrl}});
+    assert.equal(response.status(),200);return(await response.json()).path;
+  }
+  for(const [orientation,w,h] of [['portrait',2064,2752],['landscape',2752,2064]]){
+    const tabletPath=await tabletAsset(w,h);
+    testProject.orientation=orientation;
+    testProject.slidesByDevice.ipad.forEach(slide=>slide.screenshot=tabletPath);
+    await put(testProject);
+    const pending=page.waitForEvent('download',{timeout:120000});await page.getByRole('button',{name:'Export bundle',exact:true}).click();
+    const download = await Promise.race([pending, page.getByRole('dialog').waitFor({state:'visible',timeout:120000}).then(async () => { throw new Error(await page.getByRole('dialog').innerText()); })]);
+    const tabletZip=await JSZip.loadAsync(await readFile(await download.path()));
+    const tabletPNGs=Object.values(tabletZip.files).filter(f=>f.name.startsWith('ios/')&&f.name.endsWith('.png'));
+    assert.equal(tabletPNGs.length,6);
+    for(const file of tabletPNGs){const d=await file.async('nodebuffer');const [,ew,eh]=file.name.match(/\/(\d+)x(\d+)\//);assert.equal(d.readUInt32BE(16),Number(ew));assert.equal(d.readUInt32BE(20),Number(eh));}
+    await writeFile(path.join(resultDir,'ipad-'+orientation+'.png'),await tabletZip.file('review/en.png').async('nodebuffer'));
+    console.log(`iPad ${orientation} exports passed.`);
+  }
+  testProject.brand={background:'#1B252E',foreground:'#FFF8E8',font:'sans',alignment:'center'};
   testProject.locales=['en'];testProject.locale='en';testProject.device='android-7';testProject.orientation='landscape';
   testProject.slidesByDevice['android-7']=structuredClone(testProject.slidesByDevice.iphone);await put(testProject);
   const landscapeDownload=page.waitForEvent('download',{timeout:120000});await page.getByRole('button',{name:'Export bundle',exact:true}).click();
@@ -153,7 +223,7 @@ try {
   for(const f of landscape){const d=await f.async('nodebuffer');assert.equal(d.readUInt32BE(16),1920);assert.equal(d.readUInt32BE(20),1200);}
   await writeFile(path.join(resultDir,'landscape.png'),await secondZip.file('review/en.png').async('nodebuffer'));
   assert.deepEqual(errors,[]);
-  console.log('Browser checks passed: uploads, crop pixels and persistence, template switching, library add/remove, German text overflow blocked, 24 iPhone PNGs, 3 landscape tablet PNGs, 3 review sheets, no page errors.');
+  console.log('Browser checks passed: uploads, crop pixels and persistence, template switching, library add/remove, German text overflow blocked, 24 iPhone PNGs, 12 iPad PNGs, 3 Android tablet PNGs, 5 review sheets, original bezel pixels, centered larger headlines, no page errors.');
 } finally {
   await browser?.close();
   child.kill('SIGTERM');

@@ -45,6 +45,7 @@ Apply these design rules:
 - Show the actual app. Choose useful, readable captures before adding a device frame or headline.
 - Start with a solid background. White, black, and customer colors are all valid.
 - Use solid headline text with strong contrast. Use 4.5:1 as a conservative thumbnail target.
+- Start with large, centered headlines. Keep the same type size across the set. Use short copy that fits the template; do not shrink it to fit a paragraph.
 - Keep one main message per slide. Use concrete language tied to what the app does.
 - Leave the small label empty unless it adds useful context. Avoid filler labels, slogans, invented awards, ratings, and customer counts.
 - Repeat a layout when it helps the reader. Do not force alternating backgrounds, tilted phones, or different layouts.
@@ -68,6 +69,8 @@ npm run dev
 
 Use Node.js 22 or newer. Open the exact private `/unlock#...` link printed by the launcher. For a different port, use `npm run dev -- --port 3001`.
 
+For Apple decks, read [references/apple-frames.md](references/apple-frames.md). Import the user's original Apple files with `npm run frames:import -- "/path/to/Apple Device Frames"`, then reload the editor. Use the measured original bezel above the app capture. Do not draw substitute Apple hardware, add a second camera, or modify the source PNG. Keep Apple's source assets local and out of shared tool packages. If files are missing, prepare the deck and report the required import; do not claim that Apple export is ready.
+
 The launcher binds to `127.0.0.1` and creates a session token on each start. Use `npm run dev` or `npm start`; do not bypass it. Each teammate runs a local copy. Do not share the private link, expose a tunnel, or deploy this as a shared website.
 
 The API validates writes, limits project JSON to 4 MiB, and limits each uploaded PNG/JPEG to 8 MiB. Upload storage is limited to 256 MiB and 1,000 files. Do not bypass limits with embedded image data. See the template README for storage recovery.
@@ -90,7 +93,7 @@ An agent can set these values in `app-store-screenshots.json`. Use structured JS
   "background": "#FFFFFF",
   "foreground": "#202020",
   "font": "sans",
-  "alignment": "left"
+  "alignment": "center"
 }
 ```
 
@@ -100,7 +103,7 @@ Each slide has `id`, `layout`, `label`, `headline`, and `screenshot`. Text field
 
 A photo is `{ "src": "/screenshots/creator.jpg", "crop": { "x": 50, "y": 50, "zoom": 1 } }`. `artworks` is an array of two to four objects with the same shape. Crop positions range from 0 to 100; zoom ranges from 1 to 3. Crop is optional and defaults to the center at 1×. Image paths can include `{locale}`. Changing templates preserves these assets. Each crop is shared across language variants, so inspect each variant.
 
-Use `split-landscape` for landscape tablets. Use real tablet captures; do not stretch a phone capture to imply a tablet interface. Text-only slides are a deliberate exception, not a required closer.
+The three main templates support landscape tablets. Use real tablet captures with the selected frame's proportions; do not stretch a phone capture to imply a tablet interface. The older `split-landscape` layout is also available. Text-only slides are a deliberate exception, not a required closer.
 
 Keep existing custom themes during migration. For new projects, prefer saved `brand` settings over changes to shared template code.
 
@@ -108,7 +111,7 @@ Keep existing custom themes during migration. For new projects, prefer saved `br
 
 Set `locales` and `locale` from the brief. Do not assume English if the customer supplied another language. Screenshot paths can include `{locale}`, such as `/screenshots/iphone/{locale}/01.png`.
 
-Preview can show fallback copy while work is incomplete. Final export requires the headline, each used label, and added text in every target language. It checks required images, basic headline contrast, and browser-measured text overflow for every target language. Shorten overflowing text or enlarge its frame. These checks do not prove correct translation, safe element overlap, image crop, or store approval.
+Preview can show fallback copy while work is incomplete. Final export requires the headline, each used label, and added text in every target language. It checks required images, Apple capture proportions, basic headline contrast, and browser-measured text overflow for every target language. Shorten overflowing text or enlarge its frame. These checks do not prove correct translation, safe element overlap, image crop, or store approval.
 
 Inspect every language at export size. Check long words, line breaks, and right-to-left text. Do not claim RTL layout support from translated text alone. Use a fluent reviewer where needed.
 

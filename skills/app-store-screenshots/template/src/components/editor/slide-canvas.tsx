@@ -16,6 +16,7 @@ import type {
 import {
   CANVAS,
   IPAD_RATIO,
+  IPAD_LANDSCAPE_RATIO,
   MK_RATIO,
   ipadW,
   phoneW,
@@ -24,6 +25,7 @@ import {
   tabletPW,
 } from "@/lib/constants";
 import { toTextElementId } from "@/lib/elements";
+import { fitFrameRect } from "@/lib/apple-frames";
 import { img } from "@/lib/image-cache";
 import { pickText, resolveScreenshot } from "@/lib/locale";
 import { artworkRects, mediaTemplateRects } from "@/lib/template-layout";
@@ -33,6 +35,7 @@ import {
   AndroidTabletL,
   AndroidTabletP,
   IPad,
+  IPadLandscape,
   Phone,
 } from "./device-frames";
 
@@ -45,7 +48,7 @@ type FrameComp = React.ComponentType<{
 
 export function getCanvas(device: Device, orientation: Orientation) {
   const c = CANVAS[device];
-  if ((device === "android-7" || device === "android-10") && orientation === "landscape") {
+  if (c.wL && c.hL && orientation === "landscape") {
     return { cW: c.wL!, cH: c.hL! };
   }
   return { cW: c.w, cH: c.h };
@@ -56,7 +59,7 @@ function getFrameAspect(device: Device, orientation: Orientation) {
   switch (device) {
     case "iphone":      return MK_RATIO;
     case "android":     return 9 / 19.5;
-    case "ipad":        return IPAD_RATIO;
+    case "ipad":        return orientation === "landscape" ? IPAD_LANDSCAPE_RATIO : IPAD_RATIO;
     case "android-7":
     case "android-10":  return orientation === "landscape" ? 8 / 5 : 5 / 8;
     default:            return 1;
@@ -72,6 +75,7 @@ export function getFrameForDevice(device: Device, orientation: Orientation): {
     case "iphone":
       return { Comp: Phone, widthFn: phoneW, smallWidthFn: phoneWSmall };
     case "ipad":
+      if (orientation === "landscape") return { Comp: IPadLandscape, widthFn: (w, h) => Math.min(0.82, 0.72 * h / w * IPAD_LANDSCAPE_RATIO), smallWidthFn: (w, h) => Math.min(0.6, 0.6 * h / w * IPAD_LANDSCAPE_RATIO) };
       return { Comp: IPad, widthFn: ipadW, smallWidthFn: (cW, cH) => ipadW(cW, cH, 0.6) };
     case "android":
       return { Comp: AndroidPhone, widthFn: phoneW, smallWidthFn: phoneWSmall };
@@ -265,7 +269,7 @@ function Caption({
         onFocus={onFocus}
         placeholder="Write one clear benefit"
         style={{
-          fontSize: unit * 0.092,
+          fontSize: unit * 0.13,
           fontWeight: 700,
           lineHeight: 1.06,
           overflowWrap: "anywhere",
@@ -317,10 +321,11 @@ function getDefaultRects(
         },
       };
     case "device-bottom": {
-      const width = Math.min(cW * 0.84, cH * 0.65 * frameAspect);
+      const landscape = cW > cH;
+      const width = Math.min(cW * 0.84, cH * (landscape ? 0.56 : 0.65) * frameAspect);
       const height = width / frameAspect;
       return {
-        caption: { x: cW * 0.08, y: cH * 0.06, width: capW, height: cH * 0.22, align: "center" },
+        caption: { x: cW * 0.08, y: cH * 0.06, width: capW, height: cH * (landscape ? 0.30 : 0.22), align: "center" },
         device: {
           x: (cW - width) / 2,
           y: cH * 0.96 - height,
@@ -920,12 +925,13 @@ function SlideElements({
   }
 
   function renderDevice(id: "device" | "deviceSecondary", rect: Rect, src: string, extraStyle?: React.CSSProperties) {
+    const fitted = device === "iphone" || device === "ipad" ? fitFrameRect(rect, frameAspect) : rect;
     const saved = slide.transforms?.[id];
     const rotation = saved?.rotation ?? 0;
     const zIndex = saved?.zIndex ?? (id === "deviceSecondary" ? 2 : 3);
     return (
       <Movable
-        rect={toGlobal(rect)}
+        rect={toGlobal(fitted)}
         boundsW={boundsW}
         boundsH={boundsH}
         editable={editable}

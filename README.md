@@ -10,24 +10,25 @@ This fork retains Parth Jadhav's MIT license and author credit. It adds local ac
 - [Customer brief](skills/app-store-screenshots/customer-brief.example.md): brand sources, features, assets, devices, and languages.
 - [Design research](skills/app-store-screenshots/references/listing-design-research.md): six current listing references and three template types.
 - [Skill instructions](skills/app-store-screenshots/SKILL.md): the complete agent workflow.
+- [Apple frame setup](skills/app-store-screenshots/references/apple-frames.md): import original iPhone and iPad bezels for local use.
 
 ## What the editor does
 
 - Saves customer background, text color, headline type, and alignment through **Brand** controls.
 - Provides App screen, Creator with app, and Content library templates.
 - Keeps creator photos and catalog artwork separate from app captures, with saved crop and zoom controls.
-- Shows real captures in iPhone, iPad, and Android device frames.
+- Shows real captures in locally imported Apple iPhone and iPad bezels, or generic Android frames.
 - Supports per-device decks, localized copy, ordering, and element placement.
 - Starts with one empty, isolated screen per device. Connected mode is available for deliberate compositions.
 - Saves the project to `app-store-screenshots.json` and stores uploads in the project.
-- Checks missing text, translations, required images, headline contrast, and measured text overflow before export.
+- Checks missing text, translations, required images, Apple capture proportions, headline contrast, and measured text overflow before export.
 - Exports PNG bundles using the configured device-size presets, plus a review sheet for each language.
 
 These checks do not verify product claims, translation quality, element overlap, image crop, or store approval. Inspect the PNGs before delivery.
 
 ## Design direction
 
-Use the **App screen** structure as the base: one clear headline, one real app capture, and a customer brand surface. Repeat the layout when it helps the reader. Decorative effects are optional.
+Use the **App screen** structure as the base: one large, centered headline, one real app capture, and a customer brand surface. Repeat the layout when it helps the reader. Decorative effects are optional. Explicit alignment choices in existing projects remain available.
 
 Choose **Creator with app** when a teacher or creator is central to the service. Choose **Content library** for two to four approved catalog images beside the app view. Use crop controls to keep important content visible. The neutral starter is a work surface, not a finished customer design.
 
@@ -67,10 +68,13 @@ After the agent creates the project:
 
 ```bash
 npm ci
+npm run frames:import -- "/path/to/Apple Device Frames"
 npm run dev
 ```
 
 Open the private link printed in the terminal. For another port, use `npm run dev -- --port 3001`.
+
+For Apple decks, obtain the original assets and follow [Apple frame setup](skills/app-store-screenshots/references/apple-frames.md). The importer supports iPhone 17 Pro Max and iPad Pro 13-inch (M5) in portrait and landscape. Android decks do not need this import.
 
 ## Local access and customer files
 
@@ -105,5 +109,7 @@ The tests cover local access, body limits, project validation, upload limits, br
 ## License and origin
 
 MIT. Originally created by [Parth Jadhav](https://www.parthjadhav.com/).
+
+Imported Apple assets remain under Apple's separate terms. They are excluded from Git and are not included in this tool's MIT license or distribution. Each teammate obtains their own source files.
 
 The original repository's [example image](example.png) is retained as historical reference. It does not show this fork's current starter.

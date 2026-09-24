@@ -32,15 +32,17 @@ Use [customer-brief.example.md](customer-brief.example.md) for the brief. A bran
 
 ## Editor workflow
 
+For Apple decks, first follow [Apple frame setup](references/apple-frames.md). Obtain your own originals from Apple and run `npm run frames:import -- "/path/to/Apple Device Frames"` in the customer project. This imports the iPhone and iPad bezels without changes. Keep the source files local; do not add them to a shared source archive.
+
 1. Start the project with `npm ci`, then `npm run dev`.
 2. Open the private link from the terminal.
-3. Set the app name. Use **Brand** to set colors, type, alignment, and the app icon.
+3. Set the app name. Use **Brand** to set colors, type, alignment, and the app icon. New projects use large, centered headlines.
 4. Choose **App screen**, **Creator with app**, or **Content library**. Add a real app screenshot and one clear headline. Add an approved creator photo or two to four catalog images when the template needs them. Use crop controls to keep faces and titles clear.
 5. Add more screens and the required translations.
 6. Select **Export bundle**. Resolve any missing content shown in the review dialog.
 7. Open the review sheet in `review/<locale>.png` to check image order. Inspect each separate store PNG at full size and as a thumbnail. Ask the assigned customer reviewer to check the result.
 
-The automatic checks cover completeness, headline contrast, and measured text overflow. They do not verify product claims, translation quality, element overlap, image crops, or current store rules. Keep those checks in the delivery review.
+Use a matching iPhone or iPad capture. The automatic checks cover completeness, Apple capture proportions, headline contrast, and measured text overflow. They do not verify product claims, translation quality, element overlap, image crops, or current store rules. Keep those checks in the delivery review.
 
 ## Using a chat interface
 

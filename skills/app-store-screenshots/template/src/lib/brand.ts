@@ -10,7 +10,7 @@ export const BRAND_FONTS = {
 } as const;
 
 export const DEFAULT_BRAND: BrandStyle = {
-  background: "#FFFFFF", foreground: "#202020", font: "sans", alignment: "left",
+  background: "#FFFFFF", foreground: "#202020", font: "sans", alignment: "center",
 };
 
 export function brandForProject(state: Pick<ProjectState, "brand" | "themeId">): BrandStyle {

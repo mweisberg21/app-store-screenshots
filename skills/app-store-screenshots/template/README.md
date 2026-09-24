@@ -6,10 +6,13 @@ A pre-built Next.js + ShadCN editor for generating App Store and Google Play scr
 
 ```bash
 npm ci
+npm run frames:import -- "/path/to/Apple Device Frames"  # Apple decks only
 npm run dev   # open the private link printed in the terminal
 ```
 
 Use Node.js 22 or newer. The launcher binds to 127.0.0.1 and creates a new access token on each run. Open its `/unlock#...` link to set an HttpOnly, SameSite=Strict session cookie. The token stays out of query strings and is removed from browser history before the exchange. To choose another port, use `npm run dev -- --port 3001`.
+
+Obtain the original bezels from [Apple Design Resources](https://developer.apple.com/design/resources/). See [Apple frame setup](../references/apple-frames.md) for the exact files and folder structure. The importer checks the source hashes and copies the PNGs unchanged to the ignored `public/device-frames/` folder. Each teammate imports their own files. The source assets are not part of this repository's MIT license or distribution.
 
 For a production build, run `npm run build` and `npm start`. Both server modes require the launcher. All editor pages, APIs, and image files require a local session. Writes also require the configured Origin and JSON content type. This tool is for one local operator, not remote hosting. Team members should each run their own copy.
 
@@ -30,7 +33,7 @@ Run `npm test`, `npm run typecheck`, `npm audit`, `npm run build`, `npm run test
 
 - **Connected canvas editor** (`src/components/editor/`) — every screen sits on one horizontal canvas, so phones, captions, and other elements can be dragged across screen boundaries and exported as split crops when Connected mode is enabled.
 - **Screen controls** — drag-to-reorder screens, click-to-edit text, screenshot drop targets, per-screen layout switcher and element controls.
-- **Device frames** (`src/components/editor/device-frames.tsx`) — iPhone (PNG mockup), iPad, Android phone, Android tablet (portrait + landscape), feature graphic.
+- **Device frames** (`src/components/editor/device-frames.tsx`) — original local Apple PNGs for iPhone 17 Pro Max and iPad Pro 13-inch (M5), with portrait and landscape iPad support. Android uses generic frames.
 - **Auto-save (git-trackable)** — every change is persisted within ~600ms to **`app-store-screenshots.json`** at the project root (via `/api/project`) **and** mirrored to `localStorage` as an instant-paint cache. Commit `app-store-screenshots.json` and you can `git clone` to another machine and resume exactly where you left off.
 - **Multi-device decks** — iOS and Android slide decks live side by side; switching the platform tab preserves both.
 - **One-click export** — bulk PNG export at the configured App Store / Play Store resolutions using `html-to-image`; each PNG is rendered from the current connected or isolated deck mode.
@@ -63,9 +66,11 @@ Portrait creator layouts place the app view over the lower part of the photo. Us
 
 Use **Brand** in the toolbar to set customer background and text colors, headline type, alignment, and app icon. The values are saved in the project and applied across devices and languages. Local font stacks need no external font request. Exact customer fonts require licensed local files and an update to the selected stack in `src/lib/brand.ts`.
 
+New projects use centered headlines at 13% of the canvas's shorter side. This is about 41% larger than the previous default. Existing explicit alignment choices remain in effect. Keep copy short and review each line break.
+
 The starter has one empty screen per device, no marketing filler, and no saved demo transforms. It uses isolated mode. The checked-in project and the separate reset starter must match before release; a test checks this. Customer edits do not change the reset starter.
 
-Export stops for missing headlines, incomplete translations, missing or unavailable required images, insufficient basic headline contrast, and text that exceeds its frame. Text is measured in the browser for every target language before capture. Preview fallback text does not count as a completed translation. These checks do not detect all overlaps, cropping errors, or translation errors. Inspect every PNG.
+Export stops for missing headlines, incomplete translations, missing or unavailable required images, mismatched Apple capture proportions, insufficient basic headline contrast, and text that exceeds its frame. Text is measured in the browser for every target language before capture. Preview fallback text does not count as a completed translation. These checks do not detect all overlaps, cropping errors, or translation errors. Inspect every PNG.
 
 The bundle includes `review/<locale>.png`, a contact sheet made from the exported images in order. Use it for review. Upload only the separate full-resolution store images.
 
@@ -77,12 +82,13 @@ The bundle includes `review/<locale>.png`, a contact sheet made from the exporte
 | `app-store-screenshots.json` | Saved project: app name, current device, connected-canvas mode, slide copy, screenshots, and transforms |
 | `src/lib/defaults.ts` | Loads `src/lib/starter-project.json` for fallback/reset state |
 | `src/components/editor/slide-canvas.tsx` | Add new layouts and connected-canvas element rendering |
-| `src/components/editor/device-frames.tsx` | Tweak device chrome (bezel radii, camera dots) |
+| `src/lib/apple-frames.json` | Original Apple frame dimensions, source hashes, and measured screen masks |
+| `src/components/editor/device-frames.tsx` | Place app captures below the unchanged Apple bezel |
 | `src/lib/brand.ts` and `src/app/globals.css` | Configure licensed local customer fonts |
 
 ## Notes
 
-- `mockup.png` is the iPhone bezel overlay; replacing it requires re-measuring the `PHONE_SCREEN` constants.
+- Apple bezels keep their original proportions, including in old saved transform boxes. The app capture sits below one bezel and uses the measured aperture mask. Do not add a second camera shape or alter the source image. `mockup.png` remains a legacy test fixture; the renderer does not use it.
 - Image preloading converts every static path to a base64 data URI before exports run, and export retries paths that were previously missing — this prevents the html-to-image race where some slide screenshots come out black.
 - Reset via the toolbar's circular arrow icon clears in-memory state and reloads the default screens. When the editor is connected, autosave also writes the reset defaults to the project file. Back up the file before reset.
 - **Persistence model** — the canonical state lives in `app-store-screenshots.json` (git-tracked). On load, the editor reads localStorage first for instant paint, then overwrites with the file contents if present; if the file endpoint is unavailable, autosave is blocked so stale cache cannot overwrite disk. On save, both are written. If you ever see a conflict, the file always wins.
@@ -91,6 +97,6 @@ The bundle includes `review/<locale>.png`, a contact sheet made from the exporte
 
 ## Browser regression check
 
-After `npm run build`, run `node tests/templates-browser.mjs` in an environment with the Playwright package and Google Chrome. If Playwright is supplied by an external runtime, set `PLAYWRIGHT_MODULE` to that runtime's module path. Pass an output directory as the first argument to retain test review sheets. The test uses an isolated temporary project and synthetic images; it does not modify customer projects.
+Import the three Apple frame files, then run `npm run build` and `node tests/templates-browser.mjs` in an environment with the Playwright package and Google Chrome. If Playwright is supplied by an external runtime, set `PLAYWRIGHT_MODULE` to that runtime's module path. Pass an output directory as the first argument to retain test review sheets. The test uses an isolated temporary project and synthetic app images; it does not modify customer projects.
 
-The check covers photo and catalog uploads, crop changes and persistence, template changes, library add/remove, English and German export, text overflow, landscape tablet export, and review sheets. It does not establish design approval for a real customer.
+The check covers photo and catalog uploads, crop changes and persistence, template changes, library add/remove, English and German export, text overflow, iPad portrait and landscape export, review sheets, frame route access, unchanged frame bytes, and camera pixels in the exported iPhone image. It does not establish design approval for a real customer.

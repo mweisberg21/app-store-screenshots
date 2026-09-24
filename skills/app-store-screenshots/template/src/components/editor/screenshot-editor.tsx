@@ -10,7 +10,8 @@ import {
 } from "@/lib/constants";
 import { detectPlatform, nid } from "@/lib/defaults";
 import { isBuiltInElementId, isTextElementId, textElementKey } from "@/lib/elements";
-import { didFail, preloadImages } from "@/lib/image-cache";
+import { didFail, imageSize, preloadImages } from "@/lib/image-cache";
+import { appleFrame, framePath } from "@/lib/apple-frames";
 import { resolveScreenshot, writeLocalized } from "@/lib/locale";
 import { useProject } from "@/lib/storage";
 import type {
@@ -81,13 +82,14 @@ export function ScreenshotEditor() {
 
   const assetPaths = React.useMemo(() => {
     const paths = new Set<string>();
-    paths.add("/mockup.png");
+    const frame = appleFrame(state.device, state.orientation);
+    if (frame) paths.add(framePath(frame));
     if (state.appIcon) paths.add(state.appIcon);
     // Preload every locale variant so bulk export doesn't race image loads.
     const allSlides: Slide[] = Object.values(state.slidesByDevice).flat();
     for (const s of allSlides) {
       for (const raw of slideImagePaths(s)) {
-        if (!raw || raw.startsWith("data:")) continue;
+        if (!raw) continue;
         if (raw.includes("{locale}")) {
           for (const loc of state.locales) paths.add(resolveScreenshot(raw, loc));
         } else {
@@ -96,7 +98,7 @@ export function ScreenshotEditor() {
       }
     }
     return Array.from(paths).sort();
-  }, [state.slidesByDevice, state.appIcon, state.locales]);
+  }, [state.slidesByDevice, state.appIcon, state.locales, state.device, state.orientation]);
   const assetSig = assetPaths.join("|");
 
   React.useEffect(() => {
@@ -385,7 +387,7 @@ export function ScreenshotEditor() {
     await preloadImages(assetPaths, { retryFailed: true });
     await waitForPaint();
 
-    const issues = reviewExport(state, didFail);
+    const issues = reviewExport(state, didFail, imageSize);
     if (issues.length) {
       setExportIssues(issues);
       setExporting(null);

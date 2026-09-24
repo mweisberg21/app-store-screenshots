@@ -1,18 +1,21 @@
 import { contrastRatio, projectTheme } from "./brand";
 import { resolveScreenshot } from "./locale";
 import type { ProjectState } from "./types";
+import { appleFrame, framePath } from "./apple-frames";
 
 export type ExportIssue = { message: string; slideId?: string; locale?: string };
 
 // Preview may use fallback copy. A final export must have the requested language.
 // This is a completeness check, not a replacement for visual or customer review.
-export function reviewExport(state: ProjectState, imageFailed: (path: string) => boolean = () => false): ExportIssue[] {
+export function reviewExport(state: ProjectState, imageFailed: (path: string) => boolean = () => false, sizeOf: (path: string) => { width: number; height: number } | undefined = () => undefined): ExportIssue[] {
   const issues: ExportIssue[] = [];
   const slides = state.slidesByDevice[state.device] || [];
   if (!state.appName.trim()) issues.push({ message: "Add the customer app name." });
   if (!slides.length) issues.push({ message: "Add a screen." });
-  if (state.device === "iphone" && imageFailed("/mockup.png")) {
-    issues.push({ message: "The iPhone frame could not load. Restore the frame file." });
+  const frame = appleFrame(state.device, state.orientation);
+  const hasDevices = slides.some((slide) => slide.layout !== "no-device" && slide.layout !== "feature-graphic");
+  if (frame && hasDevices && imageFailed(framePath(frame))) {
+    issues.push({ message: `Import the ${frame.name} frame, then reload the editor. See the Apple frame setup guide.` });
   }
   const theme = projectTheme(state);
   for (const [index, slide] of slides.entries()) {
@@ -46,6 +49,13 @@ export function reviewExport(state: ProjectState, imageFailed: (path: string) =>
       for (const [label, raw] of paths) {
         if (!raw) add(`add the ${label}.`);
         else if (imageFailed(resolveScreenshot(raw, locale))) add(`the ${label} could not load. Replace it or check its path.`);
+        else if (frame && (label === "screenshot" || label === "back screenshot")) {
+          const size = sizeOf(resolveScreenshot(raw, locale));
+          const expected = frame.screen.width / frame.screen.height;
+          if (size && Math.abs(size.width / size.height / expected - 1) > 0.005) {
+            add(`the ${label} is ${size.width} × ${size.height}. Use a capture with ${frame.screen.width} × ${frame.screen.height} proportions for this frame.`);
+          }
+        }
       }
     }
   }

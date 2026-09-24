@@ -4,6 +4,15 @@
 
 const cache = new Map<string, string>();
 const failed = new Set<string>();
+const sizes = new Map<string, { width: number; height: number }>();
+
+async function decodedSize(data: string): Promise<{ width: number; height: number }> {
+  const image = new Image();
+  image.src = data;
+  await image.decode();
+  if (!image.naturalWidth || !image.naturalHeight) throw new Error("Empty image");
+  return { width: image.naturalWidth, height: image.naturalHeight };
+}
 
 async function fetchAsDataUrl(path: string): Promise<string | null> {
   try {
@@ -28,13 +37,17 @@ export async function preloadImages(
   await Promise.all(
     paths
       .filter(Boolean)
-      .filter((p) => !cache.has(p) && (options.retryFailed || !failed.has(p)))
+      .filter((p) => (!cache.has(p) || !sizes.has(p)) && (options.retryFailed || !failed.has(p)))
       .map(async (p) => {
-        const data = await fetchAsDataUrl(p);
-        if (data) {
+        const data = cache.get(p) || (p.startsWith("data:") ? p : await fetchAsDataUrl(p));
+        try {
+          if (!data) throw new Error("Image not found");
+          sizes.set(p, await decodedSize(data));
           cache.set(p, data);
           failed.delete(p);
-        } else {
+        } catch {
+          cache.delete(p);
+          sizes.delete(p);
           failed.add(p);
         }
       }),
@@ -43,18 +56,22 @@ export async function preloadImages(
 
 export function img(path: string | undefined): string {
   if (!path) return "";
-  if (path.startsWith("data:")) return path;
   if (failed.has(path)) return "";
+  if (path.startsWith("data:")) return path;
   return cache.get(path) || path;
 }
 
 export function setImage(path: string, dataUrl: string) {
   cache.set(path, dataUrl);
+  sizes.delete(path);
   failed.delete(path);
 }
 
 export function didFail(path: string | undefined): boolean {
   if (!path) return false;
-  if (path.startsWith("data:")) return false;
   return failed.has(path);
+}
+
+export function imageSize(path: string) {
+  return sizes.get(path);
 }
