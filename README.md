@@ -18,6 +18,10 @@ image, and show me how to use the tool again later.
 
 A local editor and agent skill for teams that create App Store and Google Play listing images for customer apps. Start with real app captures and the customer's brand. Use the browser editor to refine the deck and export PNGs.
 
+![The screenshot editor with three English Form and Flow demo images, centered headlines, and original iPhone frames](example.png)
+
+Example: the App screen, Creator with app, and Content library templates. Form & Flow is a fictional demo app with generated instructor photography. Customer projects use real app captures and approved brand assets.
+
 This fork retains Parth Jadhav's MIT license and author credit. It adds local access controls, validated saves, upload limits, and a workflow for customer work.
 
 ## Start here
@@ -137,5 +141,3 @@ The tests cover local access, body limits, project validation, upload limits, br
 MIT. Originally created by [Parth Jadhav](https://www.parthjadhav.com/).
 
 Imported Apple assets remain under Apple's separate terms. They are excluded from Git and are not included in this tool's MIT license or distribution. Each teammate obtains their own source files.
-
-The original repository's [example image](example.png) is retained as historical reference. It does not show this fork's current starter.
