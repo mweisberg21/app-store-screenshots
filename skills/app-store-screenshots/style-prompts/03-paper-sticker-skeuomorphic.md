@@ -1,3 +1,5 @@
+> Optional historical reference. The customer brief and `_QUALITY_BAR.md` take priority over every decoration count, fixed sequence, or mandatory effect below. Use only after the user explicitly selects this style.
+
 ---
 name: paper-sticker-skeuomorphic
 description: Skeuomorphic paper-craft style — cork-board backgrounds, paper-cutout UI cards, marker handwriting headlines, sticker pixel-art accents, folder tabs. Student-organizer vibe. Inspired by Folderly.

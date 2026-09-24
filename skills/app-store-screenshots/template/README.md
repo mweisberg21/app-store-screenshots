@@ -29,11 +29,11 @@ Run `npm test`, `npm run typecheck`, `npm audit`, `npm run build`, `npm run test
 ## What's inside
 
 - **Connected canvas editor** (`src/components/editor/`) — every screen sits on one horizontal canvas, so phones, captions, and other elements can be dragged across screen boundaries and exported as split crops when Connected mode is enabled.
-- **Screen controls** — drag-to-reorder screens, click-to-edit text, screenshot drop targets, per-screen layout switcher, dark/light toggle.
+- **Screen controls** — drag-to-reorder screens, click-to-edit text, screenshot drop targets, per-screen layout switcher and element controls.
 - **Device frames** (`src/components/editor/device-frames.tsx`) — iPhone (PNG mockup), iPad, Android phone, Android tablet (portrait + landscape), feature graphic.
 - **Auto-save (git-trackable)** — every change is persisted within ~600ms to **`app-store-screenshots.json`** at the project root (via `/api/project`) **and** mirrored to `localStorage` as an instant-paint cache. Commit `app-store-screenshots.json` and you can `git clone` to another machine and resume exactly where you left off.
 - **Multi-device decks** — iOS and Android slide decks live side by side; switching the platform tab preserves both.
-- **One-click export** — bulk PNG export at any required App Store / Play Store resolution using `html-to-image`; each PNG is rendered from the current connected or isolated deck mode.
+- **One-click export** — bulk PNG export at the configured App Store / Play Store resolutions using `html-to-image`; each PNG is rendered from the current connected or isolated deck mode.
 - **Project migration** — older `app-store-screenshots.json` files are migrated on load. Existing per-slide transforms remain valid, and connected crops become available without rewriting the deck by hand.
 - **Legacy-safe mode** — pre-v2 projects opened directly in the editor start in isolated-screen mode first, then can opt into connected crops with the toolbar's Connected/Isolated control. Skill-run in-place migrations keep legacy decks isolated unless the project had already explicitly opted into connected canvas.
 
@@ -42,7 +42,7 @@ Run `npm test`, `npm run typecheck`, `npm audit`, `npm run build`, `npm run test
 Two ways:
 
 1. **Drop a file in the inspector** — drag-and-drop or click Pick. The file is sent to `/api/upload`, hashed, and written to `public/screenshots/uploaded/<hash>.png`. The slide stores the resulting `/screenshots/uploaded/...` path, so commit those files alongside `app-store-screenshots.json` and the screenshots survive a `git clone`.
-2. **Reference a static file** — put PNGs under `public/screenshots/{platform}/{device}/{locale}/` and reference them by path. Default sample slides expect:
+2. **Reference a static file** — put PNGs under `public/screenshots/{platform}/{device}/{locale}/` and reference them by path. Suggested folders:
    - `public/screenshots/apple/iphone/en/...`
    - `public/screenshots/android/phone/en/...`
    - `public/screenshots/apple/ipad/en/...`
@@ -51,18 +51,34 @@ Update the matching `screenshot` fields in `app-store-screenshots.json` to point
 
 ## Exporting
 
-The toolbar dropdown lists every Apple/Google-required size for the current device. Click **Export bundle** to download a zip. In Connected mode, each PNG is clipped from the connected canvas, so an element that straddles two screens appears split exactly where you placed it. In Isolated mode, each screen clips its own elements and legacy offscreen content cannot leak into neighboring exports.
+The toolbar selects the device. The exporter uses the size presets in `src/lib/constants.ts`. Check current store requirements before delivery. Click **Export bundle** to download a zip. In Connected mode, each PNG is clipped from the connected canvas, so an element that straddles two screens appears split exactly where you placed it. In Isolated mode, each screen clips its own elements and legacy offscreen content cannot leak into neighboring exports.
+
+## Templates
+
+Choose **App screen**, **Creator with app**, or **Content library** in Screen settings. All three use a real app capture. Creator adds a separate photo. Library adds two to four catalog images. Each image has horizontal crop, vertical crop, zoom, and Reset crop controls. Template changes preserve these assets. Crops apply to all language variants; review every language.
+
+Portrait creator layouts place the app view over the lower part of the photo. Use the crop controls to keep faces and important details clear. The library layout keeps artwork beside the app view. Older layouts remain available.
+
+## Brand and export review
+
+Use **Brand** in the toolbar to set customer background and text colors, headline type, alignment, and app icon. The values are saved in the project and applied across devices and languages. Local font stacks need no external font request. Exact customer fonts require licensed local files and an update to the selected stack in `src/lib/brand.ts`.
+
+The starter has one empty screen per device, no marketing filler, and no saved demo transforms. It uses isolated mode. The checked-in project and the separate reset starter must match before release; a test checks this. Customer edits do not change the reset starter.
+
+Export stops for missing headlines, incomplete translations, missing or unavailable required images, insufficient basic headline contrast, and text that exceeds its frame. Text is measured in the browser for every target language before capture. Preview fallback text does not count as a completed translation. These checks do not detect all overlaps, cropping errors, or translation errors. Inspect every PNG.
+
+The bundle includes `review/<locale>.png`, a contact sheet made from the exported images in order. Use it for review. Upload only the separate full-resolution store images.
 
 ## Customizing
 
 | Where | What |
 |-------|------|
-| `src/lib/constants.ts` | Canvas dimensions, export sizes, frame ratios, themes, locales |
-| `app-store-screenshots.json` | Canonical starter project: app name, current device, connected-canvas mode, slide copy, screenshots, and transforms |
-| `src/lib/defaults.ts` | Fallback/reset state used when no project file or local cache exists |
+| `src/lib/constants.ts` | Canvas dimensions, export sizes, frame ratios, themes |
+| `app-store-screenshots.json` | Saved project: app name, current device, connected-canvas mode, slide copy, screenshots, and transforms |
+| `src/lib/defaults.ts` | Loads `src/lib/starter-project.json` for fallback/reset state |
 | `src/components/editor/slide-canvas.tsx` | Add new layouts and connected-canvas element rendering |
 | `src/components/editor/device-frames.tsx` | Tweak device chrome (bezel radii, camera dots) |
-| `src/app/layout.tsx` | Swap the font (`next/font/google`) |
+| `src/lib/brand.ts` and `src/app/globals.css` | Configure licensed local customer fonts |
 
 ## Notes
 
@@ -71,4 +87,10 @@ The toolbar dropdown lists every Apple/Google-required size for the current devi
 - Reset via the toolbar's circular arrow icon clears in-memory state and reloads the default screens. When the editor is connected, autosave also writes the reset defaults to the project file. Back up the file before reset.
 - **Persistence model** — the canonical state lives in `app-store-screenshots.json` (git-tracked). On load, the editor reads localStorage first for instant paint, then overwrites with the file contents if present; if the file endpoint is unavailable, autosave is blocked so stale cache cannot overwrite disk. On save, both are written. If you ever see a conflict, the file always wins.
 - **Migration model** — schema v1 projects do not need a manual conversion. On first load, the editor upgrades localized text and transform records, writes `schemaVersion: 2`, preserves all existing screens, and keeps `connectedCanvas: false` so old offscreen/clipped elements export exactly as isolated screens. Turn on **Connected** in the toolbar when you want elements to cross screen edges. Explicit skill migrations preserve an existing `connectedCanvas` choice, otherwise they keep legacy decks isolated too.
-- **Custom themes** — if a project file references a theme id that is not present in `src/lib/constants.ts`, the editor falls back to `clean-light` and shows a warning. Merge custom `THEMES` entries during in-place upgrades.
+- **Custom themes** — if a project file references a theme id that is not present in `src/lib/constants.ts`, the editor falls back to `brand-neutral` and shows a warning. Merge custom `THEMES` entries during in-place upgrades.
+
+## Browser regression check
+
+After `npm run build`, run `node tests/templates-browser.mjs` in an environment with the Playwright package and Google Chrome. If Playwright is supplied by an external runtime, set `PLAYWRIGHT_MODULE` to that runtime's module path. Pass an output directory as the first argument to retain test review sheets. The test uses an isolated temporary project and synthetic images; it does not modify customer projects.
+
+The check covers photo and catalog uploads, crop changes and persistence, template changes, library add/remove, English and German export, text overflow, landscape tablet export, and review sheets. It does not establish design approval for a real customer.

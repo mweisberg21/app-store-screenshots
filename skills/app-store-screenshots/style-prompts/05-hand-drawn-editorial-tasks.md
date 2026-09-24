@@ -1,3 +1,5 @@
+> Optional historical reference. The customer brief and `_QUALITY_BAR.md` take priority over every decoration count, fixed sequence, or mandatory effect below. Use only after the user explicitly selects this style.
+
 ---
 name: hand-drawn-editorial-tasks
 description: Deep navy + cream + solid accent slides, with hand-drawn script accent words, tilted phones, doodle squiggles. Productivity-tool design-award vibe. Inspired by Superlist.

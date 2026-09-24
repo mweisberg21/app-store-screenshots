@@ -1,3 +1,5 @@
+> Optional historical reference. The customer brief and `_QUALITY_BAR.md` take priority over every decoration count, fixed sequence, or mandatory effect below. Use only after the user explicitly selects this style.
+
 ---
 name: dreamy-pastel-couples
 description: Dreamy cotton-candy sky gradient with kawaii pets and 3D globes. Italic serif emphasis word in lilac/coral. Soft lavender hearts and chat-bubble floaters. Inspired by Between / Couple apps.

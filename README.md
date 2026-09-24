@@ -1,67 +1,47 @@
-# App Store & Google Play Screenshots Generator
+# App Store Screenshots
 
-A skill for AI coding agents that scaffolds a local Next.js editor for App Store and Google Play marketing screenshots. It gives you a connected canvas, real device frames, inspector controls, persistent project state, and one-click export bundles at store-ready sizes.
+A local editor and agent skill for teams that create App Store and Google Play listing images for customer apps. Start with real app captures and the customer's brand. Use the browser editor to refine the deck and export PNGs.
 
-![Current connected-canvas editor showing a Bloom screenshot deck](example.png)
+This fork retains Parth Jadhav's MIT license and author credit. It adds local access controls, validated saves, upload limits, and a workflow for customer work.
 
-Example screenshots generated with this skill were accepted for [Bloom Coffee Shelf Recipe on the App Store](https://apps.apple.com/us/app/bloom-coffee-shelf-recipe/id6759914524).
+## Start here
 
-## This fork
+- [Team guide](skills/app-store-screenshots/team-guide.md): setup, a reusable request, and customer handoff.
+- [Customer brief](skills/app-store-screenshots/customer-brief.example.md): brand sources, features, assets, devices, and languages.
+- [Design research](skills/app-store-screenshots/references/listing-design-research.md): six current listing references and three template types.
+- [Skill instructions](skills/app-store-screenshots/SKILL.md): the complete agent workflow.
 
-This fork retains Parth Jadhav's MIT license and author credit. It adds current patched dependencies, a loopback-only launcher, a temporary local access link, request validation, and upload storage limits. Each team member runs a separate local copy. It is not a shared web service.
+## What the editor does
 
-After generating an editor, run `npm ci` and `npm run dev`. Open the private `/unlock#...` link printed in the terminal. Do not share that link. The next server run creates a new link.
+- Saves customer background, text color, headline type, and alignment through **Brand** controls.
+- Provides App screen, Creator with app, and Content library templates.
+- Keeps creator photos and catalog artwork separate from app captures, with saved crop and zoom controls.
+- Shows real captures in iPhone, iPad, and Android device frames.
+- Supports per-device decks, localized copy, ordering, and element placement.
+- Starts with one empty, isolated screen per device. Connected mode is available for deliberate compositions.
+- Saves the project to `app-store-screenshots.json` and stores uploads in the project.
+- Checks missing text, translations, required images, headline contrast, and measured text overflow before export.
+- Exports PNG bundles using the configured device-size presets, plus a review sheet for each language.
 
-Existing editors need their own update; installing this skill does not replace files in earlier projects.
+These checks do not verify product claims, translation quality, element overlap, image crop, or store approval. Inspect the PNGs before delivery.
 
-## What It Does
+## Design direction
 
-- Builds a full screenshot editor instead of a static one-off page
-- Turns raw app captures into ad-style slides with big readable copy
-- Lets phones, captions, and decorative elements span adjacent screenshots on one connected canvas
-- Keeps older projects safe with isolated-screen export mode until you opt into connected crops
-- Saves every deck to `app-store-screenshots.json`, so the project is git-trackable and resumable
-- Uploads picked screenshots into `public/screenshots/uploaded/<hash>.png`
-- Supports iOS, iPad, Android phone, Android tablet, and Play Store feature graphic decks
-- Exports exact PNG bundles for all required App Store and Google Play sizes
-- Supports locales, RTL-aware copy/layout guidance, reusable themes, and in-place project migration
+Use the **App screen** structure as the base: one clear headline, one real app capture, and a customer brand surface. Repeat the layout when it helps the reader. Decorative effects are optional.
 
-## Current Editor UI
-
-- **Connected canvas** - view the whole screenshot strip at once, drag elements across screen boundaries, then export each screen as a precise crop.
-- **Isolated mode** - preserve legacy decks where offscreen elements should not leak into neighboring exports.
-- **Screen sidebar** - add, select, and drag-to-reorder screens with live thumbnails.
-- **Inspector** - edit layout, labels, headlines, screenshots, element stacking, and transforms from the right panel.
-- **Platform switcher** - keep iOS and Android decks side by side while sharing the same editor workflow.
-- **Device selector** - design for iPhone, iPad, Android phone, Android tablets, and feature graphic formats.
-- **Autosave** - writes to disk through `/api/project` and mirrors to `localStorage` for instant reloads.
-- **Export bundle** - downloads a zip organized by platform, device, resolution, and locale.
-
-Tip: when capturing source iPhone screenshots, the 6.1-inch simulator is usually the easiest starting point because it reduces manual image adjustment inside the frames.
+Choose **Creator with app** when a teacher or creator is central to the service. Choose **Content library** for two to four approved catalog images beside the app view. Use crop controls to keep important content visible. The neutral starter is a work surface, not a finished customer design.
 
 ## Install
 
-### Using npx skills
-
-```bash
-npx skills add mweisberg21/app-store-screenshots
-```
-
-Install globally:
+Use Node.js 22 or newer and a coding agent with local file and command access, such as Codex or Claude Code.
 
 ```bash
 npx skills add mweisberg21/app-store-screenshots -g
 ```
 
-Install for a specific agent:
+Choose the supported agent in the installer. The skill includes its design instructions and template; no additional design skill is required.
 
-```bash
-npx skills add mweisberg21/app-store-screenshots -a claude-code
-```
-
-This works with Claude Code, Cursor, Windsurf, OpenCode, Codex, and other agents supported by [`skills`](https://github.com/vercel-labs/skills).
-
-### Manual install
+Manual shared install:
 
 ```bash
 git clone https://github.com/mweisberg21/app-store-screenshots
@@ -69,167 +49,61 @@ mkdir -p ~/.agents/skills
 cp -R app-store-screenshots/skills/app-store-screenshots ~/.agents/skills/
 ```
 
-## Usage
+Agent discovery paths can differ. See the [team guide](skills/app-store-screenshots/team-guide.md). This repository is not a built-in chat plugin. A chat session needs a local execution tool to run the editor; otherwise it can help prepare copy and review images while a local agent handles rendering.
 
-Once installed, ask your coding agent for store screenshots:
+## Create a customer project
 
-```text
-Build App Store and Google Play screenshots for my app.
-```
-
-The skill guides the agent to ask for your app context, source screenshots, platforms, locales, visual direction, and slide count before generating the editor project.
-
-## Example Prompts
+Use a separate folder for each customer. Supply the brief and approved captures, then ask the agent:
 
 ```text
-Build App Store screenshots for my habit tracker.
-The app helps people stay consistent with simple daily routines.
-I want 6 slides, clean minimal style, warm neutrals, and a calm premium feel.
+Use app-store-screenshots for this customer.
+Read customer-brief.md and the real captures first.
+Use the customer's brand and verified features.
+Create one complete slide, then extend the design to the set.
+Check every exported image at full size and thumbnail size.
 ```
 
-```text
-Generate App Store screenshots for my personal finance app.
-The main strengths are fast expense capture, clear monthly trends, and shared budgets.
-I want a sharp modern style with high contrast and 7 slides.
+After the agent creates the project:
+
+```bash
+npm ci
+npm run dev
 ```
 
-```text
-Build App Store screenshots for my language learning app.
-I need English, German, and Arabic screenshot sets.
-Use two reusable themes: clean-light and dark-bold.
-Make sure Arabic slides feel RTL-native, not just translated.
+Open the private link printed in the terminal. For another port, use `npm run dev -- --port 3001`.
+
+## Local access and customer files
+
+The launcher binds to `127.0.0.1` and creates a temporary session token. Each teammate runs a separate local copy. Do not share the private link or deploy this editor as a shared website.
+
+Project writes require the local session and origin. Each uploaded image is limited to 8 MiB. Stored uploads are limited to 256 MiB and 1,000 files. See the [template README](skills/app-store-screenshots/template/README.md) for recovery and checks.
+
+Keep customer briefs, images, project files, and exports in approved private storage. Do not commit customer material to this public tool repository. Installing a newer skill does not update existing customer projects; migrate them with a backup.
+
+## Store formats
+
+The editor includes presets for iPhone, iPad, Android phones and tablets, and a 1024 × 500 Google Play feature graphic. It exports the selected device at each configured size and language. Presets do not guarantee coverage of every current store requirement.
+
+Check [Apple's screenshot specifications](https://developer.apple.com/help/app-store-connect/reference/app-information/screenshot-specifications) for the customer's target devices before delivery. Product page header and search creative assets are separate formats from gallery screenshots.
+
+## Development
+
+The Next.js template is in `skills/app-store-screenshots/template`. Run these commands there:
+
+```bash
+npm ci
+npm test
+npm run typecheck
+npm run build
+npm run test:runtime
+npm run test:runtime:dev
+npm audit
 ```
 
-## Better Prompt Tips
+The tests cover local access, body limits, project validation, upload limits, brand persistence, crop validation, template geometry, and export completeness. An optional browser test covers saved crops, text overflow, and actual PNG bundles: see the template README. See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidance.
 
-- Say what the app does in one sentence
-- List the top 3-5 features in priority order
-- Mention the platforms and devices you need
-- Describe the visual style you want
-- Say how many slides you want
-- Mention required locales or RTL languages
-- Provide source screenshot paths, app icon, and style references when available
+## License and origin
 
-## What Gets Scaffolded
+MIT. Originally created by [Parth Jadhav](https://www.parthjadhav.com/).
 
-If starting from an empty folder, the skill creates a Next.js project like this:
-
-```text
-project/
-├── public/
-│   ├── mockup.png
-│   ├── app-icon.png
-│   └── screenshots/
-│       ├── apple/
-│       │   ├── iphone/{locale}/01.png
-│       │   └── ipad/{locale}/01.png
-│       └── android/
-│           ├── phone/{locale}/01.png
-│           ├── tablet-7/portrait/{locale}/01.png
-│           ├── tablet-10/landscape/{locale}/01.png
-│           └── feature-graphic/{locale}/01.png
-├── app-store-screenshots.json
-├── src/app/
-│   ├── layout.tsx
-│   └── page.tsx
-├── src/components/editor/
-│   ├── screenshot-editor.tsx
-│   ├── toolbar.tsx
-│   ├── sidebar.tsx
-│   ├── inspector.tsx
-│   ├── preview-stage.tsx
-│   ├── slide-canvas.tsx
-│   ├── screenshot-picker.tsx
-│   └── device-frames.tsx
-└── src/lib/
-    ├── constants.ts
-    ├── defaults.ts
-    ├── storage.ts
-    ├── image-cache.ts
-    └── types.ts
-```
-
-The template README inside `skills/app-store-screenshots/template/README.md` documents the editor internals in more detail.
-
-## Editor Workflow
-
-1. Capture real app screenshots from a simulator, emulator, or device.
-2. Ask your agent to scaffold or migrate the screenshot project.
-3. Run the dev server and open the editor.
-4. Use the sidebar to organize screens and the inspector to edit copy, layouts, screenshots, and elements.
-5. Choose Connected or Isolated mode depending on whether elements should cross screen boundaries.
-6. Click **Export bundle** to download store-ready PNGs.
-
-Uploaded files are saved under `public/screenshots/uploaded/`, and the canonical deck state is saved in `app-store-screenshots.json`. Commit both to make the deck reproducible after a fresh clone.
-
-## Export Sizes
-
-### Apple App Store
-
-| Display | Resolution |
-|---------|------------|
-| 6.9" | 1320 x 2868 |
-| 6.5" | 1284 x 2778 |
-| 6.3" | 1206 x 2622 |
-| 6.1" | 1125 x 2436 |
-
-### Google Play Store
-
-| Device | Resolution |
-|--------|------------|
-| Phone portrait | 1080 x 1920 |
-| 7" tablet portrait | 1200 x 1920 |
-| 7" tablet landscape | 1920 x 1200 |
-| 10" tablet portrait | 1600 x 2560 |
-| 10" tablet landscape | 2560 x 1600 |
-| Feature graphic | 1024 x 500 |
-
-Screenshots are designed at the largest size for each platform and scaled down for smaller exports. Android frames are CSS-rendered, while iPhone uses the included `mockup.png` bezel.
-
-## Project State
-
-- `app-store-screenshots.json` is the source of truth for app name, active platform, active device, locales, theme, connected-canvas mode, slides, screenshot paths, and transforms.
-- Runtime uploads are written to `public/screenshots/uploaded/<hash>.png`.
-- The editor reads `localStorage` first for fast paint, then reconciles with the project file.
-- Older project files are migrated to schema v2 on load while keeping legacy decks isolated unless connected mode was already enabled.
-- Custom themes live in `src/lib/constants.ts`; unknown theme ids fall back to `clean-light`.
-
-## Design Standards
-
-- Screenshots are ads, not documentation
-- Each slide should sell one clear user outcome
-- Headlines should pass the one-second thumbnail test
-- Adjacent slides should vary layout and device placement
-- Cross-screen elements should never split required text or critical UI
-- Exported crops must still work as standalone screenshots
-
-## Tech Stack
-
-| Dependency | Purpose |
-|------------|---------|
-| Next.js | Dev server and app shell |
-| React | Editor UI |
-| TypeScript | Project and slide state safety |
-| Tailwind CSS | Styling |
-| shadcn/ui + Radix | Controls, dialogs, selects, tooltips |
-| html-to-image | Exact PNG rendering |
-| JSZip | Bundle downloads |
-| dnd-kit | Screen reordering |
-| react-rnd | Draggable and resizable canvas elements |
-
-## Requirements
-
-- Node.js 22+
-- One of bun, pnpm, yarn, or npm
-
-## Contributing
-
-Contributions are welcome, especially around export reliability, screenshot design guidance, migrations, and cross-agent compatibility. Start with `CONTRIBUTING.md`.
-
-## License
-
-MIT
-
-## Author
-
-Created by [Parth Jadhav](https://www.parthjadhav.com/).
+The original repository's [example image](example.png) is retained as historical reference. It does not show this fork's current starter.

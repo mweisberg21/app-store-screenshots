@@ -130,6 +130,7 @@ export function ScreenshotPicker({ label, value, locale, onChange }: Props) {
         <input
           ref={inputRef}
           type="file"
+          aria-label={`Upload ${label.toLowerCase()}`}
           accept="image/png,image/jpeg"
           className="hidden"
           onChange={async (e) => {
@@ -144,6 +145,8 @@ export function ScreenshotPicker({ label, value, locale, onChange }: Props) {
           variant="outline"
           size="sm"
           className="h-8"
+          disabled={uploading}
+          aria-label={`Pick ${label.toLowerCase()}`}
           onClick={() => inputRef.current?.click()}
         >
           <Upload className="h-3.5 w-3.5" />
@@ -154,12 +157,13 @@ export function ScreenshotPicker({ label, value, locale, onChange }: Props) {
             type="button"
             variant="ghost"
             size="icon"
-            className="h-8 w-8"
+            className="h-11 w-11 md:h-10 md:w-10"
+            disabled={uploading}
             onClick={() => {
               onChange("");
               setError(null);
             }}
-            aria-label="Clear screenshot"
+            aria-label={`Clear ${label.toLowerCase()}`}
             title="Clear"
           >
             <X className="h-4 w-4" />

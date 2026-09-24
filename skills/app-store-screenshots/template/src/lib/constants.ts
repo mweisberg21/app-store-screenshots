@@ -81,9 +81,15 @@ export function ipadW(cW: number, cH: number, clamp = 0.75) {
 }
 
 // ---------- Themes ----------
-export const DEFAULT_THEME_ID: ThemeId = "clean-light";
+export const DEFAULT_THEME_ID: ThemeId = "brand-neutral";
 
 export const THEMES: Record<string, Theme> = {
+  "brand-neutral": {
+    id: "brand-neutral", name: "Neutral starting point",
+    bg: "#FFFFFF", bgAlt: "#202020", fg: "#202020", fgAlt: "#FFFFFF",
+    accent: "#404040", muted: "#666666", textAlign: "left",
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+  },
   "clean-light": {
     id: "clean-light",
     name: "Clean Light",
@@ -158,8 +164,10 @@ export const DEVICE_LABEL: Record<Device, string> = {
 
 // Friendly labels for slide layouts (used in dropdowns)
 export const LAYOUT_LABEL: Record<SlideLayout, string> = {
+  "device-bottom": "App screen",
+  creator: "Creator with app",
+  "content-library": "Content library",
   hero: "Hero",
-  "device-bottom": "Device bottom",
   "device-top": "Device top",
   "two-devices": "Two devices",
   "no-device": "No device",
@@ -171,6 +179,8 @@ export const LAYOUT_LABEL: Record<SlideLayout, string> = {
 export const LAYOUT_HINT: Record<SlideLayout, string> = {
   hero: "Headline above, device at bottom",
   "device-bottom": "Headline top, device anchored below",
+  creator: "Creator photo with an app view. Keep faces clear of the crop and phone.",
+  "content-library": "Two to four catalog images beside a real app screen.",
   "device-top": "Flipped — device on top",
   "two-devices": "Layered back + front phones",
   "no-device": "Big standalone headline",

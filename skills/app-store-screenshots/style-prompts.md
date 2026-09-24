@@ -1,16 +1,12 @@
-# Style Prompts
+# Optional style references
 
-A library of named visual styles distilled from the best App Store screenshots in the wild. When a user names one of these styles (or pastes one of the prompts), the screenshot deck should adopt the **entire spec** in the matching file — palette, typography, layout rhythm, decorative accents, and copy tone.
+Use these only when the user explicitly selects one. Start from the customer brief. Do not choose a style by app category, and do not apply an entire spec automatically.
 
-Apply a style globally first; let the user override specific slides afterwards.
-
-If a user gives a prompt that does not match a named style, fall back to the General Visual Design Principles in `SKILL.md` and pick the **closest** style here as the starting point.
-
----
+The customer brand and [quality rules](style-prompts/_QUALITY_BAR.md) override any effect count, mandatory gradient, or slide sequence in the reference files.
 
 ## Deep style spec index (`./style-prompts/`)
 
-**Before you read any deep spec, read [`./style-prompts/_QUALITY_BAR.md`](./style-prompts/_QUALITY_BAR.md).** It defines the universal sizing, illustration-polish, contrast, and auto-reject rules that apply to every style. Each deep spec adds style-specific quantitative rules on top.
+**Before you read any deep spec, read [`./style-prompts/_QUALITY_BAR.md`](./style-prompts/_QUALITY_BAR.md).** Its rules take priority over decorative quotas and fixed sequences in these historical references.
 
 **When a user names one of these styles, ALWAYS read the matching deep spec file before generating slides.**
 
@@ -23,32 +19,7 @@ If a user gives a prompt that does not match a named style, fall back to the Gen
 | 05 | `hand-drawn-editorial-tasks` | [05-hand-drawn-editorial-tasks.md](./style-prompts/05-hand-drawn-editorial-tasks.md) | Productivity / tasks / notes with designer taste. Navy + cream + coral slides, script accent word, tilted phones, doodle squiggles. Inspired by Superlist. |
 | 06 | `glossy-3d-kbeauty-creator` | [06-glossy-3d-kbeauty-creator.md](./style-prompts/06-glossy-3d-kbeauty-creator.md) | K-beauty / creator-economy / influencer-brand collab. Deep purple gradient, glossy chrome 3D numerals, kawaii ghost mascot, yellow hashtag chips. Inspired by Nuri Lounge. |
 
----
 
-## How to apply a style
+## Apply only what helps
 
-When a user invokes a style by name (e.g. "use the Hand-Drawn Editorial style"):
-
-1. Read the matching deep spec file (and `_QUALITY_BAR.md` first).
-2. Set the theme palette to the listed hex values.
-3. Set the font family for headline + body to the listed stack.
-4. Match the listed headline emphasis behavior.
-5. Apply the listed layout rhythm (which slide types and in what order).
-6. Decide whether the deck should include a cross-screen/cross-canvas moment. For 5+ slide decks, include one tasteful adjacent-screen bridge when the style supports it; keep minimal or photo-led styles subtle.
-7. Add the listed decorative accents on at least 60% of slides.
-8. Rewrite the copy tone to match the listed voice rules.
-
-If the style and a user-supplied brand color clash, keep the brand color and adjust adjacent palette entries to be analogous.
-
----
-
-## Combining and overriding
-
-- If the user names a style **and** gives custom brand colors, swap the palette colors closest in lightness to the brand colors but keep the typography and accent rules intact.
-- If the user names a style **and** a layout (e.g. "style 05 but with style 04's layout rhythm"), keep the named style's typography + accents, swap only the layout rhythm.
-- If two styles are named, pick the first as primary and pull at most one element (typography OR decoration) from the second.
-- Cross-screen moments inherit the primary style's rules. In a moody/photo style, continue a photograph, vignette, or notification across the seam; in an editorial style, use a tilted phone, doodle, or sticker trail; in a maximalist style, let chips, mascots, or 3D objects bridge the pair. Never use the cross-screen device as an excuse to break type contrast, phone sizing, or standalone readability.
-
-## Adding new styles
-
-When the user describes a new style not in this list and likes the result, propose appending a new deep spec file in `./style-prompts/` using the next sequential number, following the same field layout as the existing specs (Palette / Typography / Headline emphasis / Layout rhythm / Decorative accents / Copy tone), then add a row to the index table above.
+Read the selected reference after the quality rules. Identify the useful type, color, or composition choice. Keep customer assets and verified copy. Remove any effect that does not support the content. Never require a cross-screen composition or decorative accent.
