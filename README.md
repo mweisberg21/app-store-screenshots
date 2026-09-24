@@ -59,7 +59,7 @@ Choose **Creator with app** when a teacher or creator is central to the service.
 
 Use Node.js 22 or newer and a coding agent with local file and command access, such as Codex or Claude Code.
 
-These team changes are on `improve-brand-defaults` in [draft PR 1](https://github.com/mweisberg21/app-store-screenshots/pull/1). Use the branch-specific command below while the PR is open. A default-branch install still gets the older version.
+The packaged frames and English preview are on `improve-brand-defaults` in [draft PR 2](https://github.com/mweisberg21/app-store-screenshots/pull/2). Use the branch-specific command below while the PR is open. A default-branch install still gets the older version.
 
 ```bash
 npx skills add https://github.com/mweisberg21/app-store-screenshots/tree/improve-brand-defaults/skills/app-store-screenshots -g
