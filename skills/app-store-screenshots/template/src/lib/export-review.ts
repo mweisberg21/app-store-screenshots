@@ -16,7 +16,7 @@ export function reviewExport(state: ProjectState, imageFailed: (path: string) =>
   const frame = appleFrame(state.device, state.orientation);
   const hasDevices = slides.some((slide) => slide.layout !== "no-device" && slide.layout !== "feature-graphic");
   if (frame && hasDevices && imageFailed(framePath(frame))) {
-    issues.push({ message: `Import the ${frame.name} frame, then reload the editor. See the Apple frame setup guide.` });
+    issues.push({ message: `The included ${frame.name} frame could not load. Restore its package file, then reload the editor. See the included Apple frames guide.` });
   }
   const theme = projectTheme(state);
   for (const [index, slide] of slides.entries()) {

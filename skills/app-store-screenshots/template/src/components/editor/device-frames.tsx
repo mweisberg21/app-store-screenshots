@@ -39,7 +39,7 @@ function AppleDevice({ src, alt = "", style, hideEmpty, frame }: FrameProps & { 
       }}>
         {resolved ? <img src={resolved} alt={alt} draggable={false} style={{ display: "block", width: "100%", height: "100%", objectFit: "contain" }} /> : hideEmpty ? null : <EmptySlot />}
       </div>
-      {overlay ? <img data-device-bezel src={overlay} alt="" draggable={false} style={{ position: "absolute", inset: 0, display: "block", width: "100%", height: "100%", pointerEvents: "none" }} /> : !hideEmpty ? <div style={{ position: "absolute", inset: 0, display: "grid", placeItems: "center", padding: "12%", background: "#ececec", color: "#202020", fontSize: 42, textAlign: "center" }}>Import the Apple frame files</div> : null}
+      {overlay ? <img data-device-bezel src={overlay} alt="" draggable={false} style={{ position: "absolute", inset: 0, display: "block", width: "100%", height: "100%", pointerEvents: "none" }} /> : !hideEmpty ? <div style={{ position: "absolute", inset: 0, display: "grid", placeItems: "center", padding: "12%", background: "#ececec", color: "#202020", fontSize: 42, textAlign: "center" }}>Included frame unavailable</div> : null}
     </div>
   );
 }

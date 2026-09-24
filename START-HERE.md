@@ -41,7 +41,7 @@ Start with your customer name and any of these files:
 
 You do not need all the files at once. The assistant will list what is missing and help you capture the right app screens. It will ask for assets as you work, without asking for the same file again.
 
-Apple device frames need a one-time setup on each computer. The assistant will check for them first. If they are missing, it will help you obtain the matching originals from Apple and import them. It will not call an Apple image ready until the real frame loads.
+The original iPhone and iPad frames are included. They work by default on Mac and Windows, with no separate Apple download. The assistant checks that they load. If an installation is incomplete, it repairs the included files. The editor has a Credits button for the source and license notices.
 
 ## 4. Make one image together
 

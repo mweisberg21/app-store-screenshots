@@ -1,50 +1,32 @@
-# Apple frame setup
+# Included Apple frames
 
-The editor uses original Apple PNG bezels by default for all iPhone and iPad device layouts. Import your local copies once on each computer. Later projects get the files automatically when the editor starts. The source images are not included in the public repository.
+The package contains three original Apple PNG bezels in `template/public/device-frames/`. Every iPhone and iPad device layout uses the matching bezel by default. A new installation works without a separate Apple download, import, or local frame cache.
 
-## Import
+| File | Device |
+| --- | --- |
+| `iphone-17-pro-max.png` | iPhone 17 Pro Max, Silver, portrait |
+| `ipad-pro-13-portrait.png` | iPad Pro 13-inch (M5), Space Black, portrait |
+| `ipad-pro-13-landscape.png` | iPad Pro 13-inch (M5), Space Black, landscape |
 
-Get the matching product bezels from [Apple Design Resources](https://developer.apple.com/design/resources/). Read the license that comes with those files. The assistant can help extract and place the images. Do not require a first-time user to arrange files manually.
+These portable filenames work on Mac and Windows. The image bytes, alpha channels, and dimensions are unchanged from the supplied originals.
 
-On Mac, the original folder structure is supported:
+## Setup and recovery
 
-```text
-Apple Device Frames/
-  iPhone 17/iPhone 17 Pro Max/iPhone 17 Pro Max - Silver - Portrait.png
-  iPad Pro M5/PNG/iPad Pro (M5) 13" - Space Black - Portrait.png
-  iPad Pro M5/PNG/iPad Pro (M5) 13" - Space Black - Landscape.png
-```
+Copy the full template into each customer project, including `public/device-frames/` and `public/licenses/`. Start the editor normally. No frame setup command is needed. Both the launcher and the protected frame route verify SHA-256 hashes against `src/lib/apple-frames.json`.
 
-On Mac or Windows, you can instead put the three originals in one folder with these simple names:
+If a file is missing or changed, restore only the affected package files from the same repository version or an intact installed template. Preserve the customer's project and captures. Reload an open editor after repair. Do not ask a first-time user to download Apple's resource archives.
 
-```text
-Apple Device Frames/
-  iphone-17-pro-max.png
-  ipad-pro-13-portrait.png
-  ipad-pro-13-landscape.png
-```
+The launcher can also restore the exact files from a pre-existing local cache. macOS uses `~/Library/Application Support/app-store-screenshots/device-frames/`; Windows uses local application data; Linux uses the XDG data folder. `SCREENSHOT_FRAME_CACHE_DIR` can select a different local cache. The cache is optional and is not needed for a complete package.
 
-Match each simple name to the corresponding model, color, and orientation above. Rename the file only; do not edit or re-save the image. This form avoids the quote character in Apple's iPad file names, which Windows cannot use. The importer checks the same hashes for both forms. A portable file takes priority when both forms exist; an invalid portable file fails verification.
+The optional maintenance command `npm run frames:import -- "<folder>"` accepts the three portable filenames above or the original paths recorded in the manifest. In Windows PowerShell, use `npm.cmd`. It checks all three files before copying them to the project and cache. Use it to repair an old project from an intact template's `public/device-frames/` folder, not as a first-run requirement. It never resizes or re-saves the images.
 
-Apple may supply a disk image or archive. Use local extraction tools that support its format. If Windows cannot extract that download, help the user obtain their own matching extracted PNGs. Do not assume every Apple archive opens on Windows or bypass the asset license.
+Export stops if a required frame cannot load. There is no substitute Apple frame. Deliberate text-only layouts and Play Store feature graphics still have no device. Android uses the existing generic frames.
 
-In the customer editor project, run:
+## Credits and license notices
 
-```bash
-npm run frames:import -- "/path/to/Apple Device Frames"
-```
+Device images: Apple Inc., from [Apple Design Resources](https://developer.apple.com/design/resources/). The [supplied Apple license](../template/public/licenses/apple-design-resources.txt) is included with the assets and stays separate from the code's MIT license. Attribution does not change the license terms or imply Apple endorsement. The editor's **Credits** button links to both license notices.
 
-In Windows PowerShell, the equivalent is `npm.cmd run frames:import -- "C:\path\to\Apple Device Frames"`. Use the user's actual folder path. No shell execution-policy change is needed.
-
-The command checks all three file hashes before it copies the files to `public/device-frames/` and an operator-local cache. It does not resize or modify them. If a hash differs, obtain the matching original or measure the new asset and update its metadata. Do not bypass the check with a resized image. Reload an open editor after import.
-
-On macOS, the cache is `~/Library/Application Support/app-store-screenshots/device-frames/`. Windows uses the local application data folder; Linux uses the XDG data folder. `SCREENSHOT_FRAME_CACHE_DIR` can select a different local cache. Do not point it at shared network storage.
-
-Each start checks the project copies. If they are missing or changed, the launcher restores the exact originals from the local cache. A complete project works without that cache or the original download folder. The server also checks frame hashes before it serves them. Export stops if a required frame cannot load. There is no substitute Apple frame. Deliberate text-only layouts and Play Store feature graphics still have no device.
-
-For a local skill installation, import into its `template/` folder once. New projects copied from that local template then include the files immediately. A skill update can replace that folder; the separate local cache lets new projects restore the files on startup.
-
-Apple's source assets have a separate license. They are not covered by this repository's MIT license. Keep them local and out of commits, public packages, and shared source archives. Each teammate must obtain and import their own copies under Apple's terms. Follow [Apple's product image guidelines](https://developer.apple.com/app-store/marketing/guidelines/) for the finished composition.
+Follow [Apple's product image guidelines](https://developer.apple.com/app-store/marketing/guidelines/) when composing marketing images.
 
 ## Captures and measurements
 

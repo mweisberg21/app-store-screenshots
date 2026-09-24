@@ -17,13 +17,13 @@ export async function GET(req: Request, context: { params: Promise<{ filename: s
   try {
     const bytes = await readFile(path.join(process.cwd(), "public/device-frames", filename));
     if (createHash("sha256").update(bytes).digest("hex") !== frame.sha256) {
-      return new Response("The frame differs from the measured original. Import it again.", { status: 409 });
+      return new Response("The frame differs from the measured original. Restore the included file from the same tool version.", { status: 409 });
     }
     return new Response(new Uint8Array(bytes), { headers: {
       "Content-Type": "image/png", "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff",
     } });
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") return new Response("Import the Apple frame files first", { status: 404 });
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") return new Response("An included Apple frame file is missing. Repair the installation.", { status: 404 });
     return new Response("Could not read the frame", { status: 500 });
   }
 }

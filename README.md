@@ -18,6 +18,10 @@ image, and show me how to use the tool again later.
 
 A local editor and agent skill for teams that create App Store and Google Play listing images for customer apps. Start with real app captures and the customer's brand. Use the browser editor to refine the deck and export PNGs.
 
+![The screenshot editor with three English Form and Flow demo images, centered headlines, and original iPhone frames](example.png)
+
+Example: the App screen, Creator with app, and Content library templates. Form & Flow is a fictional demo app with generated instructor photography. Customer projects use real app captures and approved brand assets.
+
 This fork retains Parth Jadhav's MIT license and author credit. It adds local access controls, validated saves, upload limits, and a workflow for customer work.
 
 ## Start here
@@ -28,7 +32,7 @@ This fork retains Parth Jadhav's MIT license and author credit. It adds local ac
 - [ASO playbook](skills/app-store-screenshots/references/aso-screenshot-playbook.md): audience, feature evidence, screenshot order, localization, and measured tests.
 - [Uscreen capture guide](skills/app-store-screenshots/references/uscreen-mobile-features.md): member features, useful screens, and customer-specific checks.
 - [Skill instructions](skills/app-store-screenshots/SKILL.md): the complete agent workflow.
-- [Apple frame setup](skills/app-store-screenshots/references/apple-frames.md): import original iPhone and iPad bezels for local use.
+- [Included Apple frames](skills/app-store-screenshots/references/apple-frames.md): original iPhone and iPad bezels, file checks, and credits.
 
 ## What the editor does
 
@@ -36,7 +40,7 @@ This fork retains Parth Jadhav's MIT license and author credit. It adds local ac
 - Adds a **Background** picker for solid colors, linear/radial gradients, and uploaded images. Preview crop, zoom, fit, tint, and text color before applying to the project or one screen. See [background controls](skills/app-store-screenshots/references/backgrounds.md).
 - Provides App screen, Creator with app, and Content library templates.
 - Keeps creator photos and catalog artwork separate from app captures, with saved crop and zoom controls.
-- Shows real captures in locally imported Apple iPhone and iPad bezels, or generic Android frames.
+- Shows real captures in included Apple iPhone and iPad bezels, or generic Android frames.
 - Supports per-device decks, localized copy, ordering, and element placement.
 - Starts with one empty, isolated screen per device. Connected mode is available for deliberate compositions.
 - Saves the project to `app-store-screenshots.json` and stores uploads in the project.
@@ -55,7 +59,7 @@ Choose **Creator with app** when a teacher or creator is central to the service.
 
 Use Node.js 22 or newer and a coding agent with local file and command access, such as Codex or Claude Code.
 
-These team changes are on `improve-brand-defaults` in [draft PR 1](https://github.com/mweisberg21/app-store-screenshots/pull/1). Use the branch-specific command below while the PR is open. A default-branch install still gets the older version.
+The packaged frames and English preview are on `improve-brand-defaults` in [draft PR 2](https://github.com/mweisberg21/app-store-screenshots/pull/2). Use the branch-specific command below while the PR is open. A default-branch install still gets the older version.
 
 ```bash
 npx skills add https://github.com/mweisberg21/app-store-screenshots/tree/improve-brand-defaults/skills/app-store-screenshots -g
@@ -94,13 +98,12 @@ After the agent creates the project:
 
 ```bash
 npm ci
-npm run frames:import -- "/path/to/Apple Device Frames"
 npm run dev
 ```
 
 Open the private link printed in the terminal. For another port, use `npm run dev -- --port 3001`.
 
-For Apple decks, obtain the original assets and follow [Apple frame setup](skills/app-store-screenshots/references/apple-frames.md) once per computer. The importer supports iPhone 17 Pro Max and iPad Pro 13-inch (M5) in portrait and landscape. It includes verified copies in the project and a local cache. Later projects get the originals automatically on startup and use them by default. Android decks do not need this import.
+The package includes the original iPhone 17 Pro Max frame and iPad Pro 13-inch (M5) frames in portrait and landscape. They are used by default on Mac and Windows. No separate Apple download, import, or existing frame cache is needed. See [included Apple frames](skills/app-store-screenshots/references/apple-frames.md) for file checks and recovery. Open **Credits** in the editor to see the asset source and license notices.
 
 ## Local access and customer files
 
@@ -136,6 +139,4 @@ The tests cover local access, body limits, project validation, upload limits, br
 
 MIT. Originally created by [Parth Jadhav](https://www.parthjadhav.com/).
 
-Imported Apple assets remain under Apple's separate terms. They are excluded from Git and are not included in this tool's MIT license or distribution. Each teammate obtains their own source files.
-
-The original repository's [example image](example.png) is retained as historical reference. It does not show this fork's current starter.
+The included Apple device images are credited to Apple Inc. Their [supplied license](skills/app-store-screenshots/template/public/licenses/apple-design-resources.txt) remains separate from this tool's MIT license. Attribution does not change those terms or imply Apple endorsement.

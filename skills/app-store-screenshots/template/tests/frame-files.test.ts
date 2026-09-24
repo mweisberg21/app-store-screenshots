@@ -1,10 +1,35 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { mkdtemp, mkdir, readFile, writeFile, rm, rename } from "node:fs/promises";
+import { mkdtemp, mkdir, readFile, writeFile, rm, rename, cp, access } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { importAppleFrames, ensureAppleFrames } from "../scripts/apple-frame-files.mjs";
+import { fileURLToPath } from "node:url";
+import { importAppleFrames, ensureAppleFrames, frameManifest } from "../scripts/apple-frame-files.mjs";
+
+test("the shipped template includes original PNGs that work without an import or cache", async () => {
+  const template = fileURLToPath(new URL("../", import.meta.url));
+  const directory = await mkdtemp(path.join(tmpdir(), "packaged frames-"));
+  const root = path.join(directory, "new project");
+  const cache = path.join(directory, "no operator cache");
+  try {
+    await mkdir(path.join(root, "src/lib"), {recursive: true});
+    await cp(path.join(template, "src/lib/apple-frames.json"), path.join(root, "src/lib/apple-frames.json"));
+    await cp(path.join(template, "public/device-frames"), path.join(root, "public/device-frames"), {recursive: true});
+    const frames = await frameManifest(root);
+    assert.equal(frames.length, 3);
+    for (const frame of frames) {
+      const bytes = await readFile(path.join(root, "public/device-frames", frame.filename));
+      assert.deepEqual(bytes.subarray(0, 8), Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]));
+      assert.equal(bytes.readUInt32BE(16), frame.width);
+      assert.equal(bytes.readUInt32BE(20), frame.height);
+    }
+    assert.deepEqual(await ensureAppleFrames(root, cache), {ready: true, source: "project"});
+    await assert.rejects(access(cache), {code: "ENOENT"});
+    await writeFile(path.join(root, "public/device-frames", frames[0].filename), "changed file");
+    assert.deepEqual(await ensureAppleFrames(root, cache), {ready: false, source: "missing"});
+  } finally { await rm(directory, {recursive: true, force: true}); }
+});
 
 async function fixture() {
   const directory = await mkdtemp(path.join(tmpdir(), "frame files-"));
