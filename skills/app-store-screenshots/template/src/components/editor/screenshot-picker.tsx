@@ -3,6 +3,8 @@ import * as React from "react";
 import { Image as ImageIcon, Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { didFail, img, setImage } from "@/lib/image-cache";
+import { AssetContext } from "./asset-context";
+import { nid } from "@/lib/defaults";
 import { resolveScreenshot } from "@/lib/locale";
 
 type Props = {
@@ -36,6 +38,7 @@ async function uploadDataUrl(dataUrl: string): Promise<string> {
 }
 
 export function ScreenshotPicker({ label, value, locale, onChange, onBusyChange }: Props) {
+  const library=React.useContext(AssetContext);
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -73,7 +76,7 @@ export function ScreenshotPicker({ label, value, locale, onChange, onBusyChange 
     try {
       const uploadedPath = await uploadDataUrl(dataUrl);
       setImage(uploadedPath, dataUrl);
-      if (mounted.current) onChange(uploadedPath);
+      if (mounted.current) { library.add({id:nid(),name:file.name,src:uploadedPath,category:label.toLowerCase().includes("icon")?"logo":"photo"}); onChange(uploadedPath); }
     } catch (error) {
       setError(error instanceof Error ? error.message : "Image upload failed");
     } finally {
@@ -186,4 +189,13 @@ export function ScreenshotPicker({ label, value, locale, onChange, onBusyChange 
       ) : null}
     </div>
   );
+}
+
+export async function uploadImageFile(file: File) {
+  if (!ACCEPTED.includes(file.type)) throw new Error("Choose a PNG or JPG image.");
+  if (file.size>8*1024*1024) throw new Error("Choose an image smaller than 8 MB.");
+  const data=await fileToDataUrl(file);
+  const path=await uploadDataUrl(data);
+  setImage(path,data);
+  return path;
 }

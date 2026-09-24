@@ -1,3 +1,4 @@
+import { elementPaths } from "./canvas-elements";
 import type { ImageCrop, Slide } from "./types";
 
 export const DEFAULT_CROP: ImageCrop = { x: 50, y: 50, zoom: 1 };
@@ -40,6 +41,6 @@ export function artworkRects(region: TemplateRect, count: number): TemplateRect[
 }
 
 export function slideImagePaths(slide: Slide): string[] {
-  return [slide.screenshot, slide.screenshotSecondary, slide.photo?.src, slide.background?.kind === "image" ? slide.background.image.src : undefined, ...(slide.artworks || []).map((art) => art.src)]
+  return [...(slide.elements||[]).flatMap(elementPaths), slide.screenshot, slide.screenshotSecondary, slide.photo?.src, slide.background?.kind === "image" ? slide.background.image.src : undefined, ...(slide.artworks || []).map((art) => art.src)]
     .filter((path): path is string => !!path);
 }

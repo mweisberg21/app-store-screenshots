@@ -18,7 +18,7 @@ Do not install into a remote environment and call it a local installation. Do no
 
 ## 2. Prepare a local working copy
 
-Use the URL/ref supplied by the user. For this team draft, use `improve-brand-defaults` from `mweisberg21/app-store-screenshots`; the repository's main branch is older. Report the actual ref and commit in the local setup note, not as a technical lecture. Never silently switch to upstream or an older main branch. If the requested ref is missing, explain and resolve the source before installing.
+Use the URL/ref supplied by the user. For the new element editor under review, use `editor-elements` from `mweisberg21/app-store-screenshots`. The main branch already has packaged frames and the earlier editor; it does not yet have these new controls. Report the actual ref and commit in the local setup note, not as a technical lecture. Never silently switch to upstream or an older main branch. If the requested ref is missing, explain and resolve the source before installing.
 
 Inspect existing folders first. Preserve any earlier installation and customer projects. Use a separate tools folder and customer folder within the user's chosen work area. If no location was supplied, suggest an easy-to-find folder in Documents and use the user's actual path. Do not assume a Mac username, a Windows drive letter, or an English Documents folder.
 
@@ -64,8 +64,9 @@ Work through the steps below with the user. Show one task, explain its result, a
 2. **Add one real app screen.** Show where Pick adds the file and which feature it supports. Keep the real iPhone or iPad frame.
 3. **Set the brand and headline.** Show Brand. Use their colors and a short, centered benefit headline. Keep their content readable.
 4. **Choose the background.** Show Background. Explain solid color, gradient, and image choices. For an image, show fill/fit and crop. Explain that Apply saves and Cancel discards the picker changes.
-5. **Review and add screens.** Make a small preview of the first image, then plan the next useful app area. Prioritize content, teachers, programs, playback, community, and live experiences. Do not suggest downloads unless requested.
-6. **Export and find the files.** Run Export bundle once the required content is ready. Explain any blocked item in plain language, fix it, then check the PNGs and show the output location. Explain that the review sheet is for review; the separate PNGs are the store images. Nothing is published by export.
+5. **Add useful content.** Show **Add element** for a logo, photo, content cards, device capture, or a crop of real UI. Show **Assets** for files already supplied. Read [elements-and-assets.md](elements-and-assets.md). Demonstrate one useful addition; do not require decorative elements. Explain saved groups only when there is a layout worth reusing.
+6. **Review and add screens.** Make a small preview of the first image, then plan the next useful app area. Prioritize content, teachers, programs, playback, community, and live experiences. Do not suggest downloads unless requested.
+7. **Export and find the files.** Run Export bundle once the required content is ready. Explain any blocked item in plain language, fix it, then check the PNGs and show the output location. Explain that the review sheet is for review; the separate PNGs are the store images. Nothing is published by export.
 
 The user may choose to stop after setup. Respect that. Report editor readiness separately from a completed image. Do not invent an app capture to complete the tutorial. If an example is explicitly requested, label synthetic content as a practice example and keep it outside the customer's final deck.
 

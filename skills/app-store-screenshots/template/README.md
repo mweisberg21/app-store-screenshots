@@ -43,6 +43,10 @@ Run `npm test`, `npm run typecheck`, `npm audit`, `npm run build`, `npm run test
 - **Project migration** — older `app-store-screenshots.json` files are migrated on load. Existing per-slide transforms remain valid, and connected crops become available without rewriting the deck by hand.
 - **Legacy-safe mode** — pre-v2 projects opened directly in the editor start in isolated-screen mode first, then can opt into connected crops with the toolbar's Connected/Isolated control. Skill-run in-place migrations keep legacy decks isolated unless the project had already explicitly opted into connected canvas.
 
+## Elements and assets
+
+Use **Add element** for images, logos, devices, screenshot details, content cards, shapes, lines/arrows, icons, and text. The **Elements** panel has layers, alignment, group, copy, lock/hide, and editing controls. **Assets** stores reusable images and named groups within this customer project. Undo and redo are in the toolbar. See [the full guide](../references/elements-and-assets.md). Old projects retain their existing text and layout.
+
 ## Adding screenshots
 
 Two ways:
@@ -109,3 +113,5 @@ Run `npm run build` and `node tests/templates-browser.mjs` in an environment wit
 The check covers photo and catalog uploads, crop changes and persistence, template changes, library add/remove, English and German export, text overflow, iPad portrait and landscape export, review sheets, frame route access, unchanged frame bytes, and camera pixels in the exported iPhone image. It does not establish design approval for a real customer.
 
 Run `node tests/backgrounds-browser.mjs` with the same setup for background controls. It checks cancellation, undo/redo, reload, gradient stops and center, image upload/crop/fit/tint, project and screen scope, export pixels, and a missing-image failure. An optional output directory retains screenshots of the picker and exported review images.
+
+Run `node tests/elements-browser.mjs` with the same browser setup for the element editor. It uses an isolated project to check all nine element types, image upload and reuse, crop, layer controls, groups, saved reuse, copying, persistence, PNG export, missing translations/images, and a narrow viewport. The pure tests also validate schema limits, independent copies, group placement and alignment, and snapping.

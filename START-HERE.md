@@ -10,7 +10,7 @@ Copy this message into Claude or another assistant that can work on your compute
 
 ```text
 Please set up this App Store screenshot tool on my computer:
-https://github.com/mweisberg21/app-store-screenshots/tree/improve-brand-defaults
+https://github.com/mweisberg21/app-store-screenshots/tree/editor-elements
 
 Read START-HERE.md and follow the first-run guide linked from it.
 I am not technical. Check whether you can work on my computer.
@@ -20,7 +20,7 @@ first screenshot. Ask for my app screenshots, logo, colors, and
 other assets as we go. Show me how to return to the tool later.
 ```
 
-This link selects the current team draft. It works for setup on Mac and Windows. The main repository still contains the older version until the draft is merged.
+This link selects the current team draft. It works for setup on Mac and Windows. The main branch includes the packaged frames. The new element controls are on this branch until review is complete.
 
 ## 2. Let the assistant check your setup
 
