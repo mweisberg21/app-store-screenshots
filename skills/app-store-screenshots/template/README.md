@@ -8,15 +8,14 @@ For a guided first use, ask the installed skill to follow `references/first-run.
 
 ```bash
 npm ci
-npm run frames:import -- "/path/to/Apple Device Frames"  # Apple decks only
 npm run dev   # open the private link printed in the terminal
 ```
 
 Use Node.js 22 or newer. The launcher binds to 127.0.0.1 and creates a new access token on each run. Open its `/unlock#...` link to set an HttpOnly, SameSite=Strict session cookie. The token stays out of query strings and is removed from browser history before the exchange. To choose another port, use `npm run dev -- --port 3001`.
 
-The launcher uses Node directly on Mac and Windows. In Windows PowerShell, use `npm.cmd` if policy blocks the `npm.ps1` wrapper; do not change execution policy. Quote paths with spaces. The Apple importer also accepts portable flat file names: see the frame guide below. Repository CI runs unit tests, type checking, a production build, and local server checks on Mac and Windows. These checks do not replace a first-time operator trial or Apple's asset download process.
+The launcher uses Node directly on Mac and Windows. In Windows PowerShell, use `npm.cmd` if policy blocks the `npm.ps1` wrapper; do not change execution policy. Quote paths with spaces. The included frame filenames work on both platforms. Repository CI runs unit tests, type checking, a production build, and local server checks on Mac and Windows. These checks do not replace a first-time operator trial.
 
-Obtain the original bezels from [Apple Design Resources](https://developer.apple.com/design/resources/). See [Apple frame setup](../references/apple-frames.md) for the exact files and folder structure. Import once per computer. The importer checks the source hashes and copies the PNGs unchanged to the ignored `public/device-frames/` folder and a separate local cache. Each start restores missing or changed project files from that cache. The original frames are the default for every Apple device layout. Each teammate imports their own files. The source assets are not part of this repository's MIT license or distribution.
+The package includes original Apple bezels for iPhone 17 Pro Max and iPad Pro 13-inch (M5), in portrait and landscape. They are the default for Apple device layouts. No separate download, import, or existing cache is needed. Copy `public/device-frames/` and `public/licenses/` with the template. The launcher and protected frame route check the file hashes. See [included Apple frames](../references/apple-frames.md) for recovery. The editor's **Credits** button identifies Apple as the image source and links to the supplied license, separate from the code's MIT license.
 
 For a production build, run `npm run build` and `npm start`. Both server modes require the launcher. All editor pages, APIs, and image files require a local session. Writes also require the configured Origin and JSON content type. This tool is for one local operator, not remote hosting. Team members should each run their own copy.
 
@@ -37,7 +36,7 @@ Run `npm test`, `npm run typecheck`, `npm audit`, `npm run build`, `npm run test
 
 - **Connected canvas editor** (`src/components/editor/`) — every screen sits on one horizontal canvas, so phones, captions, and other elements can be dragged across screen boundaries and exported as split crops when Connected mode is enabled.
 - **Screen controls** — drag-to-reorder screens, click-to-edit text, screenshot drop targets, per-screen layout switcher and element controls.
-- **Device frames** (`src/components/editor/device-frames.tsx`) — original local Apple PNGs for iPhone 17 Pro Max and iPad Pro 13-inch (M5), with portrait and landscape iPad support. Android uses generic frames.
+- **Device frames** (`src/components/editor/device-frames.tsx`) — included original Apple PNGs for iPhone 17 Pro Max and iPad Pro 13-inch (M5), with portrait and landscape iPad support. Android uses generic frames.
 - **Auto-save (git-trackable)** — every change is persisted within ~600ms to **`app-store-screenshots.json`** at the project root (via `/api/project`) **and** mirrored to `localStorage` as an instant-paint cache. Commit `app-store-screenshots.json` and you can `git clone` to another machine and resume exactly where you left off.
 - **Multi-device decks** — iOS and Android slide decks live side by side; switching the platform tab preserves both.
 - **One-click export** — bulk PNG export at the configured App Store / Play Store resolutions using `html-to-image`; each PNG is rendered from the current connected or isolated deck mode.
@@ -105,7 +104,7 @@ For custom backgrounds, the contrast check uses the selected solid color or samp
 
 ## Browser regression check
 
-Import the three Apple frame files, then run `npm run build` and `node tests/templates-browser.mjs` in an environment with the Playwright package and Google Chrome. If Playwright is supplied by an external runtime, set `PLAYWRIGHT_MODULE` to that runtime's module path. Pass an output directory as the first argument to retain test review sheets. The test uses an isolated temporary project and synthetic app images; it does not modify customer projects.
+Run `npm run build` and `node tests/templates-browser.mjs` in an environment with the Playwright package and Google Chrome. If Playwright is supplied by an external runtime, set `PLAYWRIGHT_MODULE` to that runtime's module path. Pass an output directory as the first argument to retain test review sheets. The test uses an isolated temporary project and synthetic app images; it does not modify customer projects.
 
 The check covers photo and catalog uploads, crop changes and persistence, template changes, library add/remove, English and German export, text overflow, iPad portrait and landscape export, review sheets, frame route access, unchanged frame bytes, and camera pixels in the exported iPhone image. It does not establish design approval for a real customer.
 

@@ -23,6 +23,7 @@ import {
   supportsLandscape,
 } from "@/lib/constants";
 import { detectPlatform } from "@/lib/defaults";
+import { Credits } from "./credits";
 import type { Device, Orientation } from "@/lib/types";
 
 type Props = {
@@ -178,6 +179,7 @@ export function Toolbar(props: Props) {
       )}
 
       <div className="ml-auto flex shrink-0 items-center gap-2">
+        <Credits />
         <SaveStatus savedAt={props.savedAt} saveError={props.saveError} />
         <span aria-hidden className="h-5 w-px bg-border" />
         <Button

@@ -5,4 +5,7 @@ out
 *.tsbuildinfo
 next-env.d.ts
 .env*.local
-/public/device-frames/
+/public/device-frames/*
+!/public/device-frames/iphone-17-pro-max.png
+!/public/device-frames/ipad-pro-13-portrait.png
+!/public/device-frames/ipad-pro-13-landscape.png

@@ -24,7 +24,7 @@ fixture.device = 'iphone';
 await writeFile(path.join(directory,'app-store-screenshots.json'), JSON.stringify(fixture));
 await symlink(path.join(source,'node_modules'),path.join(directory,'node_modules'));
 await symlink(path.join(source,'.next'),path.join(directory,'.next'));
-const child = spawn(process.execPath,['scripts/local-server.mjs','start','--port',String(port)],{cwd:directory,stdio:['ignore','pipe','pipe']});
+const child = spawn(process.execPath,['scripts/local-server.mjs','start','--port',String(port)],{cwd:directory,stdio:['ignore','pipe','pipe'],env:{...process.env,SCREENSHOT_FRAME_CACHE_DIR:path.join(directory,'empty-frame-cache')}});
 let output = '';
 child.stdout.on('data',data => { output += data; });
 child.stderr.on('data',data => { output += data; });
@@ -66,10 +66,24 @@ try {
   await page.waitForURL(origin+'/');
   await page.getByRole('textbox',{name:'App name',exact:true}).waitFor();
 
+  await page.getByRole('button',{name:'Credits',exact:true}).click();
+  const credits = page.getByRole('dialog', {name:'Credits',exact:true});
+  await credits.waitFor();
+  assert.match(await credits.innerText(), /Apple Inc\./);
+  for (const name of ['Apple asset license', 'Editor MIT license']) {
+    const href = await credits.getByRole('link', {name,exact:true}).getAttribute('href');
+    const response = await page.request.get(origin + href);
+    assert.equal(response.status(), 200);
+    assert.ok((await response.text()).length > 500);
+  }
+  await page.keyboard.press('Escape');
+  await credits.waitFor({state:'hidden'});
+  assert.equal(await page.getByRole('button',{name:'Credits',exact:true}).evaluate(el => el === document.activeElement), true);
+
   const resultDir = process.argv[2] || path.join(directory, 'review-results');
   const {mkdir}=await import('node:fs/promises');
   await mkdir(resultDir,{recursive:true});
-  // Original Apple assets are local imports and are never stored in this test.
+  // Use the packaged originals with no operator cache or separate import.
   const appleFrames=JSON.parse(await readFile(path.join(source,'src/lib/apple-frames.json'),'utf8'));
   for(const frame of Object.values(appleFrames)) {
     const file=path.join(directory,'public/device-frames',frame.filename);

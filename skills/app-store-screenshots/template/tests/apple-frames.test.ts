@@ -23,7 +23,7 @@ test("Apple frame selection uses the matching aperture for each orientation", ()
 test("a missing Apple bezel blocks export only when a slide uses a device", () => {
   const state = complete();
   const failed = (path: string) => path === framePath(appleFrame("iphone", "portrait")!);
-  assert.match(reviewExport(state, failed)[0].message, /Import the iPhone 17 Pro Max/);
+  assert.match(reviewExport(state, failed)[0].message, /iPhone 17 Pro Max/);
   state.slidesByDevice.iphone[0].layout = "no-device";
   assert.deepEqual(reviewExport(state, failed), []);
 });

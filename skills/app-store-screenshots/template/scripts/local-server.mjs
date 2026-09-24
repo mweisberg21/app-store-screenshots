@@ -13,7 +13,7 @@ const port = Number(args[1] || process.env.PORT || 3000);
 if (!Number.isInteger(port) || port < 1024 || port > 65535) throw new Error("Invalid port");
 const frames = await ensureAppleFrames(fileURLToPath(new URL("../", import.meta.url)));
 if (frames.source === "cache") console.log("Original Apple frames added from your local cache.");
-if (!frames.ready) console.warn('Apple frames need a one-time import: npm run frames:import -- "/path/to/Apple Device Frames"');
+if (!frames.ready) console.warn('Included Apple frame files are missing or changed. Restore public/device-frames from the same tool version, then restart. See references/apple-frames.md.');
 const token = randomBytes(32).toString("hex");
 const origin = `http://127.0.0.1:${port}`;
 const require = createRequire(import.meta.url);

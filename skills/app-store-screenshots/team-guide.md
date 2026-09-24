@@ -54,7 +54,7 @@ For Uscreen apps, start with the customer's content, teachers, programs, playbac
 
 ## Editor workflow
 
-For Apple decks, follow [Apple frame setup](references/apple-frames.md) once per computer. Obtain your own originals from Apple and run `npm run frames:import -- "/path/to/Apple Device Frames"` in the editor project or the installed skill's `template/` folder. This includes the unchanged files locally and saves a local cache. Later projects get the frames automatically on startup and use them by default. Keep the source files local; do not add them to a shared source archive.
+The package includes the original iPhone and iPad frames. They are used by default and need no separate download or import. Copy the full template, including `public/device-frames/` and `public/licenses/`. See [included Apple frames](references/apple-frames.md) for recovery if an installation is incomplete. The editor's **Credits** button shows the asset source and license notices.
 
 1. Start the project with `npm ci`, then `npm run dev`.
 2. Open the private link from the terminal.

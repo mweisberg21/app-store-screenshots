@@ -48,7 +48,10 @@ Thumbs.db
 !.vscode/settings.json
 
 # Skill template user assets
-skills/app-store-screenshots/template/public/device-frames/
+skills/app-store-screenshots/template/public/device-frames/*
+!skills/app-store-screenshots/template/public/device-frames/iphone-17-pro-max.png
+!skills/app-store-screenshots/template/public/device-frames/ipad-pro-13-portrait.png
+!skills/app-store-screenshots/template/public/device-frames/ipad-pro-13-landscape.png
 skills/app-store-screenshots/template/public/app-icon.png
 skills/app-store-screenshots/template/public/screenshots/**/*.png
 

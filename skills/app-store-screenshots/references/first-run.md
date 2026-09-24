@@ -28,7 +28,7 @@ Obtain the repository with Git when available, or download and extract the reque
 
 Install the skill for the assistant the user is actually using. The supported skills installer accepts the local checkout, for example `npx skills add "<checkout>" -g --agent claude-code --skill app-store-screenshots` for Claude Code. Select the matching agent for other hosts; do not install into every agent by default. Respect existing installations and preserve their local assets. If the installer is unavailable, use that host's documented skill location, then verify discovery. Merely reading `SKILL.md` is not a persistent installation. Never claim a universal Claude/ChatGPT plugin was installed.
 
-Copy the installed skill's `template/` into a new customer project with filesystem tools or Node's `fs.cp`. Include dotfiles and local frame files. Exclude `node_modules`, `.next`, and temporary build files; install dependencies in the new project with `npm ci`. Do not edit the shared template to create a customer deck. If this is only a setup session, use an empty practice project and keep customer work separate.
+Copy the installed skill's `template/` into a new customer project with filesystem tools or Node's `fs.cp`. Include dotfiles, `public/device-frames/`, and `public/licenses/`. Exclude `node_modules`, `.next`, and temporary build files; install dependencies in the new project with `npm ci`. Do not edit the shared template to create a customer deck. If this is only a setup session, use an empty practice project and keep customer work separate.
 
 ### Mac and Windows details for the assistant
 
@@ -38,17 +38,13 @@ Copy the installed skill's `template/` into a new customer project with filesyst
 - Keep the editor bound to `127.0.0.1`. Do not ask for a public firewall exception.
 - If the default port is in use, select another local port and use `npm run dev -- --port <port>`. Do not stop an unrelated process.
 
-## 3. Prepare the Apple frames once
+## 3. Verify the included Apple frames
 
-Read [apple-frames.md](apple-frames.md). Check the local template and frame cache first. If the verified files already exist, use them without asking for another download.
+Read [apple-frames.md](apple-frames.md). The skill package already includes all three original frame PNGs, with filenames that work on Mac and Windows. No separate Apple download, import, archive extraction, or cache is required. Do not send the user to Apple to finish normal setup.
 
-If files are missing, explain: "The iPhone and iPad borders come from Apple's original images. I will help you add them once; later projects will reuse them." Link the exact required models in Apple Design Resources. The user must obtain their own copies under Apple's terms. If a sign-in or download action is needed, guide that action and wait. Do not ask for credentials.
+Preserve `public/device-frames/` and `public/licenses/` when copying the template. The launcher checks the files against the manifest. If a file is missing or changed, restore it from the same repository version or an intact installed template, without replacing customer files. A valid existing local cache can also restore frames. Reload the editor after repair and verify the frame loads. Do not bypass the hash checks or draw replacement hardware.
 
-Handle extraction and file placement with available local tools. On Mac, Apple may supply a disk image. On Windows, use a compatible archive tool if available; if its format cannot be read, explain the exact missing files and help the user obtain their own extracted PNGs. Do not promise that Windows can open every Apple archive directly, or distribute another person's licensed source package.
-
-The importer accepts a flat folder with `iphone-17-pro-max.png`, `ipad-pro-13-portrait.png`, and `ipad-pro-13-landscape.png`. This avoids the quote character in Apple's iPad source names, which Windows cannot use. Rename only the files; keep their bytes unchanged. Run the import from the customer's editor project. The hashes must match. A newer or different asset needs a measured compatibility update; do not bypass checks or draw replacement frames.
-
-Keep the exact missing-frame status in the setup note. You can prepare content while frames are pending, but cannot mark Apple export ready.
+The editor's **Credits** button shows the Apple attribution and supplied license, separate from the code's MIT license. Keep those files in every customer project. If repair fails, report the missing package file and keep Apple export pending; do not turn this into a manual asset download task for the user.
 
 ## 4. Start and verify the editor
 

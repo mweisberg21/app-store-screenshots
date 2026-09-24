@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { spawn, execFile } from 'node:child_process';
 import { promisify } from 'node:util';
-import { mkdtemp, cp, symlink, readFile, writeFile, rm } from 'node:fs/promises';
+import { mkdtemp, cp, symlink, readFile, writeFile, rm, access } from 'node:fs/promises';
 import path from 'node:path';
 import { tmpdir } from 'node:os';
 import net from 'node:net';
@@ -17,12 +17,8 @@ if (mode === 'dev') await cp(path.join(source,'node_modules'),path.join(director
 else await symlink(path.join(source,'node_modules'),path.join(directory,'node_modules'), process.platform === 'win32' ? 'junction' : 'dir');
 if (mode === 'start') await symlink(path.join(source,'.next'),path.join(directory,'.next'), process.platform === 'win32' ? 'junction' : 'dir');
 const frameCache = path.join(directory, 'operator-frame-cache');
-let hasFrames = false;
-try {
-  await cp(path.join(directory, 'public/device-frames'), frameCache, {recursive:true});
-  await rm(path.join(directory, 'public/device-frames'), {recursive:true});
-  hasFrames = true;
-} catch (error) { if (error.code !== 'ENOENT') throw error; }
+// A fresh package must run with no original asset folder and no operator cache.
+await assert.rejects(access(frameCache), {code: 'ENOENT'});
 const child = spawn(process.execPath,['scripts/local-server.mjs',mode,'--port',String(port)],{cwd:directory,stdio:['ignore','pipe','pipe'],env:{...process.env,SCREENSHOT_FRAME_CACHE_DIR:frameCache}});
 let output = '';
 child.stdout.on('data',data => { output += data; });
@@ -45,13 +41,13 @@ try {
   const headers = {Cookie:cookie,Origin:origin,'Content-Type':'application/json'};
   assert.equal((await fetch(origin,{headers})).status,200);
   assert.equal((await fetch(origin+'/mockup.png',{headers})).status,200);
-  if (hasFrames) {
+  {
     const frames = Object.values(JSON.parse(await readFile(path.join(directory,'src/lib/apple-frames.json'),'utf8')));
     for (const frame of frames) {
       const url = origin+'/api/device-frames/'+frame.filename;
-      const original = await readFile(path.join(frameCache,frame.filename));
+      const original = await readFile(path.join(source,'public/device-frames',frame.filename));
       const installed = path.join(directory,'public/device-frames',frame.filename);
-      assert.deepEqual(await readFile(installed), original, 'startup embeds frames from the local cache');
+      assert.deepEqual(await readFile(installed), original, 'the package includes unchanged original frames without a cache');
       assert.equal((await fetch(url)).status,401);
       const response = await fetch(url,{headers});
       assert.equal(response.status,200);
@@ -60,6 +56,14 @@ try {
       assert.equal((await fetch(url,{headers})).status,409,'changed source bytes cannot be served as an original frame');
       await writeFile(installed,original);
     }
+  }
+  await assert.rejects(access(frameCache), {code: 'ENOENT'});
+  for (const name of ['apple-design-resources.txt', 'editor-mit.txt']) {
+    const url = origin + '/licenses/' + name;
+    assert.equal((await fetch(url)).status, 401);
+    const response = await fetch(url, {headers});
+    assert.equal(response.status, 200);
+    assert.equal(await response.text(), await readFile(path.join(source, 'public/licenses', name), 'utf8'));
   }
   const project = (await (await fetch(origin+'/api/project',{headers})).json()).state;
   project.appName='Runtime test';
@@ -78,7 +82,7 @@ try {
   png.copy(largest);
   const maximum = await fetch(origin+'/api/upload',{method:'POST',headers,body:JSON.stringify({dataUrl:`data:image/png;base64,${largest.toString('base64')}`})});
   assert.equal(maximum.status,200,'full 8 MiB upload is supported');
-  console.log('Runtime checks passed: session, protected pages/assets, save/read, cross-origin and size rejection, upload/read.' + (hasFrames ? ' Automatic frame embedding and source integrity also passed.' : ' Original frame files were not supplied.'));
+  console.log('Runtime checks passed: session, protected pages/assets, save/read, cross-origin and size rejection, upload/read.' + ' Included frames work without a cache; source integrity and license notices also passed.');
 } catch (error) {
   console.error(output.replace(/#[a-f0-9]{64}/g, '#[redacted]'));
   throw error;
