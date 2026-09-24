@@ -1,20 +1,21 @@
 import assert from 'node:assert/strict';
-import { spawn } from 'node:child_process';
+import { spawn, execFile } from 'node:child_process';
+import { promisify } from 'node:util';
 import { mkdtemp, cp, symlink, readFile, writeFile, rm } from 'node:fs/promises';
 import path from 'node:path';
 import { tmpdir } from 'node:os';
 import net from 'node:net';
 const source = process.cwd();
 const mode = process.argv[2] === 'dev' ? 'dev' : 'start';
-const directory = await mkdtemp(path.join(tmpdir(), 'screenshot-runtime-'));
+const directory = await mkdtemp(path.join(tmpdir(), 'screenshot runtime-'));
 const server = net.createServer();
 await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
 const port = server.address().port;
 await new Promise(resolve => server.close(resolve));
 for (const name of ['scripts', 'package.json', 'next.config.mjs', 'app-store-screenshots.json', 'public', 'src', 'tsconfig.json', 'postcss.config.mjs', 'tailwind.config.ts']) await cp(path.join(source,name), path.join(directory,name), {recursive:true});
 if (mode === 'dev') await cp(path.join(source,'node_modules'),path.join(directory,'node_modules'),{recursive:true,verbatimSymlinks:true});
-else await symlink(path.join(source,'node_modules'),path.join(directory,'node_modules'));
-if (mode === 'start') await symlink(path.join(source,'.next'),path.join(directory,'.next'));
+else await symlink(path.join(source,'node_modules'),path.join(directory,'node_modules'), process.platform === 'win32' ? 'junction' : 'dir');
+if (mode === 'start') await symlink(path.join(source,'.next'),path.join(directory,'.next'), process.platform === 'win32' ? 'junction' : 'dir');
 const frameCache = path.join(directory, 'operator-frame-cache');
 let hasFrames = false;
 try {
@@ -84,7 +85,11 @@ try {
 } finally {
   if (child.exitCode === null && child.signalCode === null) {
     const stopped = new Promise(resolve => child.once('exit',resolve));
-    child.kill('SIGTERM');
+    // On Windows a forced parent termination does not stop its Next child.
+    // Stop only this test's process tree before removing the temporary copy.
+    if (process.platform === 'win32') {
+      await promisify(execFile)('taskkill', ['/PID', String(child.pid), '/T', '/F']);
+    } else child.kill('SIGTERM');
     await stopped;
   }
   await rm(directory,{recursive:true,force:true});

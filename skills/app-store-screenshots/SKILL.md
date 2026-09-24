@@ -1,6 +1,6 @@
 ---
 name: app-store-screenshots
-description: Create and optimize customer-branded App Store and Google Play screenshots from real app captures. Use for listing strategy, screenshot decks, Uscreen customer apps, local editor setup, localization, and PNG export. Includes asset check-ins and feature verification.
+description: Set up and use a local App Store screenshot editor on Mac or Windows. Guide first-time users, reopen customer projects, and create branded App Store and Google Play images from real captures. Includes Uscreen feature checks, asset intake, listing strategy, localization, and PNG export.
 ---
 
 # App Store Screenshots
@@ -8,6 +8,12 @@ description: Create and optimize customer-branded App Store and Google Play scre
 Build a local screenshot editor from `template/`. Use the customer's real app screens and brand to make a clear listing. Each slide connects one useful benefit to visible evidence in the app.
 
 Source: `mweisberg21/app-store-screenshots`. Keep the original MIT license and author credit. This workflow is self-contained; teammates do not need other design or ASO skills. ASO means App Store optimization. Here, its purpose is to help the right visitor understand the app and decide to download it.
+
+## First use and returning users
+
+For setup, a repository-URL request, or a user who needs help getting started, read [references/first-run.md](references/first-run.md). Verify access to the user's actual computer, handle Mac or Windows setup, open and check the editor, then guide the first useful task one step at a time. Use plain language. Do not stop after installation or send the user a command list.
+
+For "run this skill" or "open my screenshots," find the existing customer project and its `HOW-TO-OPEN.md` note. Start it and open a fresh private link. Preserve the project; do not install again, reset the deck, or repeat first-use questions without a reason. If the customer or project is unclear, ask which one to open. Explain that the user can ask for changes in normal language.
 
 ## Ask for assets throughout the work
 
@@ -79,7 +85,7 @@ Named styles in [style-prompts.md](style-prompts.md) are optional references. Op
 
 ## 3. Create the local editor
 
-Copy `template/` into the chosen project folder. Do not rebuild the renderer or export system. Do not overwrite unrelated files.
+Copy `template/` into the chosen project folder. Do not rebuild the renderer or export system. Do not overwrite unrelated files. Use native filesystem tools on Windows; the shell example below is for Mac. The first-run guide covers Windows command shims and paths. Run commands for the user when tools allow it.
 
 ```bash
 cp -R "<SKILL_DIR>/template/." "<PROJECT_DIR>/"

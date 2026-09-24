@@ -2,6 +2,12 @@
 
 Use one local project for each customer. The customer's brand controls the screenshot design. uScreen is the team context, not a theme to apply to every customer.
 
+## First-time users
+
+Share [Start here](https://github.com/mweisberg21/app-store-screenshots/blob/improve-brand-defaults/START-HERE.md). It has a short request to paste into Claude, a plain-language walkthrough, and examples for later use. The assistant handles setup on Mac or Windows, checks local access, opens the editor, and teaches one step at a time. It leaves a `HOW-TO-OPEN.md` note with the user's actual project location.
+
+The setup steps below are for the assistant or an experienced operator. New users do not need to run these commands. The installed skill carries its own [first-run guide](references/first-run.md).
+
 ## Agent setup
 
 Use an agent that can read local files, run Node.js, and open a browser, such as Codex or Claude Code. See the [Codex skill documentation](https://developers.openai.com/codex/skills/) and [Claude Code skill documentation](https://code.claude.com/docs/en/skills).

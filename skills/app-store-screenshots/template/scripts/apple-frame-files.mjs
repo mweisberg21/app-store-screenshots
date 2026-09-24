@@ -18,8 +18,17 @@ export async function frameManifest(root) {
 async function checkedFiles(directory, frames, originalPaths = false) {
   const files = [];
   for (const frame of frames) {
-    const relative = originalPaths ? frame.source : frame.filename;
-    const bytes = await readFile(path.join(directory, relative));
+    let relative = frame.filename;
+    let bytes;
+    try {
+      // Portable names let Windows import originals whose Apple names contain
+      // a quote character. Only the name changes; the bytes must still match.
+      bytes = await readFile(path.join(directory, relative));
+    } catch (error) {
+      if (!originalPaths || error.code !== "ENOENT") throw error;
+      relative = frame.source;
+      bytes = await readFile(path.join(directory, relative));
+    }
     if (createHash("sha256").update(bytes).digest("hex") !== frame.sha256) {
       throw new Error(`${relative}: this file does not match the measured original.`);
     }

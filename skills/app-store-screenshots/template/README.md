@@ -4,6 +4,8 @@ A pre-built Next.js + ShadCN editor for generating App Store and Google Play scr
 
 ## Quick start
 
+For a guided first use, ask the installed skill to follow `references/first-run.md`. In the repository, start with [the plain-language guide](../../../START-HERE.md). The commands here are for the assistant or an experienced operator.
+
 ```bash
 npm ci
 npm run frames:import -- "/path/to/Apple Device Frames"  # Apple decks only
@@ -11,6 +13,8 @@ npm run dev   # open the private link printed in the terminal
 ```
 
 Use Node.js 22 or newer. The launcher binds to 127.0.0.1 and creates a new access token on each run. Open its `/unlock#...` link to set an HttpOnly, SameSite=Strict session cookie. The token stays out of query strings and is removed from browser history before the exchange. To choose another port, use `npm run dev -- --port 3001`.
+
+The launcher uses Node directly on Mac and Windows. In Windows PowerShell, use `npm.cmd` if policy blocks the `npm.ps1` wrapper; do not change execution policy. Quote paths with spaces. The Apple importer also accepts portable flat file names: see the frame guide below. Repository CI runs unit tests, type checking, a production build, and local server checks on Mac and Windows. These checks do not replace a first-time operator trial or Apple's asset download process.
 
 Obtain the original bezels from [Apple Design Resources](https://developer.apple.com/design/resources/). See [Apple frame setup](../references/apple-frames.md) for the exact files and folder structure. Import once per computer. The importer checks the source hashes and copies the PNGs unchanged to the ignored `public/device-frames/` folder and a separate local cache. Each start restores missing or changed project files from that cache. The original frames are the default for every Apple device layout. Each teammate imports their own files. The source assets are not part of this repository's MIT license or distribution.
 

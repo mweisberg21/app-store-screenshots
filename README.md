@@ -1,5 +1,21 @@
 # App Store Screenshots
 
+## New here? Let your assistant set it up
+
+You do not need to write code. Give Claude this request:
+
+```text
+Set up this screenshot tool on my computer:
+https://github.com/mweisberg21/app-store-screenshots/tree/improve-brand-defaults
+Read START-HERE.md and follow its first-run guide. I am not technical.
+Help me one step at a time. Open the editor, help me make my first
+image, and show me how to use the tool again later.
+```
+
+**[Start here: setup and your first image](START-HERE.md)** explains the Mac and Windows workflow, what files to supply, and what to ask next. Your assistant needs local file and command access. The guide helps you get to the correct app or setting if your current chat cannot install software.
+
+**For the assistant:** read [the skill](skills/app-store-screenshots/SKILL.md) and [the first-run guide](skills/app-store-screenshots/references/first-run.md). Complete setup, verify the editor in the user's browser, and teach the first task in plain language. Do not stop at a list of commands.
+
 A local editor and agent skill for teams that create App Store and Google Play listing images for customer apps. Start with real app captures and the customer's brand. Use the browser editor to refine the deck and export PNGs.
 
 This fork retains Parth Jadhav's MIT license and author credit. It adds local access controls, validated saves, upload limits, and a workflow for customer work.

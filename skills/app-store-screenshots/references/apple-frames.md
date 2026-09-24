@@ -4,7 +4,9 @@ The editor uses original Apple PNG bezels by default for all iPhone and iPad dev
 
 ## Import
 
-Get the matching product bezels from [Apple Design Resources](https://developer.apple.com/design/resources/). Read the license that comes with those files. Keep this folder structure in your local asset folder:
+Get the matching product bezels from [Apple Design Resources](https://developer.apple.com/design/resources/). Read the license that comes with those files. The assistant can help extract and place the images. Do not require a first-time user to arrange files manually.
+
+On Mac, the original folder structure is supported:
 
 ```text
 Apple Device Frames/
@@ -13,11 +15,26 @@ Apple Device Frames/
   iPad Pro M5/PNG/iPad Pro (M5) 13" - Space Black - Landscape.png
 ```
 
+On Mac or Windows, you can instead put the three originals in one folder with these simple names:
+
+```text
+Apple Device Frames/
+  iphone-17-pro-max.png
+  ipad-pro-13-portrait.png
+  ipad-pro-13-landscape.png
+```
+
+Match each simple name to the corresponding model, color, and orientation above. Rename the file only; do not edit or re-save the image. This form avoids the quote character in Apple's iPad file names, which Windows cannot use. The importer checks the same hashes for both forms. A portable file takes priority when both forms exist; an invalid portable file fails verification.
+
+Apple may supply a disk image or archive. Use local extraction tools that support its format. If Windows cannot extract that download, help the user obtain their own matching extracted PNGs. Do not assume every Apple archive opens on Windows or bypass the asset license.
+
 In the customer editor project, run:
 
 ```bash
 npm run frames:import -- "/path/to/Apple Device Frames"
 ```
+
+In Windows PowerShell, the equivalent is `npm.cmd run frames:import -- "C:\path\to\Apple Device Frames"`. Use the user's actual folder path. No shell execution-policy change is needed.
 
 The command checks all three file hashes before it copies the files to `public/device-frames/` and an operator-local cache. It does not resize or modify them. If a hash differs, obtain the matching original or measure the new asset and update its metadata. Do not bypass the check with a resized image. Reload an open editor after import.
 
