@@ -114,6 +114,8 @@ The first-run project has one empty screen per device. It is a starting point, n
 6. For Creator with app, add the creator photo. For Content library, add two to four catalog images. Use horizontal crop, vertical crop, and zoom to keep faces and text visible. The portrait creator template puts the phone over the lower part of the photo; keep faces clear of it.
 7. Use **Background** when the brief calls for a different surface. Read [references/backgrounds.md](references/backgrounds.md). Choose a solid color, linear/radial gradient, or approved background image. Set the project default or one screen override. Keep the solid starter unless the brand or user calls for another background. Review the real template in the picker before applying. Use fill, fit, crop, zoom, and tint to protect headline readability.
 
+8. For additional content, read [references/elements-and-assets.md](references/elements-and-assets.md). Use **Elements** for photos, logos, device captures, screenshot details, content cards, shapes, lines/arrows, icons, and text. Use **Assets** to reuse approved images and saved groups. Keep additions purposeful; do not fill empty space with decorative elements. Explain one useful action at a time. Preserve real app UI and the default Apple frames.
+
 An agent can set these values in `app-store-screenshots.json`. Use structured JSON edits. The optional `brand` object is:
 
 ```json
@@ -127,7 +129,7 @@ An agent can set these values in `app-store-screenshots.json`. Use structured JS
 
 These colors are neutral placeholders. Font choices are `sans`, `serif`, and `humanist`; alignment is `left` or `center`. Colors use six-digit hex values. Verify the actual local font in the preview. For exact customer type, put licensed files in `public/fonts/`, define `@font-face` in the existing CSS, and update the selected stack in `src/lib/brand.ts`. Keep font files with the project.
 
-Each slide has `id`, `layout`, `label`, `headline`, and `screenshot`. Text fields map language codes to strings. Optional fields include `photo`, `artworks`, `screenshotSecondary`, `inverted`, `transforms`, and `textElements`. Main template keys are `device-bottom` (App screen), `creator`, and `content-library`. Other layouts are `hero`, `device-top`, `two-devices`, `no-device`, `split-landscape`, and `feature-graphic`.
+Each slide has `id`, `layout`, `label`, `headline`, and `screenshot`. Text fields map language codes to strings. Optional fields include `photo`, `artworks`, `screenshotSecondary`, `inverted`, `transforms`, `textElements`, and `elements`. Main template keys are `device-bottom` (App screen), `creator`, and `content-library`. Other layouts are `hero`, `device-top`, `two-devices`, `no-device`, `split-landscape`, and `feature-graphic`.
 
 A photo is `{ "src": "/screenshots/creator.jpg", "crop": { "x": 50, "y": 50, "zoom": 1 } }`. `artworks` is an array of two to four objects with the same shape. Crop positions range from 0 to 100; zoom ranges from 1 to 3. Crop is optional and defaults to the center at 1×. Image paths can include `{locale}`. Changing templates preserves these assets. Each crop is shared across language variants, so inspect each variant.
 

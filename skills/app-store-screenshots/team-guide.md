@@ -4,7 +4,7 @@ Use one local project for each customer. The customer's brand controls the scree
 
 ## First-time users
 
-Share [Start here](https://github.com/mweisberg21/app-store-screenshots/blob/improve-brand-defaults/START-HERE.md). It has a short request to paste into Claude, a plain-language walkthrough, and examples for later use. The assistant handles setup on Mac or Windows, checks local access, opens the editor, and teaches one step at a time. It leaves a `HOW-TO-OPEN.md` note with the user's actual project location.
+Share [Start here](https://github.com/mweisberg21/app-store-screenshots/blob/editor-elements/START-HERE.md). It has a short request to paste into Claude, a plain-language walkthrough, and examples for later use. The assistant handles setup on Mac or Windows, checks local access, opens the editor, and teaches one step at a time. It leaves a `HOW-TO-OPEN.md` note with the user's actual project location.
 
 The setup steps below are for the assistant or an experienced operator. New users do not need to run these commands. The installed skill carries its own [first-run guide](references/first-run.md).
 
@@ -12,10 +12,10 @@ The setup steps below are for the assistant or an experienced operator. New user
 
 Use an agent that can read local files, run Node.js, and open a browser, such as Codex or Claude Code. See the [Codex skill documentation](https://developers.openai.com/codex/skills/) and [Claude Code skill documentation](https://code.claude.com/docs/en/skills).
 
-The current team version is on the `improve-brand-defaults` branch in [draft PR 1](https://github.com/mweisberg21/app-store-screenshots/pull/1). A default-branch install does not include these changes yet. Install this draft with:
+The new element editor is under review on the `editor-elements` branch. Use this version for the new controls:
 
 ```bash
-npx skills add https://github.com/mweisberg21/app-store-screenshots/tree/improve-brand-defaults/skills/app-store-screenshots -g
+npx skills add https://github.com/mweisberg21/app-store-screenshots/tree/editor-elements/skills/app-store-screenshots -g
 ```
 
 Choose your supported agent in the installer. Use Node.js 22 or newer. The skill includes the design rules and template; no extra design plugin or image generation account is required.
@@ -61,9 +61,10 @@ The package includes the original iPhone and iPad frames. They are used by defau
 3. Set the app name. Use **Brand** to set colors, type, alignment, and the app icon. New projects use large, centered headlines.
    Use **Background** for a solid, gradient, or image background. Choose the project default or one screen. Preview the crop and text color, then apply. See [background controls](references/backgrounds.md).
 4. Choose **App screen**, **Creator with app**, or **Content library**. Add a real app screenshot and one clear headline. Add an approved creator photo or two to four catalog images when the template needs them. Use crop controls to keep faces and titles clear.
-5. Add more screens and the required translations.
-6. Select **Export bundle**. Resolve any missing content shown in the review dialog.
-7. Open the review sheet in `review/<locale>.png` to check image order. Inspect each separate store PNG at full size and as a thumbnail. Ask the assigned customer reviewer to check the result.
+5. Open **Add element** for a photo, logo, device, screenshot detail, content cards, shape, arrow, icon, or text. Use **Assets** to upload and reuse files. Select layers to group them, align them, or copy them to other screens. See [elements and assets](references/elements-and-assets.md).
+6. Add more screens and the required translations.
+7. Select **Export bundle**. Resolve any missing content shown in the review dialog.
+8. Open the review sheet in `review/<locale>.png` to check image order. Inspect each separate store PNG at full size and as a thumbnail. Ask the assigned customer reviewer to check the result.
 
 The asset check-ins happen in the agent conversation. They are skill instructions, not forced dialogs in the editor. Direct manual use of the editor does not run them.
 

@@ -27,6 +27,7 @@ import { Credits } from "./credits";
 import type { Device, Orientation } from "@/lib/types";
 
 type Props = {
+  elementControl?: React.ReactNode;
   brandControl: React.ReactNode;
   backgroundControl: React.ReactNode;
   appName: string;
@@ -79,6 +80,7 @@ export function Toolbar(props: Props) {
         disabled={props.busy}
       />
 
+      {props.elementControl}
       {props.brandControl}
       {props.backgroundControl}
 

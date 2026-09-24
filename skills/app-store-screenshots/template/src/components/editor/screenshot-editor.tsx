@@ -1,20 +1,32 @@
 "use client";
 import * as React from "react";
+import { Plus, Undo2, Redo2 } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ElementsPanel, AssetsPanel } from "./elements-panel";
+import { AssetContext } from "./asset-context";
+import {
+  cloneElements,
+  customId,
+  customKey,
+  moveElement,
+  projectAssets,
+  selectedWithGroups,
+} from "@/lib/canvas-elements";
 import JSZip from "jszip";
 import { toPng } from "html-to-image";
 import { Toaster, toast } from "sonner";
-import {
-  getExportSizes,
-  hasTheme,
-  supportsLandscape,
-} from "@/lib/constants";
+import { getExportSizes, hasTheme, supportsLandscape } from "@/lib/constants";
 import { detectPlatform, nid } from "@/lib/defaults";
-import { isBuiltInElementId, isTextElementId, textElementKey } from "@/lib/elements";
+import {
+  isBuiltInElementId,
+  isTextElementId,
+  textElementKey,
+} from "@/lib/elements";
 import { didFail, imageSize, preloadImages } from "@/lib/image-cache";
 import { appleFrame, framePath } from "@/lib/apple-frames";
 import { applyBackground } from "@/lib/background";
 import { BackgroundSettings } from "./background-settings";
-import { resolveScreenshot, writeLocalized } from "@/lib/locale";
+import { pickText, resolveScreenshot, writeLocalized } from "@/lib/locale";
 import { useProject } from "@/lib/storage";
 import type {
   BuiltInElementId,
@@ -29,7 +41,13 @@ import { reviewExport, type ExportIssue } from "@/lib/export-review";
 import { slideImagePaths } from "@/lib/template-layout";
 import { reviewTextFit } from "@/lib/text-fit";
 import { createContactSheet } from "@/lib/contact-sheet";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { BrandSettings } from "./brand-settings";
 import { Inspector } from "./inspector";
@@ -39,19 +57,47 @@ import { DeckCanvas, getCanvas } from "./slide-canvas";
 import { Toolbar } from "./toolbar";
 
 export function ScreenshotEditor() {
-  const { state, setState, hydrated, savedAt, saveError, reset, resetDevice, undo, redo } = useProject();
+  const {
+    state,
+    setState,
+    hydrated,
+    savedAt,
+    saveError,
+    reset,
+    resetDevice,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
+  } = useProject();
+  const [panel, setPanel] = React.useState("screen");
+  const [addOpen, setAddOpen] = React.useState(false);
+  const [compactScreensOpen, setCompactScreensOpen] = React.useState(false);
   const [activeSlideId, setActiveSlideId] = React.useState<string | null>(null);
-  const [selectedElement, setSelectedElement] = React.useState<SelectedElement | null>(null);
+  const [selectedElement, setSelectedElement] =
+    React.useState<SelectedElement | null>(null);
   const [exporting, setExporting] = React.useState<string | null>(null);
   const [ready, setReady] = React.useState(false);
-  const [exportLocaleOverride, setExportLocaleOverride] = React.useState<string | null>(null);
+  const [exportLocaleOverride, setExportLocaleOverride] = React.useState<
+    string | null
+  >(null);
   const [exportSlideIndex, setExportSlideIndex] = React.useState(0);
   const exportRef = React.useRef<HTMLDivElement | null>(null);
 
   const currentSlides = state.slidesByDevice[state.device] || [];
   const activeSlide =
-    currentSlides.find((s) => s.id === activeSlideId) || currentSlides[0] || null;
+    currentSlides.find((s) => s.id === activeSlideId) ||
+    currentSlides[0] ||
+    null;
   const theme = projectTheme(state);
+  const assets = React.useMemo(() => projectAssets(state), [state]);
+  const usedAssets = React.useMemo(
+    () => new Set(projectAssets({ ...state, assets: [] }).map((a) => a.src)),
+    [state],
+  );
+  React.useEffect(() => {
+    if (customKey(selectedElement?.elementId)) setPanel("elements");
+  }, [selectedElement]);
   const [exportIssues, setExportIssues] = React.useState<ExportIssue[]>([]);
 
   React.useEffect(() => {
@@ -88,7 +134,8 @@ export function ScreenshotEditor() {
     if (frame) paths.add(framePath(frame));
     if (state.appIcon) paths.add(state.appIcon);
     if (state.background?.kind === "image") {
-      for (const locale of state.locales) paths.add(resolveScreenshot(state.background.image.src, locale));
+      for (const locale of state.locales)
+        paths.add(resolveScreenshot(state.background.image.src, locale));
     }
     // Preload every locale variant so bulk export doesn't race image loads.
     const allSlides: Slide[] = Object.values(state.slidesByDevice).flat();
@@ -96,14 +143,22 @@ export function ScreenshotEditor() {
       for (const raw of slideImagePaths(s)) {
         if (!raw) continue;
         if (raw.includes("{locale}")) {
-          for (const loc of state.locales) paths.add(resolveScreenshot(raw, loc));
+          for (const loc of state.locales)
+            paths.add(resolveScreenshot(raw, loc));
         } else {
           paths.add(raw);
         }
       }
     }
     return Array.from(paths).sort();
-  }, [state.slidesByDevice, state.appIcon, state.locales, state.device, state.orientation, state.background]);
+  }, [
+    state.slidesByDevice,
+    state.appIcon,
+    state.locales,
+    state.device,
+    state.orientation,
+    state.background,
+  ]);
   const assetSig = assetPaths.join("|");
 
   React.useEffect(() => {
@@ -164,7 +219,10 @@ export function ScreenshotEditor() {
         const cur = prev.slidesByDevice[dev] || [];
         return {
           ...prev,
-          slidesByDevice: { ...prev.slidesByDevice, [dev]: cur.filter((s) => s.id !== id) },
+          slidesByDevice: {
+            ...prev.slidesByDevice,
+            [dev]: cur.filter((s) => s.id !== id),
+          },
         };
       });
       setActiveSlideId((cur) => (cur === id ? fallback?.id || null : cur));
@@ -220,26 +278,34 @@ export function ScreenshotEditor() {
         ...prev,
         slidesByDevice: {
           ...prev.slidesByDevice,
-          [prev.device]: (prev.slidesByDevice[prev.device] || []).map((slide) => {
-            if (slide.id !== slideId) return slide;
-            if (isTextElementId(elementId)) {
-              const textId = textElementKey(elementId);
+          [prev.device]: (prev.slidesByDevice[prev.device] || []).map(
+            (slide) => {
+              if (slide.id !== slideId) return slide;
+              const key = customKey(elementId);
+              if (key)
+                return {
+                  ...slide,
+                  elements: moveElement(slide.elements || [], key, transform),
+                };
+              if (isTextElementId(elementId)) {
+                const textId = textElementKey(elementId);
+                return {
+                  ...slide,
+                  textElements: (slide.textElements || []).map((element) =>
+                    element.id === textId ? { ...element, transform } : element,
+                  ),
+                };
+              }
+              if (!isBuiltInElementId(elementId)) return slide;
               return {
                 ...slide,
-                textElements: (slide.textElements || []).map((element) =>
-                  element.id === textId ? { ...element, transform } : element,
-                ),
+                transforms: {
+                  ...(slide.transforms || {}),
+                  [elementId]: transform,
+                } as Partial<Record<BuiltInElementId, ElementTransform>>,
               };
-            }
-            if (!isBuiltInElementId(elementId)) return slide;
-            return {
-              ...slide,
-              transforms: {
-                ...(slide.transforms || {}),
-                [elementId]: transform,
-              } as Partial<Record<BuiltInElementId, ElementTransform>>,
-            };
-          }),
+            },
+          ),
         },
       }));
     },
@@ -252,17 +318,25 @@ export function ScreenshotEditor() {
         ...prev,
         slidesByDevice: {
           ...prev.slidesByDevice,
-          [prev.device]: (prev.slidesByDevice[prev.device] || []).map((slide) =>
-            slide.id === slideId
-              ? {
-                  ...slide,
-                  textElements: (slide.textElements || []).map((element) =>
-                    element.id === textId
-                      ? { ...element, text: writeLocalized(element.text, prev.locale, value) }
-                      : element,
-                  ),
-                }
-              : slide,
+          [prev.device]: (prev.slidesByDevice[prev.device] || []).map(
+            (slide) =>
+              slide.id === slideId
+                ? {
+                    ...slide,
+                    textElements: (slide.textElements || []).map((element) =>
+                      element.id === textId
+                        ? {
+                            ...element,
+                            text: writeLocalized(
+                              element.text,
+                              prev.locale,
+                              value,
+                            ),
+                          }
+                        : element,
+                    ),
+                  }
+                : slide,
           ),
         },
       }));
@@ -281,12 +355,16 @@ export function ScreenshotEditor() {
         newId = nid();
         const copy: Slide = {
           ...src,
+          elements: src.elements ? cloneElements(src.elements, 0) : undefined,
           id: newId,
           label: { ...src.label },
           headline: { ...src.headline },
           transforms: src.transforms
             ? Object.fromEntries(
-                Object.entries(src.transforms).map(([key, value]) => [key, { ...value }]),
+                Object.entries(src.transforms).map(([key, value]) => [
+                  key,
+                  { ...value },
+                ]),
               )
             : undefined,
           textElements: src.textElements?.map((element) => ({
@@ -296,7 +374,11 @@ export function ScreenshotEditor() {
             transform: { ...element.transform },
           })),
         };
-        const next = [...slides.slice(0, idx + 1), copy, ...slides.slice(idx + 1)];
+        const next = [
+          ...slides.slice(0, idx + 1),
+          copy,
+          ...slides.slice(idx + 1),
+        ];
         return {
           ...prev,
           slidesByDevice: { ...prev.slidesByDevice, [prev.device]: next },
@@ -322,7 +404,8 @@ export function ScreenshotEditor() {
 
       if (e.key === "Escape") {
         setSelectedElement(null);
-        if (target && "blur" in target && typeof target.blur === "function") target.blur();
+        if (target && "blur" in target && typeof target.blur === "function")
+          target.blur();
         return;
       }
 
@@ -341,13 +424,91 @@ export function ScreenshotEditor() {
         redo();
         return;
       }
+      if (
+        target?.tagName === "BUTTON" ||
+        target?.tagName === "SELECT" ||
+        target?.closest('[role="tablist"],[role="listbox"]')
+      )
+        return;
+      const selectedKey = customKey(selectedElement?.elementId);
+      const element = activeSlide?.elements?.find((e) => e.id === selectedKey);
+      if (element && activeSlide) {
+        const group = selectedWithGroups(activeSlide.elements || [], [
+            element.id,
+          ]),
+          locked = group.some((e) => e.locked);
+        if (
+          ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(e.key)
+        ) {
+          e.preventDefault();
+          if (!locked) {
+            const amount = e.shiftKey ? 10 : 1;
+            const t = {
+              ...element.transform,
+              x:
+                element.transform.x +
+                (e.key === "ArrowRight"
+                  ? amount
+                  : e.key === "ArrowLeft"
+                    ? -amount
+                    : 0),
+              y:
+                element.transform.y +
+                (e.key === "ArrowDown"
+                  ? amount
+                  : e.key === "ArrowUp"
+                    ? -amount
+                    : 0),
+            };
+            patchElementTransform(activeSlide.id, customId(element.id), t);
+          }
+          return;
+        }
+        if ((e.key === "d" || e.key === "D") && (e.metaKey || e.ctrlKey)) {
+          e.preventDefault();
+          if (
+            !locked &&
+            (activeSlide.elements?.length || 0) + group.length <= 50
+          ) {
+            const copies = cloneElements(group);
+            patchSlide(activeSlide.id, {
+              elements: [...(activeSlide.elements || []), ...copies],
+            });
+            setSelectedElement({
+              slideId: activeSlide.id,
+              elementId: customId(copies[0].id),
+            });
+          }
+          return;
+        }
+        if (e.key === "Delete" || e.key === "Backspace") {
+          e.preventDefault();
+          if (!locked) {
+            patchSlide(activeSlide.id, {
+              elements: activeSlide.elements?.filter(
+                (v) => !group.some((g) => g.id === v.id),
+              ),
+            });
+            setSelectedElement(null);
+          }
+          return;
+        }
+      }
       if (!currentSlides.length) return;
-      const idx = activeSlide ? currentSlides.findIndex((s) => s.id === activeSlide.id) : -1;
-      if (e.key === "ArrowDown" || (e.key === "j" && !e.metaKey && !e.ctrlKey)) {
+      const idx = activeSlide
+        ? currentSlides.findIndex((s) => s.id === activeSlide.id)
+        : -1;
+      if (
+        e.key === "ArrowDown" ||
+        (e.key === "j" && !e.metaKey && !e.ctrlKey)
+      ) {
         e.preventDefault();
         const next = currentSlides[Math.min(currentSlides.length - 1, idx + 1)];
         if (next) setActiveSlideId(next.id);
-      } else if (e.key === "ArrowUp" || (e.key === "k" && !e.metaKey && !e.ctrlKey)) {
+      } else if (
+        e.key === "ArrowUp" ||
+        (e.key === "k" && !e.metaKey && !e.ctrlKey)
+      ) {
         e.preventDefault();
         const next = currentSlides[Math.max(0, idx - 1)];
         if (next) setActiveSlideId(next.id);
@@ -356,7 +517,10 @@ export function ScreenshotEditor() {
           e.preventDefault();
           duplicateSlide(activeSlide.id);
         }
-      } else if ((e.key === "Backspace" || e.key === "Delete") && (e.metaKey || e.ctrlKey)) {
+      } else if (
+        (e.key === "Backspace" || e.key === "Delete") &&
+        (e.metaKey || e.ctrlKey)
+      ) {
         if (activeSlide) {
           e.preventDefault();
           deleteSlide(activeSlide.id);
@@ -365,7 +529,18 @@ export function ScreenshotEditor() {
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [activeSlide, currentSlides, duplicateSlide, deleteSlide, exporting, undo, redo]);
+  }, [
+    activeSlide,
+    currentSlides,
+    duplicateSlide,
+    deleteSlide,
+    exporting,
+    undo,
+    redo,
+    selectedElement,
+    patchElementTransform,
+    patchSlide,
+  ]);
 
   // ---------- Export ----------
 
@@ -402,7 +577,11 @@ export function ScreenshotEditor() {
 
     // Make sure custom fonts are loaded before snapshot so typography in PNG
     // matches what's on screen.
-    if (typeof document !== "undefined" && document.fonts && document.fonts.ready) {
+    if (
+      typeof document !== "undefined" &&
+      document.fonts &&
+      document.fonts.ready
+    ) {
       try {
         await document.fonts.ready;
       } catch {
@@ -417,7 +596,10 @@ export function ScreenshotEditor() {
     for (const locale of locales) {
       setExportLocaleOverride(locale);
       await waitForPaint();
-      if (exportRef.current) fitIssues.push(...reviewTextFit(exportRef.current, locale, currentSlides));
+      if (exportRef.current)
+        fitIssues.push(
+          ...reviewTextFit(exportRef.current, locale, currentSlides),
+        );
     }
     if (fitIssues.length) {
       setExportIssues(fitIssues);
@@ -448,7 +630,9 @@ export function ScreenshotEditor() {
           const el = exportRef.current;
           if (!el) {
             failed += 1;
-            errors.push(`${locale} ${size.w}×${size.h} screen ${i + 1}: render target missing`);
+            errors.push(
+              `${locale} ${size.w}×${size.h} screen ${i + 1}: render target missing`,
+            );
             continue;
           }
           try {
@@ -462,15 +646,27 @@ export function ScreenshotEditor() {
           } catch (e) {
             failed += 1;
             const msg = e instanceof Error ? e.message : String(e);
-            errors.push(`${locale} ${size.w}×${size.h} screen ${i + 1}: ${msg}`);
-            console.error("Export failed", { slideId: slide.id, locale, size }, e);
+            errors.push(
+              `${locale} ${size.w}×${size.h} screen ${i + 1}: ${msg}`,
+            );
+            console.error(
+              "Export failed",
+              { slideId: slide.id, locale, size },
+              e,
+            );
           }
         }
       }
       if (reviewShots.length === currentSlides.length) {
         try {
-          const sheet = await createContactSheet(state.appName, locale, reviewShots);
-          zip.file(`review/${locale}.png`, sheet.split(",")[1], { base64: true });
+          const sheet = await createContactSheet(
+            state.appName,
+            locale,
+            reviewShots,
+          );
+          zip.file(`review/${locale}.png`, sheet.split(",")[1], {
+            base64: true,
+          });
         } catch (error) {
           errors.push(`${locale}: review sheet failed`);
           console.error("Review sheet failed", error);
@@ -500,7 +696,10 @@ export function ScreenshotEditor() {
     const summary = `${locales.length} locale${locales.length === 1 ? "" : "s"} × ${sizes.length} size${sizes.length === 1 ? "" : "s"}`;
     if (failed === 0) {
       toast.success(`Exported ${okCount} PNGs (${summary})`);
-      if (errors.length) toast.warning("Store images exported, but a review sheet could not be created.");
+      if (errors.length)
+        toast.warning(
+          "Store images exported, but a review sheet could not be created.",
+        );
     } else if (okCount === 0) {
       toast.error(`All ${failed} renders failed`, {
         description: errors.slice(0, 3).join("\n"),
@@ -574,67 +773,169 @@ export function ScreenshotEditor() {
   const busy = !!exporting;
 
   return (
-    <div className="flex h-screen flex-col overflow-hidden bg-background">
-      <Toaster position="top-right" richColors closeButton />
-      <Toolbar
-        backgroundControl={<BackgroundSettings state={state} slide={activeSlide} disabled={busy} onApply={(scope, background, replaceOverrides) => {
-          if (activeSlide) setState(prev => applyBackground(prev, scope, activeSlide.id, background, replaceOverrides));
-        }} />}
-        brandControl={<BrandSettings state={state} disabled={busy} onApply={(brand, appIcon) => setState((p) => ({ ...p, brand, appIcon }))} />}
-        appName={state.appName}
-        setAppName={(v) => setState((p) => ({ ...p, appName: v }))}
-        connectedCanvas={state.connectedCanvas}
-        setConnectedCanvas={(v) => setState((p) => ({ ...p, connectedCanvas: v }))}
-        locale={state.locale}
-        setLocale={(v) => setState((p) => ({ ...p, locale: v }))}
-        locales={state.locales}
-        device={state.device}
-        setDevice={(v) => setState((p) => ({ ...p, device: v }))}
-        orientation={state.orientation}
-        setOrientation={(v) => setState((p) => ({ ...p, orientation: v }))}
-        onExport={exportAll}
-        onResetAll={() => {
-          reset();
-          setActiveSlideId(null);
-          toast.success("Reset all devices to defaults");
-        }}
-        onResetDevice={() => {
-          resetDevice(state.device);
-          setActiveSlideId(null);
-          toast.success(`Reset ${state.device} to defaults`);
-        }}
-        exporting={exporting}
-        savedAt={savedAt}
-        saveError={saveError}
-        busy={busy}
-      />
+    <AssetContext.Provider
+      value={{
+        assets,
+        add: (asset) =>
+          setState((p) => ({
+            ...p,
+            assets: [
+              ...(p.assets || []).filter((a) => a.src !== asset.src),
+              asset,
+            ].slice(-200),
+          })),
+        remove: (id) =>
+          setState((p) => ({
+            ...p,
+            assets: p.assets?.filter((a) => a.id !== id),
+          })),
+        isUsed: (src) =>
+          usedAssets.has(src) ||
+          !!state.savedGroups?.some((g) =>
+            g.elements.some((e) =>
+              e.kind === "image" || e.kind === "logo" || e.kind === "detail"
+                ? e.asset.src === src
+                : e.kind === "device"
+                  ? e.src === src
+                  : e.kind === "cards"
+                    ? e.items.some((item) => item.asset.src === src)
+                    : false,
+            ),
+          ),
+      }}
+    >
+      <div className="flex h-screen flex-col overflow-hidden bg-background">
+        <Toaster position="top-right" richColors closeButton />
+        <Toolbar
+          elementControl={
+            <>
+              <Button
+                variant="outline"
+                disabled={busy || !activeSlide}
+                onClick={() => {
+                  setPanel("elements");
+                  setAddOpen(true);
+                }}
+              >
+                <Plus />
+                Add element
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Undo"
+                title="Undo"
+                disabled={busy || !canUndo}
+                onClick={undo}
+              >
+                <Undo2 />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Redo"
+                title="Redo"
+                disabled={busy || !canRedo}
+                onClick={redo}
+              >
+                <Redo2 />
+              </Button>
+            </>
+          }
+          backgroundControl={
+            <BackgroundSettings
+              state={state}
+              slide={activeSlide}
+              disabled={busy}
+              onApply={(scope, background, replaceOverrides) => {
+                if (activeSlide)
+                  setState((prev) =>
+                    applyBackground(
+                      prev,
+                      scope,
+                      activeSlide.id,
+                      background,
+                      replaceOverrides,
+                    ),
+                  );
+              }}
+            />
+          }
+          brandControl={
+            <BrandSettings
+              state={state}
+              disabled={busy}
+              onApply={(brand, appIcon) =>
+                setState((p) => ({ ...p, brand, appIcon }))
+              }
+            />
+          }
+          appName={state.appName}
+          setAppName={(v) => setState((p) => ({ ...p, appName: v }))}
+          connectedCanvas={state.connectedCanvas}
+          setConnectedCanvas={(v) =>
+            setState((p) => ({ ...p, connectedCanvas: v }))
+          }
+          locale={state.locale}
+          setLocale={(v) => setState((p) => ({ ...p, locale: v }))}
+          locales={state.locales}
+          device={state.device}
+          setDevice={(v) => setState((p) => ({ ...p, device: v }))}
+          orientation={state.orientation}
+          setOrientation={(v) => setState((p) => ({ ...p, orientation: v }))}
+          onExport={exportAll}
+          onResetAll={() => {
+            reset();
+            setActiveSlideId(null);
+            toast.success("Reset all devices to defaults");
+          }}
+          onResetDevice={() => {
+            resetDevice(state.device);
+            setActiveSlideId(null);
+            toast.success(`Reset ${state.device} to defaults`);
+          }}
+          exporting={exporting}
+          savedAt={savedAt}
+          saveError={saveError}
+          busy={busy}
+        />
 
-      <div inert={busy} className="flex flex-1 overflow-hidden md:flex-row flex-col">
-        <aside className="md:w-72 w-full shrink-0 border-r bg-card md:max-h-none max-h-64 overflow-hidden">
-          <Sidebar
-            slides={currentSlides}
-            activeId={activeSlide?.id || null}
-            device={state.device}
-            orientation={state.orientation}
-            theme={theme}
-            locale={state.locale}
-            appName={state.appName}
-            appIcon={state.appIcon}
-            connectedCanvas={state.connectedCanvas}
-            disabled={busy}
-            onReorder={reorderSlides}
-            onSelect={setActiveSlideId}
-            onDelete={deleteSlide}
-            onDuplicate={duplicateSlide}
-            onAdd={addSlide}
-          />
-        </aside>
-
-        <main className="flex flex-1 items-stretch overflow-hidden min-h-0">
-          {activeSlide && currentSlides.length > 0 ? (
-            <PreviewStage
+        <div
+          inert={busy}
+          className="flex min-h-0 flex-1 overflow-y-auto lg:overflow-hidden lg:flex-row flex-col"
+        >
+          <div className="flex shrink-0 items-center gap-2 border-b bg-card p-2 lg:hidden">
+            <Button
+              variant="outline"
+              size="sm"
+              aria-expanded={compactScreensOpen}
+              aria-controls="screen-list"
+              onClick={() => setCompactScreensOpen((v) => !v)}
+            >
+              {compactScreensOpen ? "Hide screens" : "Screens"}
+            </Button>
+            <select
+              aria-label="Active screen"
+              className="h-11 min-w-0 flex-1 rounded-md border bg-background px-3 text-sm focus-visible:outline-neutral-500"
+              value={activeSlide?.id || ""}
+              onChange={(e) => setActiveSlideId(e.target.value)}
+            >
+              {!currentSlides.length && <option value="">No screens</option>}
+              {currentSlides.map((s, i) => (
+                <option key={s.id} value={s.id}>
+                  {i + 1}.{" "}
+                  {pickText(s.headline, state.locale) || "Untitled screen"}
+                </option>
+              ))}
+            </select>
+          </div>
+          <aside
+            id="screen-list"
+            className={`${compactScreensOpen ? "block" : "hidden"} lg:block lg:w-60 w-full shrink-0 border-r bg-card lg:max-h-none max-h-72 overflow-hidden`}
+          >
+            <Sidebar
               slides={currentSlides}
-              activeSlideId={activeSlide.id}
+              activeId={activeSlide?.id || null}
               device={state.device}
               orientation={state.orientation}
               theme={theme}
@@ -642,114 +943,244 @@ export function ScreenshotEditor() {
               appName={state.appName}
               appIcon={state.appIcon}
               connectedCanvas={state.connectedCanvas}
-              selectedElement={selectedElement}
-              onActiveSlideChange={setActiveSlideId}
-              onLabelChange={(slide, v) => patchLocalized(slide, "label", v)}
-              onHeadlineChange={(slide, v) => patchLocalized(slide, "headline", v)}
-              onTextElementTextChange={patchTextElementText}
-              onElementChange={patchElementTransform}
-              onSelectElement={setSelectedElement}
+              disabled={busy}
+              onReorder={reorderSlides}
+              onSelect={setActiveSlideId}
+              onDelete={deleteSlide}
+              onDuplicate={duplicateSlide}
+              onAdd={addSlide}
             />
-          ) : (
-            <div className="flex flex-1 flex-col items-center justify-center gap-2 p-8 text-center text-sm text-muted-foreground">
-              <p className="font-medium text-foreground">No screen selected</p>
-              <p>Add a screen on the left to get started.</p>
-            </div>
-          )}
-        </main>
+          </aside>
 
-        <aside className="md:w-80 w-full shrink-0 border-l bg-card md:max-h-none max-h-96 overflow-hidden">
-          {activeSlide ? (
-            <Inspector
-              slide={activeSlide}
-              device={state.device}
-              orientation={state.orientation}
-              locale={state.locale}
-              selectedElementId={
-                selectedElement?.slideId === activeSlide.id ? selectedElement.elementId : null
-              }
-              onChange={(patch) => patchSlide(activeSlide.id, patch)}
-              onSelectElement={(elementId) =>
-                setSelectedElement(
-                  elementId ? { slideId: activeSlide.id, elementId } : null,
-                )
-              }
-            />
-          ) : (
-            <div className="flex h-full flex-col items-center justify-center gap-2 p-6 text-center text-sm text-muted-foreground">
-              <p className="font-medium text-foreground">Nothing to inspect</p>
-              <p className="text-xs">Screen settings will appear here once you add or select one.</p>
-            </div>
-          )}
-        </aside>
-      </div>
-
-      <Dialog open={exportIssues.length > 0} onOpenChange={(open) => { if (!open) setExportIssues([]); }}>
-        <DialogContent className="max-h-[85dvh] overflow-y-auto sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Complete these items before export</DialogTitle>
-            <DialogDescription>Nothing was exported. Check the text and source images in each language, then try again.</DialogDescription>
-          </DialogHeader>
-          <ul className="space-y-3 text-sm">
-            {exportIssues.map((issue, index) => <li key={index}>
-              {issue.slideId ? <button className="min-h-11 w-full rounded border p-3 text-left hover:bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2" onClick={() => {
-                setActiveSlideId(issue.slideId!);
-                if (issue.locale) setState((p) => ({ ...p, locale: issue.locale! }));
-                setExportIssues([]);
-              }}>{issue.message}</button> : <p className="p-3">{issue.message}</p>}
-            </li>)}
-          </ul>
-          <Button onClick={() => setExportIssues([])}>Back to editor</Button>
-        </DialogContent>
-      </Dialog>
-
-      {/* Off-screen export container — full-resolution canvases for html-to-image. */}
-      <div
-        aria-hidden
-        style={{
-          position: "fixed",
-          left: -99999,
-          top: 0,
-          pointerEvents: "none",
-        }}
-      >
-        {currentSlides.length > 0 && (
-          <div
-            ref={exportRef}
-            style={{
-              width: cW,
-              height: cH,
-              overflow: "hidden",
-              position: "absolute",
-              left: -99999,
-              top: 0,
-            }}
-          >
-            <div
-              style={{
-                position: "absolute",
-                left: -exportSlideIndex * cW,
-                top: 0,
-                width: cW * currentSlides.length,
-                height: cH,
-              }}
-            >
-              <DeckCanvas
+          <main className="flex min-h-[420px] shrink-0 flex-1 items-stretch overflow-hidden lg:min-h-0 lg:shrink">
+            {activeSlide && currentSlides.length > 0 ? (
+              <PreviewStage
                 slides={currentSlides}
+                activeSlideId={activeSlide.id}
                 device={state.device}
                 orientation={state.orientation}
                 theme={theme}
-                locale={exportLocaleOverride ?? state.locale}
+                locale={state.locale}
                 appName={state.appName}
                 appIcon={state.appIcon}
                 connectedCanvas={state.connectedCanvas}
-                hideEmpty
+                selectedElement={selectedElement}
+                onActiveSlideChange={setActiveSlideId}
+                onLabelChange={(slide, v) => patchLocalized(slide, "label", v)}
+                onHeadlineChange={(slide, v) =>
+                  patchLocalized(slide, "headline", v)
+                }
+                onTextElementTextChange={patchTextElementText}
+                onElementChange={patchElementTransform}
+                onSelectElement={setSelectedElement}
               />
+            ) : (
+              <div className="flex flex-1 flex-col items-center justify-center gap-2 p-8 text-center text-sm text-muted-foreground">
+                <p className="font-medium text-foreground">
+                  No screen selected
+                </p>
+                <p>Add a screen on the left to get started.</p>
+              </div>
+            )}
+          </main>
+
+          <aside className="flex lg:w-[360px] w-full shrink-0 flex-col border-l bg-card lg:max-h-none max-h-[45dvh] overflow-hidden">
+            <Tabs
+              value={panel}
+              onValueChange={setPanel}
+              className="shrink-0 border-b p-3"
+            >
+              <TabsList className="grid h-11 w-full grid-cols-3">
+                <TabsTrigger
+                  value="screen"
+                  id="inspector-tab-screen"
+                  aria-controls="inspector-panel"
+                  className="h-10"
+                >
+                  Screen
+                </TabsTrigger>
+                <TabsTrigger
+                  value="elements"
+                  id="inspector-tab-elements"
+                  aria-controls="inspector-panel"
+                  className="h-10"
+                >
+                  Elements
+                </TabsTrigger>
+                <TabsTrigger
+                  value="assets"
+                  id="inspector-tab-assets"
+                  aria-controls="inspector-panel"
+                  className="h-10"
+                >
+                  Assets
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+            <div
+              id="inspector-panel"
+              role="tabpanel"
+              aria-labelledby={`inspector-tab-${panel}`}
+              className="min-h-0 flex-1 overflow-y-auto"
+            >
+              {panel === "assets" ? (
+                <AssetsPanel
+                  state={state}
+                  slide={activeSlide}
+                  setState={setState}
+                  onSelect={(id) =>
+                    setSelectedElement(
+                      id && activeSlide
+                        ? { slideId: activeSlide.id, elementId: id }
+                        : null,
+                    )
+                  }
+                />
+              ) : panel === "elements" && activeSlide ? (
+                <ElementsPanel
+                  key={activeSlide.id}
+                  state={state}
+                  slide={activeSlide}
+                  selectedId={selectedElement?.elementId || null}
+                  onSelect={(id) =>
+                    setSelectedElement(
+                      id ? { slideId: activeSlide.id, elementId: id } : null,
+                    )
+                  }
+                  setState={setState}
+                  addOpen={addOpen}
+                  setAddOpen={setAddOpen}
+                />
+              ) : (
+                <>
+                  {activeSlide ? (
+                    <Inspector
+                      onAddElement={() => {
+                        setPanel("elements");
+                        setAddOpen(true);
+                      }}
+                      slide={activeSlide}
+                      device={state.device}
+                      orientation={state.orientation}
+                      locale={state.locale}
+                      selectedElementId={
+                        selectedElement?.slideId === activeSlide.id
+                          ? selectedElement.elementId
+                          : null
+                      }
+                      onChange={(patch) => patchSlide(activeSlide.id, patch)}
+                      onSelectElement={(elementId) =>
+                        setSelectedElement(
+                          elementId
+                            ? { slideId: activeSlide.id, elementId }
+                            : null,
+                        )
+                      }
+                    />
+                  ) : (
+                    <div className="flex h-full flex-col items-center justify-center gap-2 p-6 text-center text-sm text-muted-foreground">
+                      <p className="font-medium text-foreground">
+                        Nothing to inspect
+                      </p>
+                      <p className="text-xs">
+                        Screen settings will appear here once you add or select
+                        one.
+                      </p>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
-          </div>
-        )}
+          </aside>
+        </div>
+
+        <Dialog
+          open={exportIssues.length > 0}
+          onOpenChange={(open) => {
+            if (!open) setExportIssues([]);
+          }}
+        >
+          <DialogContent className="max-h-[85dvh] overflow-y-auto sm:max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Complete these items before export</DialogTitle>
+              <DialogDescription>
+                Nothing was exported. Check the text and source images in each
+                language, then try again.
+              </DialogDescription>
+            </DialogHeader>
+            <ul className="space-y-3 text-sm">
+              {exportIssues.map((issue, index) => (
+                <li key={index}>
+                  {issue.slideId ? (
+                    <button
+                      className="min-h-11 w-full rounded border p-3 text-left hover:bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                      onClick={() => {
+                        setActiveSlideId(issue.slideId!);
+                        if (issue.locale)
+                          setState((p) => ({ ...p, locale: issue.locale! }));
+                        setExportIssues([]);
+                      }}
+                    >
+                      {issue.message}
+                    </button>
+                  ) : (
+                    <p className="p-3">{issue.message}</p>
+                  )}
+                </li>
+              ))}
+            </ul>
+            <Button onClick={() => setExportIssues([])}>Back to editor</Button>
+          </DialogContent>
+        </Dialog>
+
+        {/* Off-screen export container — full-resolution canvases for html-to-image. */}
+        <div
+          aria-hidden
+          style={{
+            position: "fixed",
+            left: -99999,
+            top: 0,
+            pointerEvents: "none",
+          }}
+        >
+          {currentSlides.length > 0 && (
+            <div
+              ref={exportRef}
+              style={{
+                width: cW,
+                height: cH,
+                overflow: "hidden",
+                position: "absolute",
+                left: -99999,
+                top: 0,
+              }}
+            >
+              <div
+                style={{
+                  position: "absolute",
+                  left: -exportSlideIndex * cW,
+                  top: 0,
+                  width: cW * currentSlides.length,
+                  height: cH,
+                }}
+              >
+                <DeckCanvas
+                  slides={currentSlides}
+                  device={state.device}
+                  orientation={state.orientation}
+                  theme={theme}
+                  locale={exportLocaleOverride ?? state.locale}
+                  appName={state.appName}
+                  appIcon={state.appIcon}
+                  connectedCanvas={state.connectedCanvas}
+                  hideEmpty
+                />
+              </div>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </AssetContext.Provider>
   );
 }
 

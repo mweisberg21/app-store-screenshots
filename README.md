@@ -6,7 +6,7 @@ You do not need to write code. Give Claude this request:
 
 ```text
 Set up this screenshot tool on my computer:
-https://github.com/mweisberg21/app-store-screenshots/tree/improve-brand-defaults
+https://github.com/mweisberg21/app-store-screenshots/tree/editor-elements
 Read START-HERE.md and follow its first-run guide. I am not technical.
 Help me one step at a time. Open the editor, help me make my first
 image, and show me how to use the tool again later.
@@ -20,7 +20,7 @@ A local editor and agent skill for teams that create App Store and Google Play l
 
 ![The screenshot editor with three English Form and Flow demo images, centered headlines, and original iPhone frames](example.png)
 
-Example: the App screen, Creator with app, and Content library templates. Form & Flow is a fictional demo app with generated instructor photography. Customer projects use real app captures and approved brand assets.
+Example: App screen, Creator with app, and a custom set of content cards with a device capture. The Assets panel stores reusable customer images and groups. Form & Flow is a fictional demo app with generated instructor photography. Customer projects use real app captures and approved brand assets.
 
 This fork retains Parth Jadhav's MIT license and author credit. It adds local access controls, validated saves, upload limits, and a workflow for customer work.
 
@@ -38,6 +38,8 @@ This fork retains Parth Jadhav's MIT license and author credit. It adds local ac
 
 - Saves customer background, text color, headline type, and alignment through **Brand** controls.
 - Adds a **Background** picker for solid colors, linear/radial gradients, and uploaded images. Preview crop, zoom, fit, tint, and text color before applying to the project or one screen. See [background controls](skills/app-store-screenshots/references/backgrounds.md).
+- Adds images, logos, device captures, screenshot details, content cards, shapes, lines/arrows, icons, and text.
+- Reuses customer files in **Assets**, with named groups, alignment, snapping, lock/hide, layer order, copy to screens, and undo/redo. See [elements and assets](skills/app-store-screenshots/references/elements-and-assets.md).
 - Provides App screen, Creator with app, and Content library templates.
 - Keeps creator photos and catalog artwork separate from app captures, with saved crop and zoom controls.
 - Shows real captures in included Apple iPhone and iPad bezels, or generic Android frames.
@@ -59,10 +61,10 @@ Choose **Creator with app** when a teacher or creator is central to the service.
 
 Use Node.js 22 or newer and a coding agent with local file and command access, such as Codex or Claude Code.
 
-The packaged frames and English preview are on `improve-brand-defaults` in [draft PR 2](https://github.com/mweisberg21/app-store-screenshots/pull/2). Use the branch-specific command below while the PR is open. A default-branch install still gets the older version.
+The new element editor is under review on `editor-elements`. Use the branch-specific command below for these controls. The main branch already includes the packaged Apple frames and the English preview.
 
 ```bash
-npx skills add https://github.com/mweisberg21/app-store-screenshots/tree/improve-brand-defaults/skills/app-store-screenshots -g
+npx skills add https://github.com/mweisberg21/app-store-screenshots/tree/editor-elements/skills/app-store-screenshots -g
 ```
 
 Choose the supported agent in the installer. The skill includes its design instructions and template; no additional design skill is required.
@@ -70,7 +72,7 @@ Choose the supported agent in the installer. The skill includes its design instr
 Manual shared install:
 
 ```bash
-git clone --branch improve-brand-defaults --single-branch https://github.com/mweisberg21/app-store-screenshots
+git clone --branch editor-elements --single-branch https://github.com/mweisberg21/app-store-screenshots
 mkdir -p ~/.agents/skills
 cp -R app-store-screenshots/skills/app-store-screenshots ~/.agents/skills/
 ```

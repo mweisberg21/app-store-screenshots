@@ -12,14 +12,14 @@ export type Platform = "ios" | "android";
 
 // Choose the layout that makes the screenshot easiest to understand.
 export type SlideLayout =
-  | "hero"             // centered device, headline above
-  | "device-bottom"    // headline top, device bottom-center
-  | "creator"          // creator photo beside a real app screen
-  | "content-library"  // approved catalog artwork beside a real app screen
-  | "device-top"       // device top, headline bottom (contrast)
-  | "two-devices"      // back + front phones, headline above
-  | "no-device"        // standalone headline, no device
-  | "split-landscape"  // landscape tablets only: caption left + device right
+  | "hero" // centered device, headline above
+  | "device-bottom" // headline top, device bottom-center
+  | "creator" // creator photo beside a real app screen
+  | "content-library" // approved catalog artwork beside a real app screen
+  | "device-top" // device top, headline bottom (contrast)
+  | "two-devices" // back + front phones, headline above
+  | "no-device" // standalone headline, no device
+  | "split-landscape" // landscape tablets only: caption left + device right
   | "feature-graphic"; // 1024×500 banner with icon + name + tagline
 
 // Per-element rect in canvas pixel space. Optional rotation in degrees and zIndex.
@@ -34,7 +34,7 @@ export type ElementTransform = {
 
 export type BuiltInElementId = "caption" | "device" | "deviceSecondary";
 export type TextElementId = `text:${string}`;
-export type ElementId = BuiltInElementId | TextElementId;
+export type ElementId = BuiltInElementId | TextElementId | `element:${string}`;
 
 export type SelectedElement = {
   slideId: string;
@@ -62,29 +62,40 @@ export type ImageCrop = { x: number; y: number; zoom: number };
 export type ImageAsset = { src: string; crop?: ImageCrop };
 
 export type GradientBackground = {
-  kind: "gradient"; textColor?: string;
-  style: "linear" | "radial"; angle: number; center: { x: number; y: number };
+  kind: "gradient";
+  textColor?: string;
+  style: "linear" | "radial";
+  angle: number;
+  center: { x: number; y: number };
   stops: { color: string; position: number }[];
 };
 export type Background =
   | { kind: "solid"; color: string; textColor?: string }
   | GradientBackground
-  | { kind: "image"; image: ImageAsset; fit: "cover" | "contain"; color: string; tint: { color: string; opacity: number }; textColor?: string };
+  | {
+      kind: "image";
+      image: ImageAsset;
+      fit: "cover" | "contain";
+      color: string;
+      tint: { color: string; opacity: number };
+      textColor?: string;
+    };
 
 export type Slide = {
   id: string;
   layout: SlideLayout;
-  label: LocalizedText;       // tiny uppercase caption above headline, per locale
-  headline: LocalizedText;    // multi-line; newlines are intentional, per locale
-  screenshot: string;         // path under /screenshots/ — may contain {locale}
+  label: LocalizedText; // tiny uppercase caption above headline, per locale
+  headline: LocalizedText; // multi-line; newlines are intentional, per locale
+  screenshot: string; // path under /screenshots/ — may contain {locale}
   screenshotSecondary?: string; // for two-devices layout — may contain {locale}
   photo?: ImageAsset;
   artworks?: ImageAsset[];
   background?: Background;
-  inverted?: boolean;         // dark background variant
+  inverted?: boolean; // dark background variant
   // Per-element overrides; when present, replaces layout default placement.
   transforms?: Partial<Record<BuiltInElementId, ElementTransform>>;
   textElements?: TextElement[];
+  elements?: CanvasElement[];
 };
 
 export type ThemeId =
@@ -98,10 +109,10 @@ export type ThemeId =
 export type Theme = {
   id: string;
   name: string;
-  bg: string;          // primary background
-  bgAlt: string;       // inverted background
-  fg: string;          // text on bg
-  fgAlt: string;       // text on bgAlt
+  bg: string; // primary background
+  bgAlt: string; // inverted background
+  fg: string; // text on bg
+  fgAlt: string; // text on bgAlt
   accent: string;
   muted: string;
   fontFamily?: string;
@@ -132,5 +143,102 @@ export type ProjectState = {
   orientation: Orientation;
   // Per-device slide decks so platform switching preserves work
   slidesByDevice: Record<Device, Slide[]>;
-  appIcon?: string;    // path under /public (e.g. /app-icon.png)
+  assets?: ProjectAsset[];
+  savedGroups?: SavedGroup[];
+  appIcon?: string; // path under /public (e.g. /app-icon.png)
+};
+
+export type ElementKind =
+  | "text"
+  | "image"
+  | "logo"
+  | "device"
+  | "detail"
+  | "cards"
+  | "shape"
+  | "line"
+  | "icon";
+export type ElementBase = {
+  id: string;
+  name: string;
+  transform: ElementTransform;
+  groupId?: string;
+  hidden?: boolean;
+  locked?: boolean;
+  opacity: number;
+};
+export type CanvasElement = ElementBase &
+  (
+    | {
+        kind: "text";
+        text: LocalizedText;
+        fontSize: number;
+        fontWeight: number;
+        color: string;
+        align: "left" | "center" | "right";
+      }
+    | {
+        kind: "image" | "logo" | "detail";
+        asset: ImageAsset;
+        fit: "cover" | "contain";
+        radius: number;
+        lockAspect: boolean;
+      }
+    | {
+        kind: "device";
+        device: Exclude<Device, "feature-graphic">;
+        orientation: Orientation;
+        src: string;
+      }
+    | {
+        kind: "cards";
+        items: { asset: ImageAsset; title: LocalizedText }[];
+        layout: "row" | "column" | "grid";
+        gap: number;
+        radius: number;
+        color: string;
+        fontSize: number;
+      }
+    | {
+        kind: "shape";
+        shape: "rectangle" | "ellipse";
+        fill: string;
+        stroke: string;
+        strokeWidth: number;
+        radius: number;
+      }
+    | {
+        kind: "line";
+        color: string;
+        thickness: number;
+        arrow: boolean;
+        dashed: boolean;
+      }
+    | {
+        kind: "icon";
+        icon:
+          | "play"
+          | "calendar"
+          | "community"
+          | "heart"
+          | "book"
+          | "check"
+          | "cast"
+          | "clock";
+        color: string;
+        strokeWidth: number;
+      }
+  );
+export type ProjectAsset = {
+  id: string;
+  name: string;
+  src: string;
+  category: "logo" | "photo" | "screenshot" | "cover";
+};
+export type SavedGroup = {
+  id: string;
+  name: string;
+  width: number;
+  height: number;
+  elements: CanvasElement[];
 };

@@ -25,7 +25,6 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { LAYOUT_HINT, LAYOUT_LABEL } from "@/lib/constants";
-import { nid } from "@/lib/defaults";
 import {
   isBuiltInElementId,
   isTextElementId,
@@ -45,7 +44,7 @@ import type {
 } from "@/lib/types";
 import { ScreenshotPicker } from "./screenshot-picker";
 import { ArtworkControls } from "./artwork-controls";
-import { getCanvas, getElementTransform } from "./slide-canvas";
+import { getElementTransform } from "./slide-canvas";
 
 type Props = {
   slide: Slide;
@@ -55,6 +54,7 @@ type Props = {
   selectedElementId: ElementId | null;
   onChange: (patch: Partial<Slide>) => void;
   onSelectElement: (id: ElementId | null) => void;
+  onAddElement: () => void;
 };
 
 const ELEMENT_LABEL: Record<BuiltInElementId, string> = {
@@ -71,30 +71,45 @@ export function Inspector({
   selectedElementId,
   onChange,
   onSelectElement,
+  onAddElement,
 }: Props) {
-  const isFeatureGraphic = device === "feature-graphic" || slide.layout === "feature-graphic";
+  const isFeatureGraphic =
+    device === "feature-graphic" || slide.layout === "feature-graphic";
   const isNoDevice = slide.layout === "no-device";
-  const layoutValue = device === "feature-graphic" ? "feature-graphic" : slide.layout;
+  const layoutValue =
+    device === "feature-graphic" ? "feature-graphic" : slide.layout;
   const layoutOptions = Object.entries(LAYOUT_LABEL).filter(([layout]) =>
-    device === "feature-graphic" ? layout === "feature-graphic" : layout !== "feature-graphic",
+    device === "feature-graphic"
+      ? layout === "feature-graphic"
+      : layout !== "feature-graphic",
   );
   const localeLabel = slide.label?.[locale] ?? "";
   const localeHeadline = slide.headline?.[locale] ?? "";
   // When the active locale is empty, surface the fallback (typically en) as
   // the placeholder so the user sees what they're translating from.
-  const headlineDefault = isFeatureGraphic ? "Describe the app in one line" : "What can someone do on this screen?";
-  const labelPlaceholder = localeLabel ? "Optional context" : pickText(slide.label, locale) || "Optional context";
+  const headlineDefault = isFeatureGraphic
+    ? "Describe the app in one line"
+    : "What can someone do on this screen?";
+  const labelPlaceholder = localeLabel
+    ? "Optional context"
+    : pickText(slide.label, locale) || "Optional context";
   const headlinePlaceholder = localeHeadline
     ? headlineDefault
     : pickText(slide.headline, locale) || headlineDefault;
 
   function setLocaleField(key: "label" | "headline", value: string) {
-    onChange({ [key]: writeLocalized(slide[key], locale, value) } as Partial<Slide>);
+    onChange({
+      [key]: writeLocalized(slide[key], locale, value),
+    } as Partial<Slide>);
   }
 
   React.useEffect(() => {
     if (device === "feature-graphic" && slide.layout !== "feature-graphic") {
-      onChange({ layout: "feature-graphic", transforms: undefined, screenshotSecondary: undefined });
+      onChange({
+        layout: "feature-graphic",
+        transforms: undefined,
+        screenshotSecondary: undefined,
+      });
     }
   }, [device, onChange, slide.layout]);
 
@@ -107,12 +122,16 @@ export function Inspector({
             editing · {locale.toUpperCase()}
           </span>
         </div>
-        <p className="text-xs text-muted-foreground">{LAYOUT_HINT[layoutValue]}</p>
+        <p className="text-xs text-muted-foreground">
+          {LAYOUT_HINT[layoutValue]}
+        </p>
       </div>
 
       <div className="flex-1 space-y-4 overflow-y-auto p-3">
         <div className="space-y-1.5">
-          <Label htmlFor="screen-layout" className="text-xs">Template</Label>
+          <Label htmlFor="screen-layout" className="text-xs">
+            Template
+          </Label>
           <Select
             value={layoutValue}
             onValueChange={(layout) => {
@@ -121,7 +140,9 @@ export function Inspector({
                 layout: next,
                 transforms: undefined,
                 screenshotSecondary:
-                  next === "two-devices" ? slide.screenshotSecondary || slide.screenshot : undefined,
+                  next === "two-devices"
+                    ? slide.screenshotSecondary || slide.screenshot
+                    : undefined,
               });
             }}
           >
@@ -140,7 +161,9 @@ export function Inspector({
 
         {!isFeatureGraphic && (
           <div className="space-y-1.5">
-            <Label htmlFor="screen-label" className="text-xs">Label (optional)</Label>
+            <Label htmlFor="screen-label" className="text-xs">
+              Label (optional)
+            </Label>
             <Input
               id="screen-label"
               value={localeLabel}
@@ -152,8 +175,12 @@ export function Inspector({
 
         <div className="space-y-1.5">
           <div className="flex items-baseline justify-between">
-            <Label htmlFor="screen-headline" className="text-xs">{isFeatureGraphic ? "Tagline" : "Headline"}</Label>
-            <span className="text-[10px] text-muted-foreground">newline = break</span>
+            <Label htmlFor="screen-headline" className="text-xs">
+              {isFeatureGraphic ? "Tagline" : "Headline"}
+            </Label>
+            <span className="text-[10px] text-muted-foreground">
+              newline = break
+            </span>
           </div>
           <Textarea
             id="screen-headline"
@@ -167,7 +194,9 @@ export function Inspector({
         {!isFeatureGraphic && !isNoDevice && (
           <div className="space-y-1.5">
             <Label className="text-xs">
-              {slide.layout === "two-devices" ? "Front device screenshot" : "Screenshot"}
+              {slide.layout === "two-devices"
+                ? "Front device screenshot"
+                : "Screenshot"}
             </Label>
             <ScreenshotPicker
               label="Primary"
@@ -190,7 +219,9 @@ export function Inspector({
           </div>
         )}
 
-        {!isFeatureGraphic && <ArtworkControls slide={slide} locale={locale} onChange={onChange} />}
+        {!isFeatureGraphic && (
+          <ArtworkControls slide={slide} locale={locale} onChange={onChange} />
+        )}
 
         {!isFeatureGraphic && (
           <ElementTransformControls
@@ -201,12 +232,15 @@ export function Inspector({
             selectedElementId={selectedElementId}
             onChange={onChange}
             onSelectElement={onSelectElement}
+            onAddElement={onAddElement}
           />
         )}
 
         {isFeatureGraphic && (
           <p className="rounded-md border bg-muted/40 p-3 text-[11px] leading-relaxed text-muted-foreground">
-            Shows the app icon, name, and tagline. A real app icon is required for export. Set the name in the toolbar. Add the icon in Brand settings.
+            Shows the app icon, name, and tagline. A real app icon is required
+            for export. Set the name in the toolbar. Add the icon in Brand
+            settings.
           </p>
         )}
       </div>
@@ -215,6 +249,7 @@ export function Inspector({
 }
 
 function ElementTransformControls({
+  onAddElement,
   slide,
   device,
   orientation,
@@ -223,6 +258,7 @@ function ElementTransformControls({
   onChange,
   onSelectElement,
 }: {
+  onAddElement: () => void;
   slide: Slide;
   device: Device;
   orientation: Orientation;
@@ -234,17 +270,22 @@ function ElementTransformControls({
   const present: ElementId[] = ["caption"];
   if (slide.layout !== "no-device") present.push("device");
   if (slide.layout === "two-devices") present.push("deviceSecondary");
-  for (const element of slide.textElements || []) present.push(toTextElementId(element.id));
+  for (const element of slide.textElements || [])
+    present.push(toTextElementId(element.id));
 
   const transforms = slide.transforms || {};
   const activeId =
-    selectedElementId && present.includes(selectedElementId) ? selectedElementId : null;
+    selectedElementId && present.includes(selectedElementId)
+      ? selectedElementId
+      : null;
   const activeTransform = activeId
     ? getElementTransform(slide, device, orientation, activeId)
     : undefined;
   const activeTextElement =
     activeId && isTextElementId(activeId)
-      ? slide.textElements?.find((element) => element.id === textElementKey(activeId))
+      ? slide.textElements?.find(
+          (element) => element.id === textElementKey(activeId),
+        )
       : null;
 
   function getTransform(id: ElementId) {
@@ -280,42 +321,19 @@ function ElementTransformControls({
   }
 
   function setTextElementValue(element: TextElement, value: string) {
-    patchTextElement(element.id, { text: writeLocalized(element.text, locale, value) });
+    patchTextElement(element.id, {
+      text: writeLocalized(element.text, locale, value),
+    });
   }
 
   function deleteTextElement(element: TextElement) {
-    const nextTextElements = (slide.textElements || []).filter((item) => item.id !== element.id);
+    const nextTextElements = (slide.textElements || []).filter(
+      (item) => item.id !== element.id,
+    );
     onChange({
       textElements: nextTextElements.length > 0 ? nextTextElements : undefined,
     });
     onSelectElement(null);
-  }
-
-  function addTextElement() {
-    const { cW, cH } = getCanvas(device, orientation);
-    const id = nid();
-    const zIndex =
-      Math.max(
-        5,
-        ...present.map((elementId) => getTransform(elementId)?.zIndex ?? defaultZ(elementId)),
-      ) + 1;
-    const element: TextElement = {
-      id,
-      text: {},
-      transform: {
-        x: cW * 0.18,
-        y: cH * 0.42,
-        width: cW * 0.64,
-        height: cH * 0.12,
-        rotation: 0,
-        zIndex,
-      },
-      fontSize: Math.round(Math.min(cW, cH) * 0.065),
-      fontWeight: 800,
-      align: "center",
-    };
-    onChange({ textElements: [...(slide.textElements || []), element] });
-    onSelectElement(toTextElementId(id));
   }
 
   // Z-order: re-rank zIndex among present elements so they remain contiguous.
@@ -345,8 +363,11 @@ function ElementTransformControls({
       if (!cur) return;
       if (isTextElementId(eid)) {
         const textId = textElementKey(eid);
-        const textElement = nextTextElements.find((element) => element.id === textId);
-        if (textElement) textElement.transform = { ...textElement.transform, zIndex: i + 1 };
+        const textElement = nextTextElements.find(
+          (element) => element.id === textId,
+        );
+        if (textElement)
+          textElement.transform = { ...textElement.transform, zIndex: i + 1 };
       } else if (isBuiltInElementId(eid)) {
         nextTransforms[eid] = { ...cur, zIndex: i + 1 };
       }
@@ -370,10 +391,10 @@ function ElementTransformControls({
           variant="outline"
           size="sm"
           className="h-7 shrink-0 px-2 text-xs"
-          onClick={addTextElement}
+          onClick={onAddElement}
         >
           <Plus className="h-3.5 w-3.5" />
-          Text
+          Add
         </Button>
       </div>
 
@@ -386,10 +407,12 @@ function ElementTransformControls({
           onRotate={(rotation) => patchElement(activeId, { rotation })}
           onReorder={(dir) => reorder(activeId, dir)}
           onTextChange={(value) => {
-            if (activeTextElement) setTextElementValue(activeTextElement, value);
+            if (activeTextElement)
+              setTextElementValue(activeTextElement, value);
           }}
           onTextPatch={(patch) => {
-            if (activeTextElement) patchTextElement(activeTextElement.id, patch);
+            if (activeTextElement)
+              patchTextElement(activeTextElement.id, patch);
           }}
           onDeleteText={() => {
             if (activeTextElement) deleteTextElement(activeTextElement);
@@ -448,7 +471,9 @@ function ActiveElementPanel({
             <Trash2 className="h-3.5 w-3.5" />
           </Button>
         ) : !engaged ? (
-          <span className="text-[10px] text-muted-foreground">drag to enable</span>
+          <span className="text-[10px] text-muted-foreground">
+            drag to enable
+          </span>
         ) : null}
       </div>
 
@@ -486,16 +511,32 @@ function ActiveElementPanel({
       <div className="space-y-1">
         <Label className="text-[11px] text-muted-foreground">Layer</Label>
         <div className="grid grid-cols-4 gap-1">
-          <LayerButton disabled={!engaged} onClick={() => onReorder("back")} label="Send to back">
+          <LayerButton
+            disabled={!engaged}
+            onClick={() => onReorder("back")}
+            label="Send to back"
+          >
             <ArrowDownToLine className="h-3.5 w-3.5" />
           </LayerButton>
-          <LayerButton disabled={!engaged} onClick={() => onReorder("down")} label="Send backward">
+          <LayerButton
+            disabled={!engaged}
+            onClick={() => onReorder("down")}
+            label="Send backward"
+          >
             <ChevronDown className="h-3.5 w-3.5" />
           </LayerButton>
-          <LayerButton disabled={!engaged} onClick={() => onReorder("up")} label="Bring forward">
+          <LayerButton
+            disabled={!engaged}
+            onClick={() => onReorder("up")}
+            label="Bring forward"
+          >
             <ChevronUp className="h-3.5 w-3.5" />
           </LayerButton>
-          <LayerButton disabled={!engaged} onClick={() => onReorder("front")} label="Bring to front">
+          <LayerButton
+            disabled={!engaged}
+            onClick={() => onReorder("front")}
+            label="Bring to front"
+          >
             <ArrowUpToLine className="h-3.5 w-3.5" />
           </LayerButton>
         </div>
@@ -535,7 +576,9 @@ function TextElementPanel({
             min={12}
             max={400}
             value={Math.round(element.fontSize || 72)}
-            onChange={(event) => onTextPatch({ fontSize: Number(event.target.value) || 72 })}
+            onChange={(event) =>
+              onTextPatch({ fontSize: Number(event.target.value) || 72 })
+            }
           />
         </div>
         <div className="space-y-1">
