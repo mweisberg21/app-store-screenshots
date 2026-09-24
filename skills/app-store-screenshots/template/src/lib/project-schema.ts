@@ -13,10 +13,30 @@ const image = z.string().max(4 * 1024 * 1024).refine((value) => {
   if (!value.startsWith("/") || value.includes("\\")) return false;
   try { return new URL(value, "http://editor.invalid").origin === "http://editor.invalid"; } catch { return false; }
 }, "Use a local image path or PNG/JPEG data URL");
+const imageAsset = z.object({
+  src: image,
+  crop: z.object({
+    x: z.number().min(0).max(100), y: z.number().min(0).max(100), zoom: z.number().min(1).max(3),
+  }).optional(),
+});
+const color = z.string().regex(/^#[0-9a-fA-F]{6}$/);
+const percent = z.number().min(0).max(100);
+export const backgroundSchema = z.discriminatedUnion("kind", [
+  z.object({ kind: z.literal("solid"), color, textColor: color.optional() }),
+  z.object({ kind: z.literal("gradient"), textColor: color.optional(), style: z.enum(["linear", "radial"]),
+    angle: z.number().min(0).max(360), center: z.object({ x: percent, y: percent }),
+    stops: z.array(z.object({ color, position: percent })).min(2).max(5),
+  }),
+  z.object({ kind: z.literal("image"), textColor: color.optional(), image: imageAsset, fit: z.enum(["cover", "contain"]), color,
+    tint: z.object({ color, opacity: percent }),
+  }),
+]);
 const slide = z.object({
   id: z.string().min(1).max(100),
-  layout: z.enum(["hero", "device-bottom", "device-top", "two-devices", "no-device", "split-landscape", "feature-graphic"]),
+  layout: z.enum(["hero", "device-bottom", "creator", "content-library", "device-top", "two-devices", "no-device", "split-landscape", "feature-graphic"]),
   label: text, headline: text, screenshot: image, screenshotSecondary: image.optional(), inverted: z.boolean().optional(),
+  photo: imageAsset.optional(), artworks: z.array(imageAsset).max(4).optional(),
+  background: backgroundSchema.optional(),
   transforms: z.object({ caption: transform.optional(), device: transform.optional(), deviceSecondary: transform.optional() }).optional(),
   textElements: z.array(z.object({
     id: z.string().min(1).max(100), text, transform, fontSize: z.number().positive().max(2000).optional(),
@@ -26,6 +46,12 @@ const slide = z.object({
 
 export const projectSchema = z.object({
   schemaVersion: z.literal(2), appName: z.string().max(200), themeId: z.string().min(1).max(100), connectedCanvas: z.boolean(),
+  brand: z.object({
+    background: z.string().regex(/^#[0-9a-fA-F]{6}$/), foreground: z.string().regex(/^#[0-9a-fA-F]{6}$/),
+    font: z.enum(["sans", "serif", "humanist"]),
+    alignment: z.enum(["left", "center"]),
+  }).optional(),
+  background: backgroundSchema.optional(),
   locales: z.array(locale).min(1).max(32), locale, device, orientation: z.enum(["portrait", "landscape"]),
   slidesByDevice: z.record(device, z.array(slide).max(50)), appIcon: image.optional(),
 }).refine((project) => project.locales.includes(project.locale), "Active locale must be in locales");

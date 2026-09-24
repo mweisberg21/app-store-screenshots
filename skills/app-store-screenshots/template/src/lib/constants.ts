@@ -1,9 +1,10 @@
 import type { Device, Orientation, SlideLayout, Theme, ThemeId } from "./types";
+import { APPLE_FRAMES } from "./apple-frames";
 
 // ---------- Canvas dimensions (design at largest required resolution) ----------
 export const CANVAS: Record<Device, { w: number; h: number; wL?: number; hL?: number }> = {
   iphone:        { w: 1320, h: 2868 },
-  ipad:          { w: 2064, h: 2752 },
+  ipad:          { w: 2064, h: 2752, wL: 2752, hL: 2064 },
   android:       { w: 1080, h: 1920 },
   "android-7":   { w: 1200, h: 1920, wL: 1920, hL: 1200 },
   "android-10":  { w: 1600, h: 2560, wL: 2560, hL: 1600 },
@@ -32,6 +33,7 @@ export const EXPORT_SIZES: Record<Device, ExportSize[]> = {
 
 // Landscape sizes (tablets only)
 export const EXPORT_SIZES_LANDSCAPE: Partial<Record<Device, ExportSize[]>> = {
+  ipad: [{ label: '13" iPad Landscape', w: 2752, h: 2064 }, { label: '12.9" iPad Pro Landscape', w: 2732, h: 2048 }],
   "android-7":  [{ label: '7" Landscape',  w: 1920, h: 1200 }],
   "android-10": [{ label: '10" Landscape', w: 2560, h: 1600 }],
 };
@@ -48,20 +50,11 @@ export function getExportSizes(device: Device, orientation: Orientation): Export
 }
 
 // ---------- Frame aspect ratios ----------
-export const MK_RATIO    = 1022 / 2082; // iPhone PNG mockup
+export const MK_RATIO    = APPLE_FRAMES["iphone-17-pro-max"].width / APPLE_FRAMES["iphone-17-pro-max"].height;
 export const TAB_P_RATIO = 0.667;        // tablet portrait
 export const TAB_L_RATIO = 1.5;          // tablet landscape
-export const IPAD_RATIO  = 0.770;        // iPad
-
-// iPhone mockup screen overlay (pre-measured)
-export const PHONE_SCREEN = {
-  L: (52 / 1022) * 100,
-  T: (46 / 2082) * 100,
-  W: (918 / 1022) * 100,
-  H: (1990 / 2082) * 100,
-  RX: (126 / 918) * 100,
-  RY: (126 / 1990) * 100,
-};
+export const IPAD_RATIO = APPLE_FRAMES["ipad-pro-13-portrait"].width / APPLE_FRAMES["ipad-pro-13-portrait"].height;
+export const IPAD_LANDSCAPE_RATIO = 1 / IPAD_RATIO;
 
 // ---------- Width formula helpers ----------
 export function phoneW(cW: number, cH: number, clamp = 0.84) {
@@ -81,9 +74,15 @@ export function ipadW(cW: number, cH: number, clamp = 0.75) {
 }
 
 // ---------- Themes ----------
-export const DEFAULT_THEME_ID: ThemeId = "clean-light";
+export const DEFAULT_THEME_ID: ThemeId = "brand-neutral";
 
 export const THEMES: Record<string, Theme> = {
+  "brand-neutral": {
+    id: "brand-neutral", name: "Neutral starting point",
+    bg: "#FFFFFF", bgAlt: "#202020", fg: "#202020", fgAlt: "#FFFFFF",
+    accent: "#404040", muted: "#666666", textAlign: "center",
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+  },
   "clean-light": {
     id: "clean-light",
     name: "Clean Light",
@@ -158,8 +157,10 @@ export const DEVICE_LABEL: Record<Device, string> = {
 
 // Friendly labels for slide layouts (used in dropdowns)
 export const LAYOUT_LABEL: Record<SlideLayout, string> = {
+  "device-bottom": "App screen",
+  creator: "Creator with app",
+  "content-library": "Content library",
   hero: "Hero",
-  "device-bottom": "Device bottom",
   "device-top": "Device top",
   "two-devices": "Two devices",
   "no-device": "No device",
@@ -171,6 +172,8 @@ export const LAYOUT_LABEL: Record<SlideLayout, string> = {
 export const LAYOUT_HINT: Record<SlideLayout, string> = {
   hero: "Headline above, device at bottom",
   "device-bottom": "Headline top, device anchored below",
+  creator: "Creator photo with an app view. Keep faces clear of the crop and phone.",
+  "content-library": "Two to four catalog images beside a real app screen.",
   "device-top": "Flipped — device on top",
   "two-devices": "Layered back + front phones",
   "no-device": "Big standalone headline",

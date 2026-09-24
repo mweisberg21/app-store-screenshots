@@ -1,3 +1,5 @@
+> Optional historical reference. The customer brief and `_QUALITY_BAR.md` take priority over every decoration count, fixed sequence, or mandatory effect below. Use only after the user explicitly selects this style.
+
 ---
 name: glossy-3d-kbeauty-creator
 description: Deep purple gradient with glossy chrome 3D headline numerals, kawaii ghost mascot, yellow hashtag pill chips, K-beauty influencer-network energy. Inspired by Nuri Lounge.

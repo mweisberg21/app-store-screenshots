@@ -10,13 +10,15 @@ export type Orientation = "portrait" | "landscape";
 
 export type Platform = "ios" | "android";
 
-// Layouts the editor can render. Vary across slides for visual rhythm.
+// Choose the layout that makes the screenshot easiest to understand.
 export type SlideLayout =
   | "hero"             // centered device, headline above
   | "device-bottom"    // headline top, device bottom-center
+  | "creator"          // creator photo beside a real app screen
+  | "content-library"  // approved catalog artwork beside a real app screen
   | "device-top"       // device top, headline bottom (contrast)
   | "two-devices"      // back + front phones, headline above
-  | "no-device"        // big headline + decorative blob, no device
+  | "no-device"        // standalone headline, no device
   | "split-landscape"  // landscape tablets only: caption left + device right
   | "feature-graphic"; // 1024×500 banner with icon + name + tagline
 
@@ -55,6 +57,20 @@ export type TextElement = {
   align?: "left" | "center" | "right";
 };
 
+// Percent positions inside an image frame. Zoom never reveals empty edges.
+export type ImageCrop = { x: number; y: number; zoom: number };
+export type ImageAsset = { src: string; crop?: ImageCrop };
+
+export type GradientBackground = {
+  kind: "gradient"; textColor?: string;
+  style: "linear" | "radial"; angle: number; center: { x: number; y: number };
+  stops: { color: string; position: number }[];
+};
+export type Background =
+  | { kind: "solid"; color: string; textColor?: string }
+  | GradientBackground
+  | { kind: "image"; image: ImageAsset; fit: "cover" | "contain"; color: string; tint: { color: string; opacity: number }; textColor?: string };
+
 export type Slide = {
   id: string;
   layout: SlideLayout;
@@ -62,6 +78,9 @@ export type Slide = {
   headline: LocalizedText;    // multi-line; newlines are intentional, per locale
   screenshot: string;         // path under /screenshots/ — may contain {locale}
   screenshotSecondary?: string; // for two-devices layout — may contain {locale}
+  photo?: ImageAsset;
+  artworks?: ImageAsset[];
+  background?: Background;
   inverted?: boolean;         // dark background variant
   // Per-element overrides; when present, replaces layout default placement.
   transforms?: Partial<Record<BuiltInElementId, ElementTransform>>;
@@ -69,6 +88,7 @@ export type Slide = {
 };
 
 export type ThemeId =
+  | "brand-neutral"
   | "clean-light"
   | "dark-bold"
   | "warm-editorial"
@@ -84,12 +104,24 @@ export type Theme = {
   fgAlt: string;       // text on bgAlt
   accent: string;
   muted: string;
+  fontFamily?: string;
+  textAlign?: "left" | "center";
+  background?: Background;
+};
+
+export type BrandStyle = {
+  background: string;
+  foreground: string;
+  font: "sans" | "serif" | "humanist";
+  alignment: "left" | "center";
 };
 
 export type ProjectState = {
   schemaVersion?: number;
   appName: string;
   themeId: string;
+  brand?: BrandStyle;
+  background?: Background;
   // v1 projects render as isolated screens until the user opts into connected crops.
   connectedCanvas: boolean;
   // Locales this project targets. Drives the toolbar dropdown and bulk export.

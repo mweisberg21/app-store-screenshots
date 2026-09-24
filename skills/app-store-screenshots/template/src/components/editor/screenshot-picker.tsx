@@ -10,6 +10,7 @@ type Props = {
   value: string;
   locale?: string;
   onChange: (v: string) => void;
+  onBusyChange?: (busy: boolean) => void;
 };
 
 const ACCEPTED = ["image/png", "image/jpeg"];
@@ -34,11 +35,17 @@ async function uploadDataUrl(dataUrl: string): Promise<string> {
   return json.path;
 }
 
-export function ScreenshotPicker({ label, value, locale, onChange }: Props) {
+export function ScreenshotPicker({ label, value, locale, onChange, onBusyChange }: Props) {
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [uploading, setUploading] = React.useState(false);
+  const mounted = React.useRef(true);
+
+  React.useEffect(() => {
+    mounted.current = true;
+    return () => { mounted.current = false; onBusyChange?.(false); };
+  }, [onBusyChange]);
 
   React.useEffect(() => {
     setError(null);
@@ -62,14 +69,15 @@ export function ScreenshotPicker({ label, value, locale, onChange }: Props) {
       return;
     }
     setUploading(true);
+    onBusyChange?.(true);
     try {
       const uploadedPath = await uploadDataUrl(dataUrl);
       setImage(uploadedPath, dataUrl);
-      onChange(uploadedPath);
+      if (mounted.current) onChange(uploadedPath);
     } catch (error) {
       setError(error instanceof Error ? error.message : "Image upload failed");
     } finally {
-      setUploading(false);
+      if (mounted.current) { setUploading(false); onBusyChange?.(false); }
     }
   }
 
@@ -85,6 +93,7 @@ export function ScreenshotPicker({ label, value, locale, onChange }: Props) {
       ? "drop image, or click Pick"
       : isData
         ? "uploaded image (not on disk)"
+        : value.startsWith("/screenshots/uploaded/") ? "Uploaded image"
         : value.replace(/^.*\/(?=[^/]+\/[^/]+$)/, "…/");
 
   return (
@@ -130,6 +139,7 @@ export function ScreenshotPicker({ label, value, locale, onChange }: Props) {
         <input
           ref={inputRef}
           type="file"
+          aria-label={`Upload ${label.toLowerCase()}`}
           accept="image/png,image/jpeg"
           className="hidden"
           onChange={async (e) => {
@@ -143,7 +153,9 @@ export function ScreenshotPicker({ label, value, locale, onChange }: Props) {
           type="button"
           variant="outline"
           size="sm"
-          className="h-8"
+          className="h-11 min-w-11"
+          disabled={uploading}
+          aria-label={`Pick ${label.toLowerCase()}`}
           onClick={() => inputRef.current?.click()}
         >
           <Upload className="h-3.5 w-3.5" />
@@ -154,12 +166,13 @@ export function ScreenshotPicker({ label, value, locale, onChange }: Props) {
             type="button"
             variant="ghost"
             size="icon"
-            className="h-8 w-8"
+            className="h-11 w-11 md:h-10 md:w-10"
+            disabled={uploading}
             onClick={() => {
               onChange("");
               setError(null);
             }}
-            aria-label="Clear screenshot"
+            aria-label={`Clear ${label.toLowerCase()}`}
             title="Clear"
           >
             <X className="h-4 w-4" />

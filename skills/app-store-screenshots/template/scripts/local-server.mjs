@@ -1,6 +1,8 @@
 import { randomBytes } from "node:crypto";
 import { spawn } from "node:child_process";
 import { createRequire } from "node:module";
+import { fileURLToPath } from "node:url";
+import { ensureAppleFrames } from "./apple-frame-files.mjs";
 
 const mode = process.argv[2];
 const args = process.argv.slice(3);
@@ -9,6 +11,9 @@ if (!["dev", "start"].includes(mode) || (args.length && (args.length !== 2 || ar
 }
 const port = Number(args[1] || process.env.PORT || 3000);
 if (!Number.isInteger(port) || port < 1024 || port > 65535) throw new Error("Invalid port");
+const frames = await ensureAppleFrames(fileURLToPath(new URL("../", import.meta.url)));
+if (frames.source === "cache") console.log("Original Apple frames added from your local cache.");
+if (!frames.ready) console.warn('Apple frames need a one-time import: npm run frames:import -- "/path/to/Apple Device Frames"');
 const token = randomBytes(32).toString("hex");
 const origin = `http://127.0.0.1:${port}`;
 const require = createRequire(import.meta.url);

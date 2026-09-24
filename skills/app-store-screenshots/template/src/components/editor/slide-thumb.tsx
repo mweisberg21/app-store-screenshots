@@ -28,7 +28,7 @@ type Props = {
 };
 
 // Thumb tile target width (pixels). Height is derived from device aspect.
-const THUMB_W = 60;
+const THUMB_W = 48;
 
 export function SlideThumb({
   slide,
@@ -54,7 +54,7 @@ export function SlideThumb({
 
   const { cW, cH } = getCanvas(device, orientation);
   const aspect = cW / cH;
-  const tileH = Math.max(34, Math.min(120, Math.round(THUMB_W / aspect)));
+  const tileH = Math.round(THUMB_W / aspect);
   const scale = THUMB_W / cW;
   const start = connectedCanvas ? Math.max(0, index - 1) : index;
   const visibleSlides = connectedCanvas ? slides.slice(start, Math.min(slides.length, index + 2)) : [slide];
@@ -71,13 +71,13 @@ export function SlideThumb({
       ref={setNodeRef}
       style={style}
       className={cn(
-        "group relative flex items-stretch gap-2 rounded-lg border bg-card p-1.5 transition-all hover:border-foreground/30 hover:bg-accent",
-        active && "border-primary ring-1 ring-primary",
+        "group relative flex items-stretch gap-2 rounded-lg border bg-card p-1.5 transition-[border-color,background-color] hover:border-foreground/30 hover:bg-accent",
+        active && "border-primary",
       )}
     >
       <button
         type="button"
-        className="flex w-3 cursor-grab items-center justify-center text-muted-foreground/60 hover:text-foreground focus-visible:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring active:cursor-grabbing"
+        className="flex min-w-10 cursor-grab items-center justify-center text-muted-foreground/60 hover:text-foreground focus-visible:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring active:cursor-grabbing"
         {...attributes}
         {...listeners}
         aria-label={`Reorder screen ${index + 1} (press space, then arrow keys)`}
@@ -88,6 +88,8 @@ export function SlideThumb({
       <button
         type="button"
         onClick={onSelect}
+        aria-current={active ? "true" : undefined}
+        aria-label={`Screen ${index + 1}${headline ? `: ${headline.replace(/\n/g, " ")}` : ": Add a headline"}`}
         className="flex flex-1 items-center gap-3 overflow-hidden text-left"
       >
         <div
@@ -151,12 +153,12 @@ export function SlideThumb({
       </button>
 
       {/* Always visible on touch (no hover); fades in on hover on desktop. */}
-      <div className="flex flex-col items-center justify-center gap-0.5 opacity-60 transition-opacity focus-within:opacity-100 group-hover:opacity-100 md:opacity-0">
+      <div className="flex flex-col items-center justify-center gap-0.5 opacity-60 transition-opacity focus-within:opacity-100 group-hover:opacity-100">
         <Button
           type="button"
           size="icon"
           variant="ghost"
-          className="h-6 w-6"
+          className="h-11 w-11 md:h-10 md:w-10"
           onClick={onDuplicate}
           aria-label={`Duplicate screen ${index + 1}`}
           title="Duplicate screen"
@@ -167,7 +169,7 @@ export function SlideThumb({
           type="button"
           size="icon"
           variant="ghost"
-          className="h-6 w-6 hover:text-destructive"
+          className="h-11 w-11 md:h-10 md:w-10 hover:text-destructive"
           onClick={onDelete}
           aria-label={`Delete screen ${index + 1}`}
           title="Delete screen (undoable)"

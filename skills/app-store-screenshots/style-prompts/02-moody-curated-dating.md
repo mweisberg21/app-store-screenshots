@@ -1,3 +1,5 @@
+> Optional historical reference. The customer brief and `_QUALITY_BAR.md` take priority over every decoration count, fixed sequence, or mandatory effect below. Use only after the user explicitly selects this style.
+
 ---
 name: moody-curated-dating
 description: Cinematic, dimly-lit lifestyle photography overlaid with white serif headlines and italic emphasis. Curated, exclusive, member's-club feel. Inspired by Mate.

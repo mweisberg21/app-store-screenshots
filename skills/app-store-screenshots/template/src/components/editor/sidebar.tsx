@@ -74,7 +74,7 @@ export function Sidebar({
     <div className="flex h-full flex-col">
       <div className="border-b p-3">
         <h2 className="text-sm font-semibold">Screens</h2>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs tabular-nums text-muted-foreground">
           {slides.length} screen{slides.length === 1 ? "" : "s"} · drag to reorder
         </p>
       </div>

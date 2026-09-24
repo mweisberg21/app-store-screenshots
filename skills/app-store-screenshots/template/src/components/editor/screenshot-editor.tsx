@@ -7,11 +7,13 @@ import {
   getExportSizes,
   hasTheme,
   supportsLandscape,
-  themeById,
 } from "@/lib/constants";
 import { detectPlatform, nid } from "@/lib/defaults";
 import { isBuiltInElementId, isTextElementId, textElementKey } from "@/lib/elements";
-import { preloadImages } from "@/lib/image-cache";
+import { didFail, imageSize, preloadImages } from "@/lib/image-cache";
+import { appleFrame, framePath } from "@/lib/apple-frames";
+import { applyBackground } from "@/lib/background";
+import { BackgroundSettings } from "./background-settings";
 import { resolveScreenshot, writeLocalized } from "@/lib/locale";
 import { useProject } from "@/lib/storage";
 import type {
@@ -22,6 +24,14 @@ import type {
   SelectedElement,
   Slide,
 } from "@/lib/types";
+import { projectTheme } from "@/lib/brand";
+import { reviewExport, type ExportIssue } from "@/lib/export-review";
+import { slideImagePaths } from "@/lib/template-layout";
+import { reviewTextFit } from "@/lib/text-fit";
+import { createContactSheet } from "@/lib/contact-sheet";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { BrandSettings } from "./brand-settings";
 import { Inspector } from "./inspector";
 import { PreviewStage } from "./preview-stage";
 import { Sidebar } from "./sidebar";
@@ -41,7 +51,8 @@ export function ScreenshotEditor() {
   const currentSlides = state.slidesByDevice[state.device] || [];
   const activeSlide =
     currentSlides.find((s) => s.id === activeSlideId) || currentSlides[0] || null;
-  const theme = themeById(state.themeId);
+  const theme = projectTheme(state);
+  const [exportIssues, setExportIssues] = React.useState<ExportIssue[]>([]);
 
   React.useEffect(() => {
     if (selectedElement && selectedElement.slideId !== activeSlide?.id) {
@@ -63,23 +74,27 @@ export function ScreenshotEditor() {
   }, [state.device, state.orientation, setState]);
 
   React.useEffect(() => {
-    if (hydrated && state.themeId && !hasTheme(state.themeId)) {
+    if (hydrated && !state.brand && state.themeId && !hasTheme(state.themeId)) {
       toast.warning("Using fallback theme", {
         description: `Theme "${state.themeId}" is not defined in src/lib/constants.ts.`,
         duration: 8000,
       });
     }
-  }, [hydrated, state.themeId]);
+  }, [hydrated, state.themeId, state.brand]);
 
   const assetPaths = React.useMemo(() => {
     const paths = new Set<string>();
-    paths.add("/mockup.png");
+    const frame = appleFrame(state.device, state.orientation);
+    if (frame) paths.add(framePath(frame));
     if (state.appIcon) paths.add(state.appIcon);
+    if (state.background?.kind === "image") {
+      for (const locale of state.locales) paths.add(resolveScreenshot(state.background.image.src, locale));
+    }
     // Preload every locale variant so bulk export doesn't race image loads.
     const allSlides: Slide[] = Object.values(state.slidesByDevice).flat();
     for (const s of allSlides) {
-      for (const raw of [s.screenshot, s.screenshotSecondary]) {
-        if (!raw || raw.startsWith("data:")) continue;
+      for (const raw of slideImagePaths(s)) {
+        if (!raw) continue;
         if (raw.includes("{locale}")) {
           for (const loc of state.locales) paths.add(resolveScreenshot(raw, loc));
         } else {
@@ -88,7 +103,7 @@ export function ScreenshotEditor() {
       }
     }
     return Array.from(paths).sort();
-  }, [state.slidesByDevice, state.appIcon, state.locales]);
+  }, [state.slidesByDevice, state.appIcon, state.locales, state.device, state.orientation, state.background]);
   const assetSig = assetPaths.join("|");
 
   React.useEffect(() => {
@@ -303,6 +318,7 @@ export function ScreenshotEditor() {
           target.tagName === "TEXTAREA" ||
           (target as HTMLElement).isContentEditable);
       if (exporting) return;
+      if (target?.closest('[role="dialog"]')) return;
 
       if (e.key === "Escape") {
         setSelectedElement(null);
@@ -373,34 +389,15 @@ export function ScreenshotEditor() {
       return;
     }
     const locales = state.locales;
+    setExporting("Checking…");
     await preloadImages(assetPaths, { retryFailed: true });
     await waitForPaint();
 
-    const missingScreens = currentSlides
-      .map((slide, index) => ({ slide, index }))
-      .filter(({ slide }) => slideNeedsScreenshot(state.device, slide) && !slide.screenshot);
-    const reusedBackScreens = currentSlides
-      .map((slide, index) => ({ slide, index }))
-      .filter(
-        ({ slide }) =>
-          state.device !== "feature-graphic" &&
-          slide.layout === "two-devices" &&
-          slide.screenshot &&
-          !slide.screenshotSecondary,
-      );
-    if (missingScreens.length > 0 || reusedBackScreens.length > 0) {
-      const details = [
-        missingScreens.length
-          ? `${missingScreens.length} screen${missingScreens.length === 1 ? "" : "s"} will export with an empty device.`
-          : null,
-        reusedBackScreens.length
-          ? `${reusedBackScreens.length} two-device screen${reusedBackScreens.length === 1 ? "" : "s"} will reuse the primary screenshot in back.`
-          : null,
-      ].filter(Boolean);
-      toast.warning("Export includes placeholder screenshots", {
-        description: details.join(" "),
-        duration: 7000,
-      });
+    const issues = reviewExport(state, didFail, imageSize);
+    if (issues.length) {
+      setExportIssues(issues);
+      setExporting(null);
+      return;
     }
 
     // Make sure custom fonts are loaded before snapshot so typography in PNG
@@ -414,6 +411,20 @@ export function ScreenshotEditor() {
     }
 
     const { cW, cH } = getCanvas(state.device, state.orientation);
+    // Measure actual browser text in each requested language before any file
+    // is captured. Never silently shrink text or clip a long translation.
+    const fitIssues: ExportIssue[] = [];
+    for (const locale of locales) {
+      setExportLocaleOverride(locale);
+      await waitForPaint();
+      if (exportRef.current) fitIssues.push(...reviewTextFit(exportRef.current, locale, currentSlides));
+    }
+    if (fitIssues.length) {
+      setExportIssues(fitIssues);
+      setExportLocaleOverride(null);
+      setExporting(null);
+      return;
+    }
     const platform = detectPlatform(state.device);
     const zip = new JSZip();
     const totalUnits = sizes.length * locales.length * currentSlides.length;
@@ -426,6 +437,7 @@ export function ScreenshotEditor() {
       setExportLocaleOverride(locale);
       await waitForPaint();
 
+      const reviewShots: string[] = [];
       for (const size of sizes) {
         for (let i = 0; i < currentSlides.length; i++) {
           const slide = currentSlides[i];
@@ -445,6 +457,7 @@ export function ScreenshotEditor() {
             const filename = `${String(i + 1).padStart(2, "0")}-${slide.layout}.png`;
             const path = `${platform}/${state.device}/${size.w}x${size.h}/${locale}/${filename}`;
             zip.file(path, base64, { base64: true });
+            if (size === sizes[0]) reviewShots.push(dataUrl);
             okCount += 1;
           } catch (e) {
             failed += 1;
@@ -452,6 +465,15 @@ export function ScreenshotEditor() {
             errors.push(`${locale} ${size.w}×${size.h} screen ${i + 1}: ${msg}`);
             console.error("Export failed", { slideId: slide.id, locale, size }, e);
           }
+        }
+      }
+      if (reviewShots.length === currentSlides.length) {
+        try {
+          const sheet = await createContactSheet(state.appName, locale, reviewShots);
+          zip.file(`review/${locale}.png`, sheet.split(",")[1], { base64: true });
+        } catch (error) {
+          errors.push(`${locale}: review sheet failed`);
+          console.error("Review sheet failed", error);
         }
       }
     }
@@ -478,6 +500,7 @@ export function ScreenshotEditor() {
     const summary = `${locales.length} locale${locales.length === 1 ? "" : "s"} × ${sizes.length} size${sizes.length === 1 ? "" : "s"}`;
     if (failed === 0) {
       toast.success(`Exported ${okCount} PNGs (${summary})`);
+      if (errors.length) toast.warning("Store images exported, but a review sheet could not be created.");
     } else if (okCount === 0) {
       toast.error(`All ${failed} renders failed`, {
         description: errors.slice(0, 3).join("\n"),
@@ -554,6 +577,10 @@ export function ScreenshotEditor() {
     <div className="flex h-screen flex-col overflow-hidden bg-background">
       <Toaster position="top-right" richColors closeButton />
       <Toolbar
+        backgroundControl={<BackgroundSettings state={state} slide={activeSlide} disabled={busy} onApply={(scope, background, replaceOverrides) => {
+          if (activeSlide) setState(prev => applyBackground(prev, scope, activeSlide.id, background, replaceOverrides));
+        }} />}
+        brandControl={<BrandSettings state={state} disabled={busy} onApply={(brand, appIcon) => setState((p) => ({ ...p, brand, appIcon }))} />}
         appName={state.appName}
         setAppName={(v) => setState((p) => ({ ...p, appName: v }))}
         connectedCanvas={state.connectedCanvas}
@@ -582,7 +609,7 @@ export function ScreenshotEditor() {
         busy={busy}
       />
 
-      <div className="flex flex-1 overflow-hidden md:flex-row flex-col">
+      <div inert={busy} className="flex flex-1 overflow-hidden md:flex-row flex-col">
         <aside className="md:w-72 w-full shrink-0 border-r bg-card md:max-h-none max-h-64 overflow-hidden">
           <Sidebar
             slides={currentSlides}
@@ -657,11 +684,30 @@ export function ScreenshotEditor() {
         </aside>
       </div>
 
+      <Dialog open={exportIssues.length > 0} onOpenChange={(open) => { if (!open) setExportIssues([]); }}>
+        <DialogContent className="max-h-[85dvh] overflow-y-auto sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Complete these items before export</DialogTitle>
+            <DialogDescription>Nothing was exported. Check the text and source images in each language, then try again.</DialogDescription>
+          </DialogHeader>
+          <ul className="space-y-3 text-sm">
+            {exportIssues.map((issue, index) => <li key={index}>
+              {issue.slideId ? <button className="min-h-11 w-full rounded border p-3 text-left hover:bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2" onClick={() => {
+                setActiveSlideId(issue.slideId!);
+                if (issue.locale) setState((p) => ({ ...p, locale: issue.locale! }));
+                setExportIssues([]);
+              }}>{issue.message}</button> : <p className="p-3">{issue.message}</p>}
+            </li>)}
+          </ul>
+          <Button onClick={() => setExportIssues([])}>Back to editor</Button>
+        </DialogContent>
+      </Dialog>
+
       {/* Off-screen export container — full-resolution canvases for html-to-image. */}
       <div
         aria-hidden
         style={{
-          position: "absolute",
+          position: "fixed",
           left: -99999,
           top: 0,
           pointerEvents: "none",
@@ -714,11 +760,6 @@ function slugify(s: string) {
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/(^-|-$)/g, "") || "screenshots"
   );
-}
-
-function slideNeedsScreenshot(device: Device, slide: Slide) {
-  if (device === "feature-graphic") return false;
-  return slide.layout !== "no-device" && slide.layout !== "feature-graphic";
 }
 
 function stamp() {

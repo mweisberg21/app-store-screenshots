@@ -94,7 +94,7 @@ export function PreviewStage({
     const screenLeft = activeIndex * cW * scale;
     const screenWidth = cW * scale;
     const targetLeft = Math.max(0, screenLeft - (scroller.clientWidth - screenWidth) / 2);
-    scroller.scrollTo({ left: targetLeft, behavior: "smooth" });
+    scroller.scrollTo({ left: targetLeft, behavior: "instant" });
   }, [activeIndex, activeSlide, cW, scale]);
 
   const handleCanvasActiveSlideChange = React.useCallback(
@@ -110,7 +110,7 @@ export function PreviewStage({
   return (
     <div
       ref={containerRef}
-      className="relative h-full w-full overflow-hidden bg-[radial-gradient(70%_70%_at_50%_35%,_hsl(var(--background))_0%,_hsl(var(--muted))_100%)]"
+      className="relative h-full w-full overflow-hidden bg-muted"
     >
       <div ref={scrollerRef} className="h-full w-full overflow-auto p-12">
         <div
@@ -119,7 +119,7 @@ export function PreviewStage({
             height: cH * scale,
             position: "relative",
             flexShrink: 0,
-            filter: "drop-shadow(0 32px 42px rgba(15, 23, 42, 0.18))",
+            boxShadow: "0 2px 12px rgba(0, 0, 0, 0.08)",
           }}
         >
           <div
@@ -194,7 +194,7 @@ export function PreviewStage({
           type="button"
           variant="ghost"
           size="icon"
-          className="h-6 w-6"
+          className="h-11 w-11 md:h-10 md:w-10"
           onClick={() => setZoom((value) => Math.max(0.25, Number((value - 0.1).toFixed(2))))}
           disabled={zoom <= 0.25}
           title="Zoom out"
@@ -207,7 +207,7 @@ export function PreviewStage({
           type="button"
           variant="ghost"
           size="icon"
-          className="h-6 w-6"
+          className="h-11 w-11 md:h-10 md:w-10"
           onClick={() => setZoom((value) => Math.min(2, Number((value + 0.1).toFixed(2))))}
           disabled={zoom >= 2}
           title="Zoom in"
@@ -219,7 +219,7 @@ export function PreviewStage({
           type="button"
           variant="ghost"
           size="icon"
-          className="h-6 w-6"
+          className="h-11 w-11 md:h-10 md:w-10"
           onClick={() => setZoom(1)}
           title="Fit active screen"
           aria-label="Fit active screen"

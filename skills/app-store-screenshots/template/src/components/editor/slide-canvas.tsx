@@ -16,6 +16,7 @@ import type {
 import {
   CANVAS,
   IPAD_RATIO,
+  IPAD_LANDSCAPE_RATIO,
   MK_RATIO,
   ipadW,
   phoneW,
@@ -24,13 +25,19 @@ import {
   tabletPW,
 } from "@/lib/constants";
 import { toTextElementId } from "@/lib/elements";
+import { fitFrameRect } from "@/lib/apple-frames";
 import { img } from "@/lib/image-cache";
 import { pickText, resolveScreenshot } from "@/lib/locale";
+import { artworkRects, mediaTemplateRects } from "@/lib/template-layout";
+import { CroppedImage } from "./cropped-image";
+import { effectiveBackground, themeForSlide } from "@/lib/background";
+import { BackgroundLayer } from "./background-layer";
 import {
   AndroidPhone,
   AndroidTabletL,
   AndroidTabletP,
   IPad,
+  IPadLandscape,
   Phone,
 } from "./device-frames";
 
@@ -43,7 +50,7 @@ type FrameComp = React.ComponentType<{
 
 export function getCanvas(device: Device, orientation: Orientation) {
   const c = CANVAS[device];
-  if ((device === "android-7" || device === "android-10") && orientation === "landscape") {
+  if (c.wL && c.hL && orientation === "landscape") {
     return { cW: c.wL!, cH: c.hL! };
   }
   return { cW: c.w, cH: c.h };
@@ -54,7 +61,7 @@ function getFrameAspect(device: Device, orientation: Orientation) {
   switch (device) {
     case "iphone":      return MK_RATIO;
     case "android":     return 9 / 19.5;
-    case "ipad":        return IPAD_RATIO;
+    case "ipad":        return orientation === "landscape" ? IPAD_LANDSCAPE_RATIO : IPAD_RATIO;
     case "android-7":
     case "android-10":  return orientation === "landscape" ? 8 / 5 : 5 / 8;
     default:            return 1;
@@ -70,6 +77,7 @@ export function getFrameForDevice(device: Device, orientation: Orientation): {
     case "iphone":
       return { Comp: Phone, widthFn: phoneW, smallWidthFn: phoneWSmall };
     case "ipad":
+      if (orientation === "landscape") return { Comp: IPadLandscape, widthFn: (w, h) => Math.min(0.82, 0.72 * h / w * IPAD_LANDSCAPE_RATIO), smallWidthFn: (w, h) => Math.min(0.6, 0.6 * h / w * IPAD_LANDSCAPE_RATIO) };
       return { Comp: IPad, widthFn: ipadW, smallWidthFn: (cW, cH) => ipadW(cW, cH, 0.6) };
     case "android":
       return { Comp: AndroidPhone, widthFn: phoneW, smallWidthFn: phoneWSmall };
@@ -175,9 +183,10 @@ function EditableText({
   return (
     <div
       ref={ref}
+      data-text-leaf
       contentEditable={editable}
       suppressContentEditableWarning
-      data-placeholder={placeholder}
+      data-placeholder={editable ? placeholder : undefined}
       onInput={handleInput}
       onFocus={() => onFocus?.()}
       onKeyDown={(e) => {
@@ -232,14 +241,14 @@ function Caption({
   onFocus?: () => void;
 }) {
   const fg = inverted ? theme.fgAlt : theme.fg;
-  const accent = theme.accent;
+  const label = pickText(slide.label, locale);
   // Scale typography off the *shorter* dimension so landscape layouts don't
   // produce headlines so tall they overlap the device frame.
   const unit = Math.min(cW, cH);
   return (
-    <div style={{ textAlign: align, position: "relative", width: "100%" }}>
-      <EditableText
-        value={pickText(slide.label, locale)}
+    <div data-text-content style={{ textAlign: theme.textAlign ?? align, fontFamily: theme.fontFamily, position: "relative", width: "100%" }}>
+      {label && <EditableText
+        value={label}
         editable={editable}
         onChange={edit?.onLabelChange}
         onFocus={onFocus}
@@ -248,85 +257,30 @@ function Caption({
           fontSize: unit * 0.028,
           fontWeight: 600,
           letterSpacing: unit * 0.0015,
-          color: accent,
+          color: fg,
           textTransform: "uppercase",
           marginBottom: unit * 0.018,
           minHeight: unit * 0.03,
         }}
-      />
+      />}
       <EditableText
         value={pickText(slide.headline, locale)}
         editable={editable}
         multiline
         onChange={edit?.onHeadlineChange}
         onFocus={onFocus}
-        placeholder="Headline goes here"
+        placeholder="Write one clear benefit"
         style={{
-          fontSize: unit * 0.092,
+          fontSize: unit * 0.13,
           fontWeight: 700,
-          lineHeight: 0.96,
+          lineHeight: 1.06,
+          overflowWrap: "anywhere",
+          textWrap: "balance",
           letterSpacing: -unit * 0.001,
           color: fg,
         }}
       />
     </div>
-  );
-}
-
-// ---------- Background ----------
-
-function backgroundFor(theme: Theme, inverted?: boolean) {
-  if (inverted) {
-    return `linear-gradient(160deg, ${theme.bgAlt} 0%, ${shade(theme.bgAlt, -8)} 100%)`;
-  }
-  return `linear-gradient(160deg, ${theme.bg} 0%, ${shade(theme.bg, -6)} 100%)`;
-}
-
-function shade(hex: string, percent: number) {
-  const c = hex.replace("#", "");
-  const num = parseInt(c.length === 3 ? c.split("").map((x) => x + x).join("") : c, 16);
-  let r = (num >> 16) & 0xff;
-  let g = (num >> 8) & 0xff;
-  let b = num & 0xff;
-  const amt = Math.round((255 * percent) / 100);
-  r = Math.max(0, Math.min(255, r + amt));
-  g = Math.max(0, Math.min(255, g + amt));
-  b = Math.max(0, Math.min(255, b + amt));
-  return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, "0")}`;
-}
-
-// ---------- Decorative blob ----------
-
-function Blob({
-  cW,
-  color,
-  x,
-  y,
-  size,
-  opacity = 0.4,
-}: {
-  cW: number;
-  color: string;
-  x: number;
-  y: number;
-  size: number;
-  opacity?: number;
-}) {
-  return (
-    <div
-      style={{
-        position: "absolute",
-        left: `${x}%`,
-        top: `${y}%`,
-        width: `${size}%`,
-        aspectRatio: "1 / 1",
-        background: color,
-        borderRadius: "50%",
-        filter: `blur(${cW * 0.06}px)`,
-        opacity,
-        pointerEvents: "none",
-      }}
-    />
   );
 }
 
@@ -355,6 +309,9 @@ function getDefaultRects(
   const capH = cH * 0.28;
 
   switch (layout) {
+    case "creator":
+    case "content-library":
+      return mediaTemplateRects(cW, cH, frameAspect, layout);
     case "hero":
       return {
         caption: { x: cW * 0.08, y: cH * 0.09, width: capW, height: capH, align: "center" },
@@ -365,16 +322,20 @@ function getDefaultRects(
           height: deviceH,
         },
       };
-    case "device-bottom":
+    case "device-bottom": {
+      const landscape = cW > cH;
+      const width = Math.min(cW * 0.84, cH * (landscape ? 0.56 : 0.65) * frameAspect);
+      const height = width / frameAspect;
       return {
-        caption: { x: cW * 0.08, y: cH * 0.08, width: capW, height: capH, align: "center" },
+        caption: { x: cW * 0.08, y: cH * 0.06, width: capW, height: cH * (landscape ? 0.30 : 0.22), align: "center" },
         device: {
-          x: (cW - deviceW) / 2,
-          y: cH - deviceH - cH * 0.02,
-          width: deviceW,
-          height: deviceH,
+          x: (cW - width) / 2,
+          y: cH * 0.96 - height,
+          width,
+          height,
         },
       };
+    }
     case "device-top":
       return {
         caption: { x: cW * 0.08, y: cH * 0.65, width: capW, height: capH, align: "center" },
@@ -540,7 +501,7 @@ export function SlideCanvas({
         overflow: "hidden",
       }}
     >
-      <SlideBackground slide={slide} cW={cW} cH={cH} theme={theme} />
+      <BackgroundLayer background={effectiveBackground(slide, theme)} locale={locale} />
       <SlideElements
         slide={slide}
         device={device}
@@ -646,7 +607,7 @@ export function DeckCanvas({
               overflow: "hidden",
             }}
           >
-            <SlideBackground slide={slide} cW={cW} cH={cH} theme={theme} />
+            <BackgroundLayer background={effectiveBackground(slide, theme)} locale={locale} />
             {showGuides && <ScreenGuide cW={cW} cH={cH} index={index} active={active} />}
           </div>
         );
@@ -709,34 +670,6 @@ export function DeckCanvas({
   );
 }
 
-function SlideBackground({
-  slide,
-  cW,
-  cH,
-  theme,
-}: {
-  slide: Slide;
-  cW: number;
-  cH: number;
-  theme: Theme;
-}) {
-  const inverted = !!slide.inverted;
-  return (
-    <div
-      style={{
-        position: "absolute",
-        inset: 0,
-        overflow: "hidden",
-        background: backgroundFor(theme, inverted),
-        color: inverted ? theme.fgAlt : theme.fg,
-      }}
-    >
-      <Blob cW={cW} color={theme.accent} x={-15} y={-10} size={55} opacity={inverted ? 0.25 : 0.32} />
-      <Blob cW={cW} color={theme.accent} x={70} y={75} size={45} opacity={inverted ? 0.18 : 0.25} />
-    </div>
-  );
-}
-
 function ScreenGuide({
   cW,
   cH,
@@ -756,12 +689,9 @@ function ScreenGuide({
         inset: 0,
         pointerEvents: "none",
         outline: `${active ? Math.max(4, cW * 0.003) : Math.max(2, cW * 0.0015)}px solid ${
-          active ? "rgba(91, 124, 250, 0.95)" : "rgba(15, 23, 42, 0.22)"
+          active ? "rgba(48, 48, 48, 0.9)" : "rgba(15, 23, 42, 0.22)"
         }`,
         outlineOffset: active ? -Math.max(4, cW * 0.003) : -Math.max(2, cW * 0.0015),
-        boxShadow: active
-          ? "inset 0 0 0 9999px rgba(91, 124, 250, 0.03)"
-          : "inset 0 0 0 1px rgba(255, 255, 255, 0.22)",
       }}
     >
       <div
@@ -771,7 +701,7 @@ function ScreenGuide({
           top: cH * 0.024,
           borderRadius: cW * 0.018,
           padding: `${cH * 0.006}px ${cW * 0.018}px`,
-          background: active ? "rgba(91, 124, 250, 0.92)" : "rgba(15, 23, 42, 0.72)",
+          background: active ? "rgba(48, 48, 48, 0.92)" : "rgba(15, 23, 42, 0.72)",
           color: "white",
           fontSize: Math.max(24, cW * 0.022),
           lineHeight: 1,
@@ -788,7 +718,7 @@ function ScreenGuide({
 function FeatureGraphicCanvas({
   slide,
   cW,
-  theme,
+  theme: baseTheme,
   locale,
   appName,
   appIcon,
@@ -804,6 +734,7 @@ function FeatureGraphicCanvas({
   editable?: boolean;
   edit?: EditHandlers;
 }) {
+  const theme = themeForSlide(slide, baseTheme);
   return (
     <div
       style={{
@@ -811,14 +742,15 @@ function FeatureGraphicCanvas({
         height: "100%",
         position: "relative",
         overflow: "hidden",
-        background: `linear-gradient(135deg, ${theme.bgAlt} 0%, ${shade(theme.bgAlt, -10)} 50%, ${theme.accent} 200%)`,
+        background: slide.inverted ? theme.bgAlt : theme.bg,
+        fontFamily: theme.fontFamily,
         display: "flex",
         alignItems: "center",
         padding: `0 ${cW * 0.06}px`,
-        color: theme.fgAlt,
+        color: slide.inverted ? theme.fgAlt : theme.fg,
       }}
     >
-      <Blob cW={cW} color={theme.accent} x={70} y={20} size={50} opacity={0.45} />
+      <BackgroundLayer background={effectiveBackground(slide, theme)} locale={locale} />
       <div style={{ display: "flex", alignItems: "center", gap: cW * 0.03, zIndex: 2 }}>
         {appIcon && img(appIcon) ? (
           <img
@@ -828,7 +760,6 @@ function FeatureGraphicCanvas({
               width: cW * 0.13,
               height: cW * 0.13,
               borderRadius: cW * 0.022,
-              boxShadow: "0 4px 16px rgba(0,0,0,0.3)",
             }}
             draggable={false}
           />
@@ -839,21 +770,21 @@ function FeatureGraphicCanvas({
               width: cW * 0.13,
               height: cW * 0.13,
               borderRadius: cW * 0.022,
-              background: `linear-gradient(135deg, ${theme.accent}55, ${theme.accent})`,
+              background: theme.fg,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              color: theme.fgAlt,
+              color: theme.bg,
               fontWeight: 800,
               fontSize: cW * 0.07,
-              boxShadow: "0 4px 16px rgba(0,0,0,0.3)",
             }}
           >
             {(appName || "A").slice(0, 1).toUpperCase()}
           </div>
         )}
-        <div>
-          <div style={{ fontSize: cW * 0.06, fontWeight: 800, lineHeight: 1.05 }}>{appName || "App"}</div>
+        <div data-text-box data-slide-id={slide.id} style={{ width: cW * 0.70, height: cW * 0.37, display: "flex", alignItems: "center", textAlign: theme.textAlign }}>
+          <div data-text-content style={{ width: "100%" }}>
+          <div data-text-leaf style={{ fontSize: cW * 0.06, fontWeight: 800, lineHeight: 1.05, overflowWrap: "anywhere" }}>{appName || "App"}</div>
           <EditableText
             value={pickText(slide.headline, locale)}
             editable={editable}
@@ -861,11 +792,12 @@ function FeatureGraphicCanvas({
             onChange={edit?.onHeadlineChange}
             style={{
               fontSize: cW * 0.028,
-              color: "rgba(255,255,255,0.85)",
+              color: "inherit",
               marginTop: cW * 0.012,
               lineHeight: 1.25,
             }}
           />
+          </div>
         </div>
       </div>
     </div>
@@ -876,7 +808,7 @@ function SlideElements({
   slide,
   device,
   orientation,
-  theme,
+  theme: baseTheme,
   locale,
   editable,
   edit,
@@ -903,6 +835,7 @@ function SlideElements({
   boundsH: number;
   allowCrossScreen: boolean;
 }) {
+  const theme = themeForSlide(slide, baseTheme);
   const screenshot = resolveScreenshot(slide.screenshot, locale);
   const screenshotSecondary = resolveScreenshot(slide.screenshotSecondary, locale);
   const { cW, cH, Frame, frameAspect, defaults } = getSlideGeometry(slide, device, orientation);
@@ -961,7 +894,7 @@ function SlideElements({
         onSelect={() => edit?.onSelectElement?.("caption")}
         allowOverflow={allowCrossScreen}
       >
-        <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "flex-start" }}>
+        <div data-text-box data-slide-id={slide.id} style={{ width: "100%", height: "100%", display: "flex", alignItems: "flex-start" }}>
           {inner}
         </div>
       </Movable>
@@ -969,12 +902,13 @@ function SlideElements({
   }
 
   function renderDevice(id: "device" | "deviceSecondary", rect: Rect, src: string, extraStyle?: React.CSSProperties) {
+    const fitted = device === "iphone" || device === "ipad" ? fitFrameRect(rect, frameAspect) : rect;
     const saved = slide.transforms?.[id];
     const rotation = saved?.rotation ?? 0;
     const zIndex = saved?.zIndex ?? (id === "deviceSecondary" ? 2 : 3);
     return (
       <Movable
-        rect={toGlobal(rect)}
+        rect={toGlobal(fitted)}
         boundsW={boundsW}
         boundsH={boundsH}
         editable={editable}
@@ -1036,6 +970,8 @@ function SlideElements({
         allowOverflow={allowCrossScreen}
       >
         <div
+          data-text-box
+          data-slide-id={slide.id}
           style={{
             width: "100%",
             height: "100%",
@@ -1050,7 +986,7 @@ function SlideElements({
             padding: `${Math.min(cW, cH) * 0.012}px`,
           }}
         >
-          <EditableText
+          <div data-text-content style={{ width: "100%" }}><EditableText
             value={pickText(textElement.text, locale)}
             editable={editable}
             multiline
@@ -1060,13 +996,13 @@ function SlideElements({
             style={{
               width: "100%",
               color: textColor,
+              fontFamily: theme.fontFamily,
               fontSize: textElement.fontSize ?? Math.min(cW, cH) * 0.06,
               fontWeight: textElement.fontWeight ?? 700,
               lineHeight: 1.05,
               textAlign: textElement.align ?? "center",
-              textShadow: inverted ? "0 2px 18px rgba(0,0,0,0.22)" : "0 2px 18px rgba(255,255,255,0.2)",
             }}
-          />
+          /></div>
         </div>
       </Movable>
     );
@@ -1074,6 +1010,16 @@ function SlideElements({
 
   return (
     <>
+      {(slide.layout === "creator" || slide.layout === "content-library") && (() => {
+        const region = mediaTemplateRects(cW, cH, frameAspect, slide.layout).media;
+        const photoHeight = Math.min(region.height, region.width * 1.5);
+        const rects = slide.layout === "creator"
+          ? [{ ...region, y: region.y + (region.height - photoHeight) / 2, height: photoHeight }]
+          : artworkRects(region, slide.artworks?.length || 2);
+        return rects.map((rect, index) => <div key={`art-${index}`} onMouseDown={() => edit?.onSelectElement?.(null)} style={{ position: "absolute", left: screenX + rect.x, top: rect.y, width: rect.width, height: rect.height, zIndex: 1 }}>
+          <CroppedImage asset={slide.layout === "creator" ? slide.photo : slide.artworks?.[index]} locale={locale} label={slide.layout === "creator" ? "Creator photo" : `Catalog image ${index + 1}`} hideEmpty={hideEmpty} theme={theme} />
+        </div>);
+      })()}
       {secondaryRect &&
         renderDevice(
           "deviceSecondary",

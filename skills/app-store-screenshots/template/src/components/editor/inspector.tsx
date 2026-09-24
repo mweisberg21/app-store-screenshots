@@ -44,6 +44,7 @@ import type {
   TextElement,
 } from "@/lib/types";
 import { ScreenshotPicker } from "./screenshot-picker";
+import { ArtworkControls } from "./artwork-controls";
 import { getCanvas, getElementTransform } from "./slide-canvas";
 
 type Props = {
@@ -81,8 +82,8 @@ export function Inspector({
   const localeHeadline = slide.headline?.[locale] ?? "";
   // When the active locale is empty, surface the fallback (typically en) as
   // the placeholder so the user sees what they're translating from.
-  const headlineDefault = isFeatureGraphic ? "Your tagline." : "One idea\nper slide.";
-  const labelPlaceholder = localeLabel ? "FEATURE 01" : pickText(slide.label, locale) || "FEATURE 01";
+  const headlineDefault = isFeatureGraphic ? "Describe the app in one line" : "What can someone do on this screen?";
+  const labelPlaceholder = localeLabel ? "Optional context" : pickText(slide.label, locale) || "Optional context";
   const headlinePlaceholder = localeHeadline
     ? headlineDefault
     : pickText(slide.headline, locale) || headlineDefault;
@@ -111,7 +112,7 @@ export function Inspector({
 
       <div className="flex-1 space-y-4 overflow-y-auto p-3">
         <div className="space-y-1.5">
-          <Label className="text-xs">Layout</Label>
+          <Label htmlFor="screen-layout" className="text-xs">Template</Label>
           <Select
             value={layoutValue}
             onValueChange={(layout) => {
@@ -124,7 +125,7 @@ export function Inspector({
               });
             }}
           >
-            <SelectTrigger>
+            <SelectTrigger id="screen-layout">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -139,8 +140,9 @@ export function Inspector({
 
         {!isFeatureGraphic && (
           <div className="space-y-1.5">
-            <Label className="text-xs">Label</Label>
+            <Label htmlFor="screen-label" className="text-xs">Label (optional)</Label>
             <Input
+              id="screen-label"
               value={localeLabel}
               onChange={(e) => setLocaleField("label", e.target.value)}
               placeholder={labelPlaceholder}
@@ -150,10 +152,11 @@ export function Inspector({
 
         <div className="space-y-1.5">
           <div className="flex items-baseline justify-between">
-            <Label className="text-xs">{isFeatureGraphic ? "Tagline" : "Headline"}</Label>
+            <Label htmlFor="screen-headline" className="text-xs">{isFeatureGraphic ? "Tagline" : "Headline"}</Label>
             <span className="text-[10px] text-muted-foreground">newline = break</span>
           </div>
           <Textarea
+            id="screen-headline"
             value={localeHeadline}
             onChange={(e) => setLocaleField("headline", e.target.value)}
             rows={3}
@@ -187,6 +190,8 @@ export function Inspector({
           </div>
         )}
 
+        {!isFeatureGraphic && <ArtworkControls slide={slide} locale={locale} onChange={onChange} />}
+
         {!isFeatureGraphic && (
           <ElementTransformControls
             slide={slide}
@@ -201,7 +206,7 @@ export function Inspector({
 
         {isFeatureGraphic && (
           <p className="rounded-md border bg-muted/40 p-3 text-[11px] leading-relaxed text-muted-foreground">
-            Shows app icon + name + tagline. Drop an icon at <span className="rounded bg-background px-1 py-0.5 font-mono text-[10px] text-foreground">/public/app-icon.png</span> (or leave blank — the app initial will be used). Name is set in the toolbar.
+            Shows the app icon, name, and tagline. A real app icon is required for export. Set the name in the toolbar. Add the icon in Brand settings.
           </p>
         )}
       </div>
@@ -296,7 +301,7 @@ function ElementTransformControls({
       ) + 1;
     const element: TextElement = {
       id,
-      text: writeLocalized({}, locale, "New text"),
+      text: {},
       transform: {
         x: cW * 0.18,
         y: cH * 0.42,
@@ -435,7 +440,7 @@ function ActiveElementPanel({
             type="button"
             variant="ghost"
             size="icon"
-            className="h-6 w-6 hover:text-destructive"
+            className="h-11 w-11 md:h-10 md:w-10 hover:text-destructive"
             onClick={onDeleteText}
             title="Delete text element"
             aria-label="Delete text element"

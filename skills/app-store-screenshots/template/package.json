@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "frames:import": "node scripts/import-apple-frames.mjs",
     "dev": "node scripts/local-server.mjs dev",
     "build": "next build",
     "start": "node scripts/local-server.mjs start",

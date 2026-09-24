@@ -26,6 +26,8 @@ import { detectPlatform } from "@/lib/defaults";
 import type { Device, Orientation } from "@/lib/types";
 
 type Props = {
+  brandControl: React.ReactNode;
+  backgroundControl: React.ReactNode;
   appName: string;
   setAppName: (v: string) => void;
   connectedCanvas: boolean;
@@ -69,12 +71,15 @@ export function Toolbar(props: Props) {
       <Input
         value={props.appName}
         onChange={(e) => props.setAppName(e.target.value)}
-        className="h-8 w-40 border-dashed text-sm font-semibold focus-visible:border-input focus-visible:border-solid focus-visible:bg-background"
+        className="h-11 w-44 border-dashed text-sm font-semibold focus-visible:border-input focus-visible:border-solid focus-visible:bg-background"
         placeholder="App name"
         aria-label="App name"
         title="App name (click to edit)"
         disabled={props.busy}
       />
+
+      {props.brandControl}
+      {props.backgroundControl}
 
       <span aria-hidden className="mx-1 h-5 w-px bg-border" />
 
@@ -82,7 +87,7 @@ export function Toolbar(props: Props) {
         type="button"
         variant={props.connectedCanvas ? "secondary" : "outline"}
         size="sm"
-        className="h-8 gap-1.5 px-2 text-xs"
+        className="h-11 gap-1.5 px-2 text-xs"
         onClick={() => props.setConnectedCanvas(!props.connectedCanvas)}
         aria-pressed={props.connectedCanvas}
         title={
@@ -106,11 +111,11 @@ export function Toolbar(props: Props) {
           props.setDevice(next);
         }}
       >
-        <TabsList className="h-8 p-0.5">
-          <TabsTrigger value="ios" className="h-7 px-3 text-xs" disabled={props.busy}>
+        <TabsList className="h-11 p-0.5">
+          <TabsTrigger value="ios" className="h-10 px-3 text-xs" disabled={props.busy}>
             iOS
           </TabsTrigger>
-          <TabsTrigger value="android" className="h-7 px-3 text-xs" disabled={props.busy}>
+          <TabsTrigger value="android" className="h-10 px-3 text-xs" disabled={props.busy}>
             Android
           </TabsTrigger>
         </TabsList>
@@ -121,7 +126,7 @@ export function Toolbar(props: Props) {
         onValueChange={(v) => props.setDevice(v as Device)}
         disabled={props.busy}
       >
-        <SelectTrigger className="h-8 w-44 text-xs">
+        <SelectTrigger className="h-11 w-44 text-xs">
           <SelectValue placeholder="Device">{deviceLabel}</SelectValue>
         </SelectTrigger>
         <SelectContent>
@@ -147,7 +152,7 @@ export function Toolbar(props: Props) {
           onValueChange={(v) => props.setOrientation(v as Orientation)}
           disabled={props.busy}
         >
-          <SelectTrigger className="h-8 w-32 text-xs">
+          <SelectTrigger className="h-11 w-32 text-xs">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -159,7 +164,7 @@ export function Toolbar(props: Props) {
 
       {showLocale && (
         <Select value={props.locale} onValueChange={props.setLocale} disabled={props.busy}>
-          <SelectTrigger className="h-8 w-20 text-xs">
+          <SelectTrigger className="h-11 w-20 text-xs">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -178,7 +183,7 @@ export function Toolbar(props: Props) {
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8"
+          className="h-11 w-11"
           onClick={() => setResetOpen(true)}
           title="Reset screens to defaults"
           aria-label="Reset"
@@ -190,7 +195,7 @@ export function Toolbar(props: Props) {
           onClick={props.onExport}
           disabled={!!props.exporting}
           size="sm"
-          className="h-8"
+          className="h-11"
           title="Export every size × locale for this device as a zip"
         >
           <Download className="h-4 w-4" />
@@ -257,7 +262,7 @@ function SaveStatus({ savedAt, saveError }: { savedAt: number | null; saveError:
 
   if (!savedAt) {
     return (
-      <span className="flex items-center gap-1 text-xs text-muted-foreground">
+      <span className="flex items-center gap-1 min-w-28 text-xs tabular-nums text-muted-foreground">
         <Cloud className="h-3.5 w-3.5" /> not saved yet
       </span>
     );
@@ -272,7 +277,7 @@ function SaveStatus({ savedAt, saveError }: { savedAt: number | null; saveError:
           ? `saved ${Math.round(seconds / 60)}m ago`
           : `saved ${Math.round(seconds / 3600)}h ago`;
   return (
-    <span className="flex items-center gap-1 text-xs text-muted-foreground">
+    <span className="flex items-center gap-1 min-w-28 text-xs tabular-nums text-muted-foreground">
       <Check className="h-3.5 w-3.5 text-green-500" /> {label}
     </span>
   );
