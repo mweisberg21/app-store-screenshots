@@ -41,6 +41,17 @@ Supported devices out of the box:
 
 You should NOT write `page.tsx`, device frames, or export logic by hand. They live in the template.
 
+## Security requirements for this fork
+
+- Source: `mweisberg21/app-store-screenshots`. Retain the original MIT license and author credit.
+- Use the current template package file, `package-lock.json`, `scripts/`, `src/proxy.ts`, and server security helpers when creating or migrating an editor.
+- Remove obsolete `bun.lock`, `bun.lockb`, `yarn.lock`, or `pnpm-lock.yaml` only after backing them up during migration; use the new npm lock for the default workflow.
+- Use `npm run dev` or `npm start`. These commands create a temporary access link and bind to 127.0.0.1. Raw Next.js commands fail closed without the launcher configuration.
+- Each team member must run a separate local copy. Do not share the live access link or deploy this editor as a shared web service.
+- Requests require the local session. Writes require the exact local origin and JSON content type. Uploads are limited to 8 MiB per image, 256 MiB total, and 1,000 files. Project JSON is limited to 4 MiB.
+- Failed uploads display an error; do not bypass a quota by embedding new uploads in project JSON. To recover space, remove unused images after a backup. If a crash leaves `public/screenshots/uploaded/.write-lock`, stop every editor process for that project before removing the empty lock directory.
+- Existing generated editors are not changed by installing this skill. Migrate them explicitly and test saves and exports.
+
 ## Step 0: Probe for Existing Screenshot Projects
 
 Before asking the new-project questions in Step 1, always inspect the current working directory for an existing app-store-screenshots implementation.
@@ -295,9 +306,9 @@ NODE
 Then install/update dependencies and verify:
 
 ```bash
-bun install      # or pnpm install / yarn / npm install
+npm install      # refresh the lock after merging existing dependencies
 set -o pipefail
-bun run build 2>&1 | tee "$BACKUP_DIR/build.log"    # or the detected package-manager equivalent
+npm run build 2>&1 | tee "$BACKUP_DIR/build.log"    # or the detected package-manager equivalent
 ```
 
 Start the dev server and verify in the browser:
@@ -344,10 +355,11 @@ Ask the user these. Do not proceed until you have answers:
 
 ### Detect Package Manager
 
-Priority: **bun > pnpm > yarn > npm**.
+Use **npm** and the checked-in `package-lock.json` by default. Use Node.js 22 or newer. If the user explicitly selects another package manager, regenerate its lock file from this template; do not retain an old dependency lock.
 
 ```bash
-which bun && echo bun || which pnpm && echo pnpm || which yarn && echo yarn || echo npm
+node --version
+npm --version
 ```
 
 ### Copy the Template
@@ -364,7 +376,7 @@ If the target directory already has a `package.json`, ask the user before overwr
 ### Install Dependencies
 
 ```bash
-bun install      # or pnpm install / yarn / npm install
+npm ci           # reproducible install from package-lock.json
 ```
 
 ### Drop the User's Assets
@@ -400,10 +412,10 @@ Otherwise, leave the defaults — the user can rewrite copy in the editor.
 ### Start the Dev Server
 
 ```bash
-bun dev    # → http://localhost:3000
+npm run dev    # prints a private http://127.0.0.1:3000/unlock#... link
 ```
 
-Tell the user to open the URL and start editing. The editor auto-saves to **`app-store-screenshots.json`** at the project root (plus a `localStorage` mirror for instant paint). Uploaded screenshots land in `public/screenshots/uploaded/<hash>.png`. Both are git-trackable — committing them means another machine can `git clone` and resume the exact deck.
+Tell the user to open the private `/unlock#...` link printed by the launcher. The fragment carries a temporary access token; do not publish it, commit it, or send it to other people. A restart creates a new link. The launcher binds only to 127.0.0.1. Never replace it with raw `next dev` or `next start`, and never expose the editor through a tunnel or public host. The editor auto-saves to **`app-store-screenshots.json`** at the project root (plus a `localStorage` mirror for instant paint). Uploaded screenshots land in `public/screenshots/uploaded/<hash>.png`. Both are git-trackable — committing them means another machine can `git clone` and resume the exact deck.
 
 ## Step 3: Coach the User on Copy
 
@@ -619,7 +631,7 @@ If exports come out blank or with black screen rectangles:
 | Wrong directory layout for tablet screenshots | See Step 2 — `android/tablet-7/portrait/{locale}/...` etc. |
 | Reset wiped the deck | Reset clears in-memory state and re-saves defaults to `app-store-screenshots.json`. Recover by `git checkout app-store-screenshots.json` if it was committed, or export first before resetting. |
 | Export is blank | Source PNGs probably have alpha — flatten to RGB |
-| `bun dev` port collision | Template defaults to `next dev`; let Next pick the next free port (3001+) |
+| `bun dev` port collision | Use `npm run dev -- --port 3001`; use the exact private link printed for that port |
 
 ## Project Migration
 
@@ -637,7 +649,7 @@ There are two migration modes:
 - **Passive runtime migration:** when a user opens an old project in the current editor, keep `connectedCanvas: false` for pre-v2 JSON so old exports remain visually stable.
 - **Explicit skill migration:** when Step 0 detects an old implementation and the user answers **Yes**, upgrade the UI in place and write `schemaVersion: 2`. Preserve an existing explicit `connectedCanvas` boolean; otherwise write `connectedCanvas: false` without asking more product/design questions.
 
-For explicit in-place upgrades, copy the current template's `src/components/editor/`, `src/lib/`, app routes, config, and package files into the project while preserving user assets and project JSON. If the old project had custom themes, merge those `THEMES` entries into `src/lib/constants.ts`; otherwise the editor falls back to `clean-light` and warns in the browser. Then run the app once and confirm `schemaVersion: 2` and a boolean `connectedCanvas` are present.
+For explicit in-place upgrades, copy the current template's `src/components/editor/`, `src/lib/`, app routes, config, and package files, `scripts/`, `src/proxy.ts`, and `src/app/screenshots/uploaded/` into the project while preserving user assets and project JSON. If the old project had custom themes, merge those `THEMES` entries into `src/lib/constants.ts`; otherwise the editor falls back to `clean-light` and warns in the browser. Then run the app once and confirm `schemaVersion: 2` and a boolean `connectedCanvas` are present.
 
 ## Template Reference
 
@@ -685,11 +697,11 @@ project/
 
 When you finish scaffolding, **start the dev server** (`bun dev` / `pnpm dev` / `yarn dev` / `npm run dev`) and then tell the user the following, in this order:
 
-1. **The server is running at `http://localhost:3000`** (or whichever port Next picked — read it from the dev server output and quote the actual URL). Tell them to open it in the browser.
+1. **The server is running on this Mac.** Show the private `/unlock#...` URL from the launcher only to the current user. Open that exact link; a plain localhost URL does not grant access.
 2. **How to run it next time** — give them the exact two-command recipe for their package manager:
    ```bash
-   bun install   # only needed the first time, or after pulling new deps
-   bun dev       # → http://localhost:3000
+   npm ci        # first install or after dependency changes
+   npm run dev   # open the private link printed in the terminal
    ```
    Substitute `pnpm` / `yarn` / `npm run` as appropriate for what was detected in Step 2.
 3. Which platforms have starter decks seeded (iOS, Android, or both).

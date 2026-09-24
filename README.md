@@ -1,10 +1,18 @@
 # App Store & Google Play Screenshots Generator
 
-A skill for AI coding agents that scaffolds a production-ready Next.js editor for App Store and Google Play marketing screenshots. It gives you a connected canvas, real device frames, inspector controls, persistent project state, and one-click export bundles at store-ready sizes.
+A skill for AI coding agents that scaffolds a local Next.js editor for App Store and Google Play marketing screenshots. It gives you a connected canvas, real device frames, inspector controls, persistent project state, and one-click export bundles at store-ready sizes.
 
 ![Current connected-canvas editor showing a Bloom screenshot deck](example.png)
 
 Example screenshots generated with this skill were accepted for [Bloom Coffee Shelf Recipe on the App Store](https://apps.apple.com/us/app/bloom-coffee-shelf-recipe/id6759914524).
+
+## This fork
+
+This fork retains Parth Jadhav's MIT license and author credit. It adds current patched dependencies, a loopback-only launcher, a temporary local access link, request validation, and upload storage limits. Each team member runs a separate local copy. It is not a shared web service.
+
+After generating an editor, run `npm ci` and `npm run dev`. Open the private `/unlock#...` link printed in the terminal. Do not share that link. The next server run creates a new link.
+
+Existing editors need their own update; installing this skill does not replace files in earlier projects.
 
 ## What It Does
 
@@ -36,19 +44,19 @@ Tip: when capturing source iPhone screenshots, the 6.1-inch simulator is usually
 ### Using npx skills
 
 ```bash
-npx skills add ParthJadhav/app-store-screenshots
+npx skills add mweisberg21/app-store-screenshots
 ```
 
 Install globally:
 
 ```bash
-npx skills add ParthJadhav/app-store-screenshots -g
+npx skills add mweisberg21/app-store-screenshots -g
 ```
 
 Install for a specific agent:
 
 ```bash
-npx skills add ParthJadhav/app-store-screenshots -a claude-code
+npx skills add mweisberg21/app-store-screenshots -a claude-code
 ```
 
 This works with Claude Code, Cursor, Windsurf, OpenCode, Codex, and other agents supported by [`skills`](https://github.com/vercel-labs/skills).
@@ -56,7 +64,9 @@ This works with Claude Code, Cursor, Windsurf, OpenCode, Codex, and other agents
 ### Manual install
 
 ```bash
-git clone https://github.com/ParthJadhav/app-store-screenshots ~/.claude/skills/app-store-screenshots
+git clone https://github.com/mweisberg21/app-store-screenshots
+mkdir -p ~/.agents/skills
+cp -R app-store-screenshots/skills/app-store-screenshots ~/.agents/skills/
 ```
 
 ## Usage
@@ -209,7 +219,7 @@ Screenshots are designed at the largest size for each platform and scaled down f
 
 ## Requirements
 
-- Node.js 18+
+- Node.js 22+
 - One of bun, pnpm, yarn, or npm
 
 ## Contributing

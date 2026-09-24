@@ -23,19 +23,15 @@ async function fileToDataUrl(file: File): Promise<string> {
   });
 }
 
-async function uploadDataUrl(dataUrl: string): Promise<string | null> {
-  try {
-    const resp = await fetch("/api/upload", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ dataUrl }),
-    });
-    if (!resp.ok) return null;
-    const json = (await resp.json()) as { ok: boolean; path?: string };
-    return json.ok && json.path ? json.path : null;
-  } catch {
-    return null;
-  }
+async function uploadDataUrl(dataUrl: string): Promise<string> {
+  const resp = await fetch("/api/upload", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ dataUrl }),
+  });
+  const json = (await resp.json()) as { ok: boolean; path?: string; error?: string };
+  if (!resp.ok || !json.ok || !json.path) throw new Error(json.error || "Image upload failed");
+  return json.path;
 }
 
 export function ScreenshotPicker({ label, value, locale, onChange }: Props) {
@@ -65,18 +61,15 @@ export function ScreenshotPicker({ label, value, locale, onChange }: Props) {
       setError("Failed to read file");
       return;
     }
-    // Try to persist to disk so the screenshot survives a git clone.
-    // If the upload endpoint is unreachable (e.g. static export), fall back
-    // to the inline data URI — still works in the current session.
     setUploading(true);
-    const uploadedPath = await uploadDataUrl(dataUrl);
-    setUploading(false);
-    if (uploadedPath) {
+    try {
+      const uploadedPath = await uploadDataUrl(dataUrl);
       setImage(uploadedPath, dataUrl);
       onChange(uploadedPath);
-    } else {
-      setImage(dataUrl, dataUrl);
-      onChange(dataUrl);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Image upload failed");
+    } finally {
+      setUploading(false);
     }
   }
 

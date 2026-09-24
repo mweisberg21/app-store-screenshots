@@ -5,9 +5,26 @@ A pre-built Next.js + ShadCN editor for generating App Store and Google Play scr
 ## Quick start
 
 ```bash
-bun install   # or pnpm / yarn / npm
-bun dev       # http://localhost:3000
+npm ci
+npm run dev   # open the private link printed in the terminal
 ```
+
+Use Node.js 22 or newer. The launcher binds to 127.0.0.1 and creates a new access token on each run. Open its `/unlock#...` link to set an HttpOnly, SameSite=Strict session cookie. The token stays out of query strings and is removed from browser history before the exchange. To choose another port, use `npm run dev -- --port 3001`.
+
+For a production build, run `npm run build` and `npm start`. Both server modes require the launcher. All editor pages, APIs, and image files require a local session. Writes also require the configured Origin and JSON content type. This tool is for one local operator, not remote hosting. Team members should each run their own copy.
+
+## Resource limits
+
+- Each PNG/JPEG upload: 8 MiB; request bytes are bounded before JSON parsing and base64 decoding.
+- Upload directory: 256 MiB and 1,000 files, with a filesystem lock to serialize quota checks. Identical files reuse storage.
+- Upload rate: 60 attempts per minute, at most four active uploads per process.
+- Project JSON: 4 MiB, validated before an atomic save. Up to 32 locales and 50 slides per device.
+- Remove unused uploaded images after a backup to recover space. No automatic deletion is performed.
+- After a crash, an empty `.write-lock` directory may remain under `public/screenshots/uploaded`. Stop all servers using that project before removing this directory.
+
+## Checks
+
+Run `npm test`, `npm run typecheck`, `npm audit`, `npm run build`, `npm run test:runtime`, and `npm run test:runtime:dev` after changes.
 
 ## What's inside
 
@@ -51,7 +68,7 @@ The toolbar dropdown lists every Apple/Google-required size for the current devi
 
 - `mockup.png` is the iPhone bezel overlay; replacing it requires re-measuring the `PHONE_SCREEN` constants.
 - Image preloading converts every static path to a base64 data URI before exports run, and export retries paths that were previously missing — this prevents the html-to-image race where some slide screenshots come out black.
-- Reset via the toolbar's circular arrow icon clears in-memory state and reloads the default screens. To wipe disk state too, delete `app-store-screenshots.json`.
+- Reset via the toolbar's circular arrow icon clears in-memory state and reloads the default screens. When the editor is connected, autosave also writes the reset defaults to the project file. Back up the file before reset.
 - **Persistence model** — the canonical state lives in `app-store-screenshots.json` (git-tracked). On load, the editor reads localStorage first for instant paint, then overwrites with the file contents if present; if the file endpoint is unavailable, autosave is blocked so stale cache cannot overwrite disk. On save, both are written. If you ever see a conflict, the file always wins.
 - **Migration model** — schema v1 projects do not need a manual conversion. On first load, the editor upgrades localized text and transform records, writes `schemaVersion: 2`, preserves all existing screens, and keeps `connectedCanvas: false` so old offscreen/clipped elements export exactly as isolated screens. Turn on **Connected** in the toolbar when you want elements to cross screen edges. Explicit skill migrations preserve an existing `connectedCanvas` choice, otherwise they keep legacy decks isolated too.
 - **Custom themes** — if a project file references a theme id that is not present in `src/lib/constants.ts`, the editor falls back to `clean-light` and shows a warning. Merge custom `THEMES` entries during in-place upgrades.
