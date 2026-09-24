@@ -26,7 +26,7 @@ import { didFail, imageSize, preloadImages } from "@/lib/image-cache";
 import { appleFrame, framePath } from "@/lib/apple-frames";
 import { applyBackground } from "@/lib/background";
 import { BackgroundSettings } from "./background-settings";
-import { resolveScreenshot, writeLocalized } from "@/lib/locale";
+import { pickText, resolveScreenshot, writeLocalized } from "@/lib/locale";
 import { useProject } from "@/lib/storage";
 import type {
   BuiltInElementId,
@@ -72,6 +72,7 @@ export function ScreenshotEditor() {
   } = useProject();
   const [panel, setPanel] = React.useState("screen");
   const [addOpen, setAddOpen] = React.useState(false);
+  const [compactScreensOpen, setCompactScreensOpen] = React.useState(false);
   const [activeSlideId, setActiveSlideId] = React.useState<string | null>(null);
   const [selectedElement, setSelectedElement] =
     React.useState<SelectedElement | null>(null);
@@ -901,9 +902,37 @@ export function ScreenshotEditor() {
 
         <div
           inert={busy}
-          className="flex flex-1 overflow-hidden lg:flex-row flex-col"
+          className="flex min-h-0 flex-1 overflow-y-auto lg:overflow-hidden lg:flex-row flex-col"
         >
-          <aside className="lg:w-60 w-full shrink-0 border-r bg-card lg:max-h-none max-h-32 overflow-hidden">
+          <div className="flex shrink-0 items-center gap-2 border-b bg-card p-2 lg:hidden">
+            <Button
+              variant="outline"
+              size="sm"
+              aria-expanded={compactScreensOpen}
+              aria-controls="screen-list"
+              onClick={() => setCompactScreensOpen((v) => !v)}
+            >
+              {compactScreensOpen ? "Hide screens" : "Screens"}
+            </Button>
+            <select
+              aria-label="Active screen"
+              className="h-11 min-w-0 flex-1 rounded-md border bg-background px-3 text-sm focus-visible:outline-neutral-500"
+              value={activeSlide?.id || ""}
+              onChange={(e) => setActiveSlideId(e.target.value)}
+            >
+              {!currentSlides.length && <option value="">No screens</option>}
+              {currentSlides.map((s, i) => (
+                <option key={s.id} value={s.id}>
+                  {i + 1}.{" "}
+                  {pickText(s.headline, state.locale) || "Untitled screen"}
+                </option>
+              ))}
+            </select>
+          </div>
+          <aside
+            id="screen-list"
+            className={`${compactScreensOpen ? "block" : "hidden"} lg:block lg:w-60 w-full shrink-0 border-r bg-card lg:max-h-none max-h-72 overflow-hidden`}
+          >
             <Sidebar
               slides={currentSlides}
               activeId={activeSlide?.id || null}
@@ -923,7 +952,7 @@ export function ScreenshotEditor() {
             />
           </aside>
 
-          <main className="flex flex-1 items-stretch overflow-hidden min-h-0">
+          <main className="flex min-h-[420px] shrink-0 flex-1 items-stretch overflow-hidden lg:min-h-0 lg:shrink">
             {activeSlide && currentSlides.length > 0 ? (
               <PreviewStage
                 slides={currentSlides}

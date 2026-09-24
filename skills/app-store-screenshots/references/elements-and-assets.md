@@ -10,6 +10,8 @@ Open **Add element** in the top bar. The right panel has three sections:
 - **Elements**: added images, text, device captures, and their positions.
 - **Assets**: reusable customer images and saved groups.
 
+In a narrow window, use the active screen list to change screens. Choose **Screens** to open the full screen controls. Scroll down to the editing panel; the canvas keeps enough height to show the full image.
+
 Start with one useful addition. Explain its purpose, show the result, and keep the existing asset check-ins. Do not ask the user to choose technical coordinates before showing a layout.
 
 | Element | Use | Source required |

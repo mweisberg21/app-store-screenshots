@@ -389,6 +389,14 @@ try {
     ),
     false,
   );
+  await page.setViewportSize({ width: 632, height: 754 });
+  assert.ok((await page.locator("main").boundingBox()).height >= 400);
+  await page.getByLabel("Active screen", { exact: true }).selectOption("first");
+  await page.getByRole("button", { name: "Screens", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Hide screens", exact: true })
+    .waitFor();
+  await page.getByRole("button", { name: "Hide screens", exact: true }).click();
   await page.setViewportSize({ width: 1600, height: 1100 });
   p.device = "feature-graphic";
   p.appIcon = imagePath;
