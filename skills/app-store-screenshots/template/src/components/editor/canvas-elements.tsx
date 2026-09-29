@@ -20,7 +20,7 @@ import type {
 import { img } from "@/lib/image-cache";
 import { pickText, resolveScreenshot } from "@/lib/locale";
 import { customId } from "@/lib/canvas-elements";
-import { appleFrame, fitFrameRect } from "@/lib/apple-frames";
+import { deviceFrameAspect, fitFrameRect } from "@/lib/device-frames";
 import { Movable } from "./movable";
 import {
   Phone,
@@ -323,14 +323,7 @@ export function CanvasElements({
           let rect = e.transform;
           let ratio: number | undefined;
           if (e.kind === "device") {
-            const frame = appleFrame(e.device, e.orientation);
-            ratio = frame
-              ? frame.width / frame.height
-              : e.device === "android"
-                ? 9 / 19.5
-                : e.orientation === "portrait"
-                  ? 5 / 8
-                  : 8 / 5;
+            ratio = deviceFrameAspect(e.device, e.orientation);
             rect = { ...rect, ...fitFrameRect(rect, ratio) };
           }
           if (

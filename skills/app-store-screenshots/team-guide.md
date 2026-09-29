@@ -4,7 +4,7 @@ Use one local project for each customer. The customer's brand controls the scree
 
 ## First-time users
 
-Share [Start here](https://github.com/mweisberg21/app-store-screenshots/blob/editor-elements/START-HERE.md). It has a short request to paste into Claude, a plain-language walkthrough, and examples for later use. The assistant handles setup on Mac or Windows, checks local access, opens the editor, and teaches one step at a time. It leaves a `HOW-TO-OPEN.md` note with the user's actual project location.
+Share [Start here](https://github.com/mweisberg21/app-store-screenshots/blob/main/START-HERE.md). It has a short request to paste into Claude, a plain-language walkthrough, and examples for later use. The assistant handles setup on Mac or Windows, checks local access, opens the editor, and teaches one step at a time. It leaves a `HOW-TO-OPEN.md` note with the user's actual project location.
 
 The setup steps below are for the assistant or an experienced operator. New users do not need to run these commands. The installed skill carries its own [first-run guide](references/first-run.md).
 
@@ -12,15 +12,21 @@ The setup steps below are for the assistant or an experienced operator. New user
 
 Use an agent that can read local files, run Node.js, and open a browser, such as Codex or Claude Code. See the [Codex skill documentation](https://developers.openai.com/codex/skills/) and [Claude Code skill documentation](https://code.claude.com/docs/en/skills).
 
-The new element editor is under review on the `editor-elements` branch. Use this version for the new controls:
+Use the team fork for the editor controls and included frames:
 
 ```bash
-npx skills add https://github.com/mweisberg21/app-store-screenshots/tree/editor-elements/skills/app-store-screenshots -g
+npx skills add https://github.com/mweisberg21/app-store-screenshots/tree/main/skills/app-store-screenshots -g
 ```
 
 Choose your supported agent in the installer. Use Node.js 22 or newer. The skill includes the design rules and template; no extra design plugin or image generation account is required.
 
 The bundle has one entry skill plus supporting guides. It includes an [ASO playbook](references/aso-screenshot-playbook.md), a [Uscreen feature and capture guide](references/uscreen-mobile-features.md), design research, and local editor instructions. The agent reads the relevant guide as it plans the work. It does not need another ASO skill installed.
+
+## Updates before every request
+
+The assistant follows [the update procedure](references/updates.md) before setup, reopening, editing, or export. It checks this team fork, downloads available updates, and updates both the installed skill and the active editor when needed. It keeps a backup and preserves customer work. It does not ask the user to run update commands. If the check fails, it explains the problem and waits for the user's choice.
+
+This rule runs through the assistant. Opening the browser editor directly does not check GitHub.
 
 ## Start a customer project
 
@@ -28,6 +34,7 @@ Create an empty folder in your approved customer work area. Open it in your agen
 
 ```text
 Use app-store-screenshots to create a listing for this customer.
+Check the team repository and apply available updates before work.
 Read customer-brief.md and the supplied app captures first.
 Use the customer's approved brand and verified features.
 Plan the sequence around the audience and the customer's content.
@@ -54,7 +61,7 @@ For Uscreen apps, start with the customer's content, teachers, programs, playbac
 
 ## Editor workflow
 
-The package includes the original iPhone and iPad frames. They are used by default and need no separate download or import. Copy the full template, including `public/device-frames/` and `public/licenses/`. See [included Apple frames](references/apple-frames.md) for recovery if an installation is incomplete. The editor's **Credits** button shows the asset source and license notices.
+The package includes the original iPhone, iPad, and Samsung Galaxy S22 frames. They are used by default and need no separate download or import. Copy the full template, including `public/device-frames/` and `public/licenses/`. See [included device frames](references/apple-frames.md) for recovery if an installation is incomplete. The editor's **Credits** button shows the asset source and license notices.
 
 1. Start the project with `npm ci`, then `npm run dev`.
 2. Open the private link from the terminal.
@@ -68,7 +75,7 @@ The package includes the original iPhone and iPad frames. They are used by defau
 
 The asset check-ins happen in the agent conversation. They are skill instructions, not forced dialogs in the editor. Direct manual use of the editor does not run them.
 
-Use a matching iPhone or iPad capture. The automatic checks cover completeness, Apple capture proportions, headline contrast, and measured text overflow. They do not verify product claims, translation quality, element overlap, image crops, or current store rules. Keep those checks in the delivery review.
+Use a capture that matches the selected device and frame. The automatic checks cover completeness, device capture proportions, headline contrast, and measured text overflow. They do not verify product claims, translation quality, element overlap, image crops, or current store rules. Keep those checks in the delivery review.
 
 ## Using a chat interface
 
@@ -78,7 +85,7 @@ The repository is a local Node.js editor plus an agent skill. It is not a built-
 
 Keep the brief, JSON project, approved images, fonts, and output PNGs in the customer's approved storage. Share that project with the next teammate through your normal private process. Keep the public tool fork free of customer images and data.
 
-The editor runs on one computer. Each teammate starts a separate local copy; the private start link is not a team collaboration link. Installing a newer skill does not update old customer projects. Ask the agent to migrate the project with a backup.
+The editor runs on one computer. Each teammate starts a separate local copy; the private start link is not a team collaboration link. Installing a newer skill alone does not update old customer projects. The required update procedure also updates the active editor, with a backup and preserved customer files.
 
 ## Before a wider team rollout
 

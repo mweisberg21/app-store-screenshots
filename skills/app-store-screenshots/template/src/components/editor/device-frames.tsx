@@ -1,6 +1,6 @@
 "use client";
 import * as React from "react";
-import { APPLE_FRAMES, framePath, type AppleFrame } from "@/lib/apple-frames";
+import { DEVICE_FRAMES, framePath, type DeviceFrame } from "@/lib/device-frames";
 import { img } from "@/lib/image-cache";
 
 type FrameProps = {
@@ -11,26 +11,26 @@ type FrameProps = {
   hideEmpty?: boolean;
 };
 
-// The screenshot is below one unchanged, transparent Apple product bezel.
+// The screenshot is below one unchanged, transparent product bezel.
 // The measured aperture mask preserves the original rounded screen boundary.
 export function Phone(props: FrameProps) {
-  return <AppleDevice {...props} frame={APPLE_FRAMES["iphone-17-pro-max"]} />;
+  return <ProductDevice {...props} frame={DEVICE_FRAMES["iphone-17-pro-max"]} />;
 }
 
 export function IPad(props: FrameProps) {
-  return <AppleDevice {...props} frame={APPLE_FRAMES["ipad-pro-13-portrait"]} />;
+  return <ProductDevice {...props} frame={DEVICE_FRAMES["ipad-pro-13-portrait"]} />;
 }
 
 export function IPadLandscape(props: FrameProps) {
-  return <AppleDevice {...props} frame={APPLE_FRAMES["ipad-pro-13-landscape"]} />;
+  return <ProductDevice {...props} frame={DEVICE_FRAMES["ipad-pro-13-landscape"]} />;
 }
 
-function AppleDevice({ src, alt = "", style, hideEmpty, frame }: FrameProps & { frame: AppleFrame }) {
+function ProductDevice({ src, alt = "", style, hideEmpty, frame }: FrameProps & { frame: DeviceFrame }) {
   const resolved = img(src);
   const overlay = img(framePath(frame));
   const { screen } = frame;
   return (
-    <div data-apple-frame={frame.filename} style={{ position: "relative", aspectRatio: `${frame.width} / ${frame.height}`, ...style }}>
+    <div data-device-frame={frame.filename} data-apple-frame={frame.filename.startsWith("samsung-") ? undefined : frame.filename} style={{ position: "relative", aspectRatio: `${frame.width} / ${frame.height}`, ...style }}>
       <div data-device-screen style={{
         position: "absolute", overflow: "hidden",
         left: `${screen.x / frame.width * 100}%`, top: `${screen.y / frame.height * 100}%`,
@@ -44,61 +44,8 @@ function AppleDevice({ src, alt = "", style, hideEmpty, frame }: FrameProps & { 
   );
 }
 
-export function AndroidPhone({ src, alt = "", style, hideEmpty }: FrameProps) {
-  const resolved = img(src);
-  return (
-    <div style={{ position: "relative", aspectRatio: "9 / 19.5", ...style }}>
-      <div
-        style={{
-          width: "100%",
-          height: "100%",
-          borderRadius: "8% / 4%",
-          background: "linear-gradient(160deg, #2a2a2e 0%, #18181b 100%)",
-          boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.08), 0 8px 40px rgba(0,0,0,0.55)",
-          position: "relative",
-          overflow: "hidden",
-        }}
-      >
-        <div
-          style={{
-            position: "absolute",
-            top: "1.5%",
-            left: "50%",
-            transform: "translateX(-50%)",
-            width: "3%",
-            height: "1.4%",
-            borderRadius: "50%",
-            background: "#0d0d0f",
-            border: "1px solid rgba(255,255,255,0.06)",
-            zIndex: 20,
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            left: "3.5%",
-            top: "2%",
-            width: "93%",
-            height: "96%",
-            borderRadius: "5.5% / 2.6%",
-            overflow: "hidden",
-            background: "#000",
-          }}
-        >
-          {resolved ? (
-            <img
-              src={resolved}
-              alt={alt}
-              style={{ display: "block", width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }}
-              draggable={false}
-            />
-          ) : hideEmpty ? null : (
-            <EmptySlot />
-          )}
-        </div>
-      </div>
-    </div>
-  );
+export function AndroidPhone(props: FrameProps) {
+  return <ProductDevice {...props} frame={DEVICE_FRAMES["samsung-galaxy-s22"]} />;
 }
 
 export function AndroidTabletP({ src, alt = "", style, hideEmpty }: FrameProps) {

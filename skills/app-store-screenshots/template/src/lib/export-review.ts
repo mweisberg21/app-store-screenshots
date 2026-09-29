@@ -6,7 +6,7 @@ import {
 } from "./background";
 import { resolveScreenshot } from "./locale";
 import type { ProjectState } from "./types";
-import { appleFrame, framePath } from "./apple-frames";
+import { deviceFrame, framePath } from "./device-frames";
 
 export type ExportIssue = {
   message: string;
@@ -28,14 +28,14 @@ export function reviewExport(
   if (!state.appName.trim())
     issues.push({ message: "Add the customer app name." });
   if (!slides.length) issues.push({ message: "Add a screen." });
-  const frame = appleFrame(state.device, state.orientation);
+  const frame = deviceFrame(state.device, state.orientation);
   const hasDevices = slides.some(
     (slide) =>
       slide.layout !== "no-device" && slide.layout !== "feature-graphic",
   );
   if (frame && hasDevices && imageFailed(framePath(frame))) {
     issues.push({
-      message: `The included ${frame.name} frame could not load. Restore its package file, then reload the editor. See the included Apple frames guide.`,
+      message: `The included ${frame.name} frame could not load. Restore its package file, then reload the editor. See the included device frames guide.`,
     });
   }
   const theme = projectTheme(state);
@@ -101,7 +101,7 @@ export function reviewExport(
               add(`translate card ${i + 1} in “${element.name}”.`);
           }
         if (element.kind === "device") {
-          const ownFrame = appleFrame(element.device, element.orientation);
+          const ownFrame = deviceFrame(element.device, element.orientation);
           if (ownFrame && imageFailed(framePath(ownFrame)))
             add(`the included frame for “${element.name}” could not load.`);
           if (checkImage(element.src, "screenshot") && ownFrame) {

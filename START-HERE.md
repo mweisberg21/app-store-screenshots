@@ -10,7 +10,11 @@ Copy this message into Claude or another assistant that can work on your compute
 
 ```text
 Please set up this App Store screenshot tool on my computer:
-https://github.com/mweisberg21/app-store-screenshots/tree/editor-elements
+https://github.com/mweisberg21/app-store-screenshots/tree/main
+
+Before any work, check this repository and install available updates.
+Keep my customer files and local changes. Repeat this check each time
+I ask you to use the tool.
 
 Read START-HERE.md and follow the first-run guide linked from it.
 I am not technical. Check whether you can work on my computer.
@@ -20,7 +24,7 @@ first screenshot. Ask for my app screenshots, logo, colors, and
 other assets as we go. Show me how to return to the tool later.
 ```
 
-This link selects the current team draft. It works for setup on Mac and Windows. The main branch includes the packaged frames. The new element controls are on this branch until review is complete.
+This link selects the team version. It works for setup on Mac and Windows.
 
 ## 2. Let the assistant check your setup
 
@@ -29,6 +33,8 @@ The assistant needs to read and save files and run the editor on **your computer
 If your current chat cannot do this, use Claude's desktop app. Open **Code**, choose **Local**, and select a folder for your screenshot work. Despite the name, you can use normal requests; you do not need to write code. The assistant will explain each step. Access depends on your Claude plan and your company's settings. See [Claude's desktop setup guide](https://code.claude.com/docs/en/desktop-quickstart).
 
 If you already use another assistant with local file and command access, keep using it. A remote chat or cloud workspace must not claim it has installed the tool on your computer.
+
+The assistant checks the team repository before each request. It installs available updates before starting work and keeps your customer files. It also updates an existing editor when needed. If it cannot complete the check, it tells you and asks how to proceed.
 
 ## 3. Supply what you have
 
@@ -41,7 +47,7 @@ Start with your customer name and any of these files:
 
 You do not need all the files at once. The assistant will list what is missing and help you capture the right app screens. It will ask for assets as you work, without asking for the same file again.
 
-The original iPhone and iPad frames are included. They work by default on Mac and Windows, with no separate Apple download. The assistant checks that they load. If an installation is incomplete, it repairs the included files. The editor has a Credits button for the source and license notices.
+The original iPhone, iPad, and Samsung Galaxy S22 frames are included. They work by default on Mac and Windows, with no separate Apple download. The assistant checks that they load. If an installation is incomplete, it repairs the included files. The editor has a Credits button for the source and license notices.
 
 ## 4. Make one image together
 
@@ -75,4 +81,4 @@ The editor's private browser link changes when it restarts. If an old tab does n
 
 ## Instructions for the assistant
 
-When the user asks you to set up or use this tool, read [the skill](skills/app-store-screenshots/SKILL.md), then follow [the first-run guide](skills/app-store-screenshots/references/first-run.md). Complete the local checks and the guided first use. Do not stop after downloading files or showing install commands.
+Before work, follow [the update procedure](skills/app-store-screenshots/references/updates.md). When the user asks you to set up or use this tool, read [the skill](skills/app-store-screenshots/SKILL.md), then follow [the first-run guide](skills/app-store-screenshots/references/first-run.md). Complete the local checks and the guided first use. Do not stop after downloading files or showing install commands.

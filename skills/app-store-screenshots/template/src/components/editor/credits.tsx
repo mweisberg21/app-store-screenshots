@@ -26,6 +26,11 @@ export function Credits() {
               <a className={linkClass} href="/licenses/apple-design-resources.txt" target="_blank" rel="noreferrer">Apple asset license</a>
             </div>
           </section>
+          <section className="space-y-2" aria-labelledby="android-credit">
+            <h2 id="android-credit" className="font-semibold">Android phone image</h2>
+            <p>The Samsung Galaxy S22 frame was supplied by Mark Weisberg. The original transparent PNG is included and used by default for Android phones.</p>
+            <p>The source image is 388 × 800 pixels. Its edges can look soft in large exports. Android tablets use generic frames.</p>
+          </section>
           <section className="space-y-2" aria-labelledby="editor-credit">
             <h2 id="editor-credit" className="font-semibold">Screenshot editor</h2>
             <p>Originally created by Parth Jadhav. Customer screenshot workflow and team tools maintained in Mark Weisberg's fork.</p>

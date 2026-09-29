@@ -1,5 +1,5 @@
 import { nid } from "./defaults";
-import { appleFrame, framePath } from "./apple-frames";
+import { deviceFrame, framePath } from "./device-frames";
 import type {
   CanvasElement,
   ElementKind,
@@ -147,7 +147,7 @@ export function elementPaths(element: CanvasElement): string[] {
   if (element.kind === "cards")
     return element.items.map((item) => item.asset.src);
   if (element.kind === "device") {
-    const frame = appleFrame(element.device, element.orientation);
+    const frame = deviceFrame(element.device, element.orientation);
     return [element.src, ...(frame ? [framePath(frame)] : [])];
   }
   return [];

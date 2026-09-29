@@ -80,3 +80,20 @@ export async function ensureAppleFrames(root, cache = defaultFrameCache()) {
   await saveFiles(destination, files);
   return { ready: true, source: "cache" };
 }
+
+// The Apple import command remains Apple-only. Android is supplied in the package.
+export async function deviceFrameManifest(root) {
+  const android = Object.values(JSON.parse(await readFile(path.join(root, "src/lib/android-frames.json"), "utf8")));
+  return [...await frameManifest(root), ...android];
+}
+
+export async function ensureDeviceFrames(root, cache = defaultFrameCache()) {
+  const apple = await ensureAppleFrames(root, cache);
+  if (!apple.ready) return apple;
+  try {
+    await checkedFiles(path.join(root, "public/device-frames"), await deviceFrameManifest(root));
+    return apple;
+  } catch {
+    return { ready: false, source: "missing" };
+  }
+}

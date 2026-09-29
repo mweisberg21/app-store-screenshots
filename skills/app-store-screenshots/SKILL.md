@@ -9,11 +9,15 @@ Build a local screenshot editor from `template/`. Use the customer's real app sc
 
 Source: `mweisberg21/app-store-screenshots`. Keep the original MIT license and author credit. This workflow is self-contained; teammates do not need other design or ASO skills. ASO means App Store optimization. Here, its purpose is to help the right visitor understand the app and decide to download it.
 
+## Required first step: update before work
+
+Before any work with this tool, read [references/updates.md](references/updates.md). At the start of every request and resumed session, check `mweisberg21/app-store-screenshots` on GitHub. Download and apply available updates before setup, reopening, planning, editing, or export. The normal branch is `main`; preserve an explicitly selected branch or version. Update both the installed skill and the active editor when needed. Preserve customer files and local changes with a verified backup. Re-read updated instructions before continuing. Do not silently continue if checking or updating fails; the guide defines the recovery steps.
+
 ## First use and returning users
 
 For setup, a repository-URL request, or a user who needs help getting started, read [references/first-run.md](references/first-run.md). Verify access to the user's actual computer, handle Mac or Windows setup, open and check the editor, then guide the first useful task one step at a time. Use plain language. Do not stop after installation or send the user a command list.
 
-For "run this skill" or "open my screenshots," find the existing customer project and its `HOW-TO-OPEN.md` note. Start it and open a fresh private link. Preserve the project; do not install again, reset the deck, or repeat first-use questions without a reason. If the customer or project is unclear, ask which one to open. Explain that the user can ask for changes in normal language.
+For "run this skill" or "open my screenshots," find the existing customer project and its `HOW-TO-OPEN.md` note. Complete the required update check, update its editor when needed, then start it and open a fresh private link. Preserve the project; do not reset the deck or repeat first-use questions without a reason. If the customer or project is unclear, ask which one to open. Explain that the user can ask for changes in normal language.
 
 ## Ask for assets throughout the work
 
@@ -85,7 +89,7 @@ Named styles in [style-prompts.md](style-prompts.md) are optional references. Op
 
 ## 3. Create the local editor
 
-Copy `template/` into the chosen project folder. Do not rebuild the renderer or export system. Do not overwrite unrelated files. Use native filesystem tools on Windows; the shell example below is for Mac. The first-run guide covers Windows command shims and paths. Run commands for the user when tools allow it.
+For a new project, copy the verified current `template/` into the chosen project folder, including `AGENTS.md` and `CLAUDE.md`. For an existing project, apply [the update procedure](references/updates.md); do not repeat a full template copy. Do not rebuild the renderer or export system. Do not overwrite unrelated files. Use native filesystem tools on Windows; the shell example below is for Mac. The first-run guide covers Windows command shims and paths. Run commands for the user when tools allow it.
 
 ```bash
 cp -R "<SKILL_DIR>/template/." "<PROJECT_DIR>/"
@@ -96,7 +100,7 @@ npm run dev
 
 Use Node.js 22 or newer. Open the exact private `/unlock#...` link printed by the launcher. For a different port, use `npm run dev -- --port 3001`.
 
-For Apple decks, read [references/apple-frames.md](references/apple-frames.md). The package includes original Apple bezels, used by default for every iPhone and iPad device layout. Copy `public/device-frames/` and `public/licenses/` with the template. Do not ask the user to download or import frames during setup. The launcher and frame route check the original file hashes. If a package file is missing or damaged, repair it from the same repository version or an intact installed template; a local cache can also restore it. Preserve customer work during repair. Use the measured bezel above the capture. Do not draw substitute Apple hardware, add a second camera, or modify the source PNG. Keep the Apple attribution and supplied license separate from the code's MIT license. Verify frame loading before marking Apple export ready.
+For device decks, read [references/apple-frames.md](references/apple-frames.md). The package includes original Apple bezels and the supplied Samsung Galaxy S22 frame. Use the matching frame by default for iPhone, iPad, and Android phone layouts. The iPad has separate portrait and landscape PNGs. Android tablets still use generic frames. Copy `public/device-frames/` and `public/licenses/` with the template. Do not ask the user to download or import frames during setup. The launcher and frame route check the original file hashes. If a package file is missing or damaged, repair it from the same repository version or an intact installed template; a local cache can also restore Apple frames. Preserve customer work during repair. Use the measured bezel above the capture. Do not draw substitute phone or iPad hardware, add a second camera, or modify the source PNG. Keep the Apple attribution and supplied license separate from the code's MIT license. Verify frame loading before marking device export ready.
 
 The launcher binds to `127.0.0.1` and creates a session token on each start. Use `npm run dev` or `npm start`; do not bypass it. Each teammate runs a local copy. Do not share the private link, expose a tunnel, or deploy this as a shared website.
 
@@ -114,7 +118,7 @@ The first-run project has one empty screen per device. It is a starting point, n
 6. For Creator with app, add the creator photo. For Content library, add two to four catalog images. Use horizontal crop, vertical crop, and zoom to keep faces and text visible. The portrait creator template puts the phone over the lower part of the photo; keep faces clear of it.
 7. Use **Background** when the brief calls for a different surface. Read [references/backgrounds.md](references/backgrounds.md). Choose a solid color, linear/radial gradient, or approved background image. Set the project default or one screen override. Keep the solid starter unless the brand or user calls for another background. Review the real template in the picker before applying. Use fill, fit, crop, zoom, and tint to protect headline readability.
 
-8. For additional content, read [references/elements-and-assets.md](references/elements-and-assets.md). Use **Elements** for photos, logos, device captures, screenshot details, content cards, shapes, lines/arrows, icons, and text. Use **Assets** to reuse approved images and saved groups. Keep additions purposeful; do not fill empty space with decorative elements. Explain one useful action at a time. Preserve real app UI and the default Apple frames.
+8. For additional content, read [references/elements-and-assets.md](references/elements-and-assets.md). Use **Elements** for photos, logos, device captures, screenshot details, content cards, shapes, lines/arrows, icons, and text. Use **Assets** to reuse approved images and saved groups. Keep additions purposeful; do not fill empty space with decorative elements. Explain one useful action at a time. Preserve real app UI and the default packaged frames.
 
 An agent can set these values in `app-store-screenshots.json`. Use structured JSON edits. The optional `brand` object is:
 
@@ -141,7 +145,7 @@ Keep existing custom themes during migration. For new projects, prefer saved `br
 
 Set `locales` and `locale` from the brief. Do not assume English if the customer supplied another language. Screenshot paths can include `{locale}`, such as `/screenshots/iphone/{locale}/01.png`.
 
-Preview can show fallback copy while work is incomplete. Final export requires the headline, each used label, and added text in every target language. It checks required images, Apple capture proportions, basic headline contrast, and browser-measured text overflow for every target language. Shorten overflowing text or enlarge its frame. These checks do not prove correct translation, safe element overlap, image crop, or store approval.
+Preview can show fallback copy while work is incomplete. Final export requires the headline, each used label, and added text in every target language. It checks required images, device capture proportions, basic headline contrast, and browser-measured text overflow for every target language. Shorten overflowing text or enlarge its frame. These checks do not prove correct translation, safe element overlap, image crop, or store approval.
 
 Solid and gradient contrast checks use the selected background. Image backgrounds require visual review of the text against the image. Check each language and orientation; the image crop can change with screen proportions. Missing background images block export.
 

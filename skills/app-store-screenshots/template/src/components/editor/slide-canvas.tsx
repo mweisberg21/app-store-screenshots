@@ -15,7 +15,6 @@ import {
   CANVAS,
   IPAD_RATIO,
   IPAD_LANDSCAPE_RATIO,
-  MK_RATIO,
   ipadW,
   phoneW,
   phoneWSmall,
@@ -23,7 +22,7 @@ import {
   tabletPW,
 } from "@/lib/constants";
 import { toTextElementId } from "@/lib/elements";
-import { fitFrameRect } from "@/lib/apple-frames";
+import { fitFrameRect, deviceFrameAspect } from "@/lib/device-frames";
 import { img } from "@/lib/image-cache";
 import { pickText, resolveScreenshot } from "@/lib/locale";
 import { artworkRects, mediaTemplateRects } from "@/lib/template-layout";
@@ -56,23 +55,6 @@ export function getCanvas(device: Device, orientation: Orientation) {
   return { cW: c.w, cH: c.h };
 }
 
-// Aspect ratio (w/h) of each device frame — must match device-frames.tsx
-function getFrameAspect(device: Device, orientation: Orientation) {
-  switch (device) {
-    case "iphone":
-      return MK_RATIO;
-    case "android":
-      return 9 / 19.5;
-    case "ipad":
-      return orientation === "landscape" ? IPAD_LANDSCAPE_RATIO : IPAD_RATIO;
-    case "android-7":
-    case "android-10":
-      return orientation === "landscape" ? 8 / 5 : 5 / 8;
-    default:
-      return 1;
-  }
-}
-
 export function getFrameForDevice(
   device: Device,
   orientation: Orientation,
@@ -99,7 +81,11 @@ export function getFrameForDevice(
         smallWidthFn: (cW, cH) => ipadW(cW, cH, 0.6),
       };
     case "android":
-      return { Comp: AndroidPhone, widthFn: phoneW, smallWidthFn: phoneWSmall };
+      return {
+        Comp: AndroidPhone,
+        widthFn: (w, h) => Math.min(0.84, 0.72 * (h / w) * deviceFrameAspect("android", "portrait")),
+        smallWidthFn: (w, h) => Math.min(0.66, 0.72 * (h / w) * deviceFrameAspect("android", "portrait")),
+      };
     case "android-7":
     case "android-10":
       if (orientation === "landscape") {
@@ -490,7 +476,7 @@ function getSlideGeometry(
     widthFn,
     smallWidthFn,
   } = getFrameForDevice(device, orientation);
-  const frameAspect = getFrameAspect(device, orientation);
+  const frameAspect = deviceFrameAspect(device, orientation);
   const fwFrac = widthFn(cW, cH);
   const fwSmallFrac = smallWidthFn(cW, cH);
   const defaults = getDefaultRects(
