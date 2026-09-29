@@ -22,12 +22,19 @@ Choose your supported agent in the installer. Use Node.js 22 or newer. The skill
 
 The bundle has one entry skill plus supporting guides. It includes an [ASO playbook](references/aso-screenshot-playbook.md), a [Uscreen feature and capture guide](references/uscreen-mobile-features.md), design research, and local editor instructions. The agent reads the relevant guide as it plans the work. It does not need another ASO skill installed.
 
+## Updates before every request
+
+The assistant follows [the update procedure](references/updates.md) before setup, reopening, editing, or export. It checks this team fork, downloads available updates, and updates both the installed skill and the active editor when needed. It keeps a backup and preserves customer work. It does not ask the user to run update commands. If the check fails, it explains the problem and waits for the user's choice.
+
+This rule runs through the assistant. Opening the browser editor directly does not check GitHub.
+
 ## Start a customer project
 
 Create an empty folder in your approved customer work area. Open it in your agent. Supply this request with the customer material:
 
 ```text
 Use app-store-screenshots to create a listing for this customer.
+Check the team repository and apply available updates before work.
 Read customer-brief.md and the supplied app captures first.
 Use the customer's approved brand and verified features.
 Plan the sequence around the audience and the customer's content.
@@ -78,7 +85,7 @@ The repository is a local Node.js editor plus an agent skill. It is not a built-
 
 Keep the brief, JSON project, approved images, fonts, and output PNGs in the customer's approved storage. Share that project with the next teammate through your normal private process. Keep the public tool fork free of customer images and data.
 
-The editor runs on one computer. Each teammate starts a separate local copy; the private start link is not a team collaboration link. Installing a newer skill does not update old customer projects. Ask the agent to migrate the project with a backup.
+The editor runs on one computer. Each teammate starts a separate local copy; the private start link is not a team collaboration link. Installing a newer skill alone does not update old customer projects. The required update procedure also updates the active editor, with a backup and preserved customer files.
 
 ## Before a wider team rollout
 

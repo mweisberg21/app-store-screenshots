@@ -9,11 +9,15 @@ Build a local screenshot editor from `template/`. Use the customer's real app sc
 
 Source: `mweisberg21/app-store-screenshots`. Keep the original MIT license and author credit. This workflow is self-contained; teammates do not need other design or ASO skills. ASO means App Store optimization. Here, its purpose is to help the right visitor understand the app and decide to download it.
 
+## Required first step: update before work
+
+Before any work with this tool, read [references/updates.md](references/updates.md). At the start of every request and resumed session, check `mweisberg21/app-store-screenshots` on GitHub. Download and apply available updates before setup, reopening, planning, editing, or export. The normal branch is `main`; preserve an explicitly selected branch or version. Update both the installed skill and the active editor when needed. Preserve customer files and local changes with a verified backup. Re-read updated instructions before continuing. Do not silently continue if checking or updating fails; the guide defines the recovery steps.
+
 ## First use and returning users
 
 For setup, a repository-URL request, or a user who needs help getting started, read [references/first-run.md](references/first-run.md). Verify access to the user's actual computer, handle Mac or Windows setup, open and check the editor, then guide the first useful task one step at a time. Use plain language. Do not stop after installation or send the user a command list.
 
-For "run this skill" or "open my screenshots," find the existing customer project and its `HOW-TO-OPEN.md` note. Start it and open a fresh private link. Preserve the project; do not install again, reset the deck, or repeat first-use questions without a reason. If the customer or project is unclear, ask which one to open. Explain that the user can ask for changes in normal language.
+For "run this skill" or "open my screenshots," find the existing customer project and its `HOW-TO-OPEN.md` note. Complete the required update check, update its editor when needed, then start it and open a fresh private link. Preserve the project; do not reset the deck or repeat first-use questions without a reason. If the customer or project is unclear, ask which one to open. Explain that the user can ask for changes in normal language.
 
 ## Ask for assets throughout the work
 
@@ -85,7 +89,7 @@ Named styles in [style-prompts.md](style-prompts.md) are optional references. Op
 
 ## 3. Create the local editor
 
-Copy `template/` into the chosen project folder. Do not rebuild the renderer or export system. Do not overwrite unrelated files. Use native filesystem tools on Windows; the shell example below is for Mac. The first-run guide covers Windows command shims and paths. Run commands for the user when tools allow it.
+For a new project, copy the verified current `template/` into the chosen project folder, including `AGENTS.md` and `CLAUDE.md`. For an existing project, apply [the update procedure](references/updates.md); do not repeat a full template copy. Do not rebuild the renderer or export system. Do not overwrite unrelated files. Use native filesystem tools on Windows; the shell example below is for Mac. The first-run guide covers Windows command shims and paths. Run commands for the user when tools allow it.
 
 ```bash
 cp -R "<SKILL_DIR>/template/." "<PROJECT_DIR>/"

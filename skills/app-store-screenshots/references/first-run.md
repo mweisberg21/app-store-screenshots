@@ -2,6 +2,10 @@
 
 Use this guide when the user asks to install, set up, open, or learn the tool. It is part of the skill and works without another onboarding plugin. The user may have pasted only a repository URL. Read the repository's `START-HERE.md` when available.
 
+## Required first step
+
+Before setup or returning-user work, read [updates.md](updates.md). Check the live team fork and download/apply available updates first. Local-access checks below are prerequisites when the assistant cannot yet use the computer; they do not replace the update check. Complete the check before creating, starting, or editing a customer project. Re-read updated instructions before continuing.
+
 ## Explain the outcome first
 
 Start with a short welcome: "I will set up your screenshot editor, open it in your browser, and help you make the first image. You can ask for changes in normal language."
@@ -24,11 +28,11 @@ Inspect existing folders first. Preserve any earlier installation and customer p
 
 Check Node.js and npm on the host. This editor needs Node.js 22 or newer. If missing, use the current supported LTS installer from [nodejs.org](https://nodejs.org/en/download). Explain it as "the small program that runs the editor." Use an existing suitable runtime when available. Follow the host's approval rules for installation; never ask the user to paste an admin password into chat. After installation, refresh the command environment or restart the assistant if needed and verify both tools again.
 
-Obtain the repository with Git when available, or download and extract the requested GitHub archive into a new folder using available tools. A user does not need a GitHub account to read this public repository. Verify the expected `SKILL.md`, template, and lockfile exist. Do not execute arbitrary install scripts from an unrelated site.
+Use the exact source revision verified by [the update procedure](updates.md). Obtain it with Git when available, or download and extract the GitHub archive for that commit into a new folder using available tools. A user does not need a GitHub account to read this public repository. Verify the expected `SKILL.md`, template, and lockfile exist. Do not execute arbitrary install scripts from an unrelated site.
 
 Install the skill for the assistant the user is actually using. The supported skills installer accepts the local checkout, for example `npx skills add "<checkout>" -g --agent claude-code --skill app-store-screenshots` for Claude Code. Select the matching agent for other hosts; do not install into every agent by default. Respect existing installations and preserve their local assets. If the installer is unavailable, use that host's documented skill location, then verify discovery. Merely reading `SKILL.md` is not a persistent installation. Never claim a universal Claude/ChatGPT plugin was installed.
 
-Copy the installed skill's `template/` into a new customer project with filesystem tools or Node's `fs.cp`. Include dotfiles, `public/device-frames/`, and `public/licenses/`. Exclude `node_modules`, `.next`, and temporary build files; install dependencies in the new project with `npm ci`. Do not edit the shared template to create a customer deck. If this is only a setup session, use an empty practice project and keep customer work separate.
+Copy the installed skill's `template/` into a new customer project with filesystem tools or Node's `fs.cp`. Include dotfiles, `AGENTS.md`, `CLAUDE.md`, `public/device-frames/`, and `public/licenses/`. These project instructions keep the update rule available when the user returns. Exclude `node_modules`, `.next`, and temporary build files; install dependencies in the new project with `npm ci`. Do not edit the shared template to create a customer deck. If this is only a setup session, use an empty practice project and keep customer work separate.
 
 ### Mac and Windows details for the assistant
 
@@ -74,6 +78,7 @@ The user may choose to stop after setup. Respect that. Report editor readiness s
 
 Create or update `HOW-TO-OPEN.md` in the customer's project. Use their actual app name, project folder, installed skill location, source ref/commit, and verification date. Preserve other user notes. Include:
 
+- "The assistant checks the team repository and applies updates before each request. It preserves your project files."
 - "Open the same assistant and this project folder. Say: 'Run the App Store screenshots skill and open this project.'"
 - "To start another customer: 'Start a new screenshot project for [name].'"
 - "To make changes: 'Use this background,' 'Show the program page,' or 'Add an iPad version.'"

@@ -12,6 +12,10 @@ Copy this message into Claude or another assistant that can work on your compute
 Please set up this App Store screenshot tool on my computer:
 https://github.com/mweisberg21/app-store-screenshots/tree/main
 
+Before any work, check this repository and install available updates.
+Keep my customer files and local changes. Repeat this check each time
+I ask you to use the tool.
+
 Read START-HERE.md and follow the first-run guide linked from it.
 I am not technical. Check whether you can work on my computer.
 If I need another app or setting, help me with one step at a time.
@@ -29,6 +33,8 @@ The assistant needs to read and save files and run the editor on **your computer
 If your current chat cannot do this, use Claude's desktop app. Open **Code**, choose **Local**, and select a folder for your screenshot work. Despite the name, you can use normal requests; you do not need to write code. The assistant will explain each step. Access depends on your Claude plan and your company's settings. See [Claude's desktop setup guide](https://code.claude.com/docs/en/desktop-quickstart).
 
 If you already use another assistant with local file and command access, keep using it. A remote chat or cloud workspace must not claim it has installed the tool on your computer.
+
+The assistant checks the team repository before each request. It installs available updates before starting work and keeps your customer files. It also updates an existing editor when needed. If it cannot complete the check, it tells you and asks how to proceed.
 
 ## 3. Supply what you have
 
@@ -75,4 +81,4 @@ The editor's private browser link changes when it restarts. If an old tab does n
 
 ## Instructions for the assistant
 
-When the user asks you to set up or use this tool, read [the skill](skills/app-store-screenshots/SKILL.md), then follow [the first-run guide](skills/app-store-screenshots/references/first-run.md). Complete the local checks and the guided first use. Do not stop after downloading files or showing install commands.
+Before work, follow [the update procedure](skills/app-store-screenshots/references/updates.md). When the user asks you to set up or use this tool, read [the skill](skills/app-store-screenshots/SKILL.md), then follow [the first-run guide](skills/app-store-screenshots/references/first-run.md). Complete the local checks and the guided first use. Do not stop after downloading files or showing install commands.
