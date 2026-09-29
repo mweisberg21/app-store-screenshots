@@ -10,7 +10,7 @@ Copy this message into Claude or another assistant that can work on your compute
 
 ```text
 Please set up this App Store screenshot tool on my computer:
-https://github.com/mweisberg21/app-store-screenshots/tree/editor-elements
+https://github.com/mweisberg21/app-store-screenshots/tree/main
 
 Read START-HERE.md and follow the first-run guide linked from it.
 I am not technical. Check whether you can work on my computer.
@@ -20,7 +20,7 @@ first screenshot. Ask for my app screenshots, logo, colors, and
 other assets as we go. Show me how to return to the tool later.
 ```
 
-This link selects the current team draft. It works for setup on Mac and Windows. The main branch includes the packaged frames. The new element controls are on this branch until review is complete.
+This link selects the team version. It works for setup on Mac and Windows.
 
 ## 2. Let the assistant check your setup
 
@@ -41,7 +41,7 @@ Start with your customer name and any of these files:
 
 You do not need all the files at once. The assistant will list what is missing and help you capture the right app screens. It will ask for assets as you work, without asking for the same file again.
 
-The original iPhone and iPad frames are included. They work by default on Mac and Windows, with no separate Apple download. The assistant checks that they load. If an installation is incomplete, it repairs the included files. The editor has a Credits button for the source and license notices.
+The original iPhone, iPad, and Samsung Galaxy S22 frames are included. They work by default on Mac and Windows, with no separate Apple download. The assistant checks that they load. If an installation is incomplete, it repairs the included files. The editor has a Credits button for the source and license notices.
 
 ## 4. Make one image together
 

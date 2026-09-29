@@ -18,7 +18,7 @@ Do not install into a remote environment and call it a local installation. Do no
 
 ## 2. Prepare a local working copy
 
-Use the URL/ref supplied by the user. For the new element editor under review, use `editor-elements` from `mweisberg21/app-store-screenshots`. The main branch already has packaged frames and the earlier editor; it does not yet have these new controls. Report the actual ref and commit in the local setup note, not as a technical lecture. Never silently switch to upstream or an older main branch. If the requested ref is missing, explain and resolve the source before installing.
+Use the URL/ref supplied by the user. Default to `main` from `mweisberg21/app-store-screenshots` when no ref is specified. A supplied feature branch takes precedence. Report the actual ref and commit in the local setup note, not as a technical lecture. Never silently switch to upstream or an older main branch. If the requested ref is missing, explain and resolve the source before installing.
 
 Inspect existing folders first. Preserve any earlier installation and customer projects. Use a separate tools folder and customer folder within the user's chosen work area. If no location was supplied, suggest an easy-to-find folder in Documents and use the user's actual path. Do not assume a Mac username, a Windows drive letter, or an English Documents folder.
 
@@ -38,11 +38,11 @@ Copy the installed skill's `template/` into a new customer project with filesyst
 - Keep the editor bound to `127.0.0.1`. Do not ask for a public firewall exception.
 - If the default port is in use, select another local port and use `npm run dev -- --port <port>`. Do not stop an unrelated process.
 
-## 3. Verify the included Apple frames
+## 3. Verify the included device frames
 
-Read [apple-frames.md](apple-frames.md). The skill package already includes all three original frame PNGs, with filenames that work on Mac and Windows. No separate Apple download, import, archive extraction, or cache is required. Do not send the user to Apple to finish normal setup.
+Read [apple-frames.md](apple-frames.md). The skill package already includes all four original frame PNGs, with filenames that work on Mac and Windows. No separate Apple download, import, archive extraction, or cache is required. Do not send the user to Apple to finish normal setup.
 
-Preserve `public/device-frames/` and `public/licenses/` when copying the template. The launcher checks the files against the manifest. If a file is missing or changed, restore it from the same repository version or an intact installed template, without replacing customer files. A valid existing local cache can also restore frames. Reload the editor after repair and verify the frame loads. Do not bypass the hash checks or draw replacement hardware.
+Preserve `public/device-frames/` and `public/licenses/` when copying the template. The launcher checks the files against the manifest. If a file is missing or changed, restore it from the same repository version or an intact installed template, without replacing customer files. A valid existing local cache can also restore Apple frames. Reload the editor after repair and verify the frame loads. Do not bypass the hash checks or draw replacement hardware.
 
 The editor's **Credits** button shows the Apple attribution and supplied license, separate from the code's MIT license. Keep those files in every customer project. If repair fails, report the missing package file and keep Apple export pending; do not turn this into a manual asset download task for the user.
 
@@ -61,7 +61,7 @@ Ask: "Do you have any assets you want to provide, specific screenshots, logos, c
 Work through the steps below with the user. Show one task, explain its result, and invite the next useful input. Do not deliver all the steps as a wall of instructions. Keep the asset check-ins and feature checks from `SKILL.md`.
 
 1. **Choose the app and device.** Explain that each customer has a separate saved project. Confirm the language.
-2. **Add one real app screen.** Show where Pick adds the file and which feature it supports. Keep the real iPhone or iPad frame.
+2. **Add one real app screen.** Show where Pick adds the file and which feature it supports. Keep the matching iPhone, iPad, or Samsung phone frame.
 3. **Set the brand and headline.** Show Brand. Use their colors and a short, centered benefit headline. Keep their content readable.
 4. **Choose the background.** Show Background. Explain solid color, gradient, and image choices. For an image, show fill/fit and crop. Explain that Apply saves and Cancel discards the picker changes.
 5. **Add useful content.** Show **Add element** for a logo, photo, content cards, device capture, or a crop of real UI. Show **Assets** for files already supplied. Read [elements-and-assets.md](elements-and-assets.md). Demonstrate one useful addition; do not require decorative elements. Explain saved groups only when there is a layout worth reusing.

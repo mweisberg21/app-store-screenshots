@@ -9,7 +9,7 @@ export function appleFrame(device: Device, orientation: Orientation): AppleFrame
   if (device === "ipad") return frames[orientation === "landscape" ? "ipad-pro-13-landscape" : "ipad-pro-13-portrait"];
 }
 
-export function framePath(frame: AppleFrame): string {
+export function framePath(frame: { filename: string }): string {
   return `/api/device-frames/${frame.filename}`;
 }
 

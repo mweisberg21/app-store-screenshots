@@ -42,7 +42,8 @@ try {
   assert.equal((await fetch(origin,{headers})).status,200);
   assert.equal((await fetch(origin+'/mockup.png',{headers})).status,200);
   {
-    const frames = Object.values(JSON.parse(await readFile(path.join(directory,'src/lib/apple-frames.json'),'utf8')));
+    const frames = [];
+    for (const manifest of ['apple-frames', 'android-frames']) frames.push(...Object.values(JSON.parse(await readFile(path.join(directory,`src/lib/${manifest}.json`),'utf8'))));
     for (const frame of frames) {
       const url = origin+'/api/device-frames/'+frame.filename;
       const original = await readFile(path.join(source,'public/device-frames',frame.filename));

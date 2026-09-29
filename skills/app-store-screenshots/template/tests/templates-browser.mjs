@@ -85,7 +85,8 @@ try {
   await mkdir(resultDir,{recursive:true});
   // Use the packaged originals with no operator cache or separate import.
   const appleFrames=JSON.parse(await readFile(path.join(source,'src/lib/apple-frames.json'),'utf8'));
-  for(const frame of Object.values(appleFrames)) {
+  const androidFrames=JSON.parse(await readFile(path.join(source,'src/lib/android-frames.json'),'utf8'));
+  for(const frame of [...Object.values(appleFrames), ...Object.values(androidFrames)]) {
     const file=path.join(directory,'public/device-frames',frame.filename);
     const original=await readFile(file);
     assert.equal((await fetch(origin+'/api/device-frames/'+frame.filename)).status,401);
@@ -198,11 +199,11 @@ try {
   await page.getByRole('button',{name:'Export bundle',exact:true}).click();
   await page.getByText(/Use a capture with 2064 × 2752 proportions/).first().waitFor();
   await page.getByRole('button',{name:'Back to editor'}).click();
-  async function tabletAsset(width,height) {
-    const dataUrl=await page.evaluate(({width,height})=>{
+  async function tabletAsset(width,height,deviceName='iPAD') {
+    const dataUrl=await page.evaluate(({width,height,deviceName})=>{
       const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;
       const c=canvas.getContext('2d');c.fillStyle='#f7f4eb';c.fillRect(0,0,width,height);
-      c.fillStyle='#253d33';c.fillRect(0,0,width,250);c.fillStyle='white';c.font='bold 70px sans-serif';c.fillText('TEST APP · iPAD',80,155);
+      c.fillStyle='#253d33';c.fillRect(0,0,width,250);c.fillStyle='white';c.font='bold 70px sans-serif';c.fillText('TEST APP · '+deviceName,80,155);
       const gap=70,col=(width-gap*3)/2,cardH=Math.min(650,(height-450)/2);
       ['Sample class','Sample program','Saved content','Sample lesson'].forEach((label,i)=>{
         const x=gap+(i%2)*(col+gap),y=340+Math.floor(i/2)*(cardH+150);
@@ -210,9 +211,28 @@ try {
         c.fillStyle='#253d33';c.font='50px sans-serif';c.fillText(label,x,y+cardH+75);
       });
       return canvas.toDataURL('image/png');
-    },{width,height});
+    },{width,height,deviceName});
     const response=await page.request.post(origin+'/api/upload',{headers:{Origin:origin},data:{dataUrl}});
     assert.equal(response.status(),200);return(await response.json()).path;
+  }
+  async function checkFramePixels(frame,bytes,cw,ch,box) {
+    const render=await sharp(bytes).ensureAlpha().raw().toBuffer({resolveWithObject:true});
+    const original=await sharp(path.join(source,'public/device-frames',frame.filename)).ensureAlpha().raw().toBuffer({resolveWithObject:true});
+    const width=box?.width ?? Math.min(cw*0.84,ch*(cw>ch?0.56:0.65)*frame.width/frame.height),height=width*frame.height/frame.width;
+    const left=box?.left ?? (cw-width)/2,top=box?.top ?? ch*0.96-height;
+    const pixel=(x,y)=>{const i=(Math.round(top+y/frame.height*height)*cw+Math.round(left+x/frame.width*width))*4;return [...render.data.subarray(i,i+3)];};
+    for(const [x,y] of [[Math.floor(frame.screen.x/2),Math.floor(frame.height/2)],[Math.floor(frame.width/2),frame.screen.y+frame.screen.height+Math.floor((frame.height-frame.screen.y-frame.screen.height)/2)]]) {
+      const i=(y*frame.width+x)*4,expected=[...original.data.subarray(i,i+3)];
+      assert.equal(original.data[i+3],255,'sample is opaque original hardware');
+      assert.ok(pixel(x,y).every((v,c)=>Math.abs(v-expected[c])<40),'original side and bottom rails remain above the capture');
+    }
+    const inside=pixel(frame.screen.x+frame.screen.width*0.15,frame.screen.y+frame.screen.height*0.025);
+    assert.ok(inside[1]>inside[0]+10,'capture fills the screen below the top hardware');
+    const outside=pixel(1,1);assert.ok(outside[0]>200&&outside[1]>180,'no screenshot spills into exterior transparency');
+    if(frame.filename.startsWith('samsung')) {
+      const camera=pixel(192,30);assert.ok(Math.max(...camera)<150,'original camera remains above the capture');
+      const beneath=pixel(192,80);assert.ok(beneath[1]>beneath[0]+10,'no second synthetic camera below the supplied camera');
+    }
   }
   for(const [orientation,w,h] of [['portrait',2064,2752],['landscape',2752,2064]]){
     const tabletPath=await tabletAsset(w,h);
@@ -226,8 +246,47 @@ try {
     assert.equal(tabletPNGs.length,6);
     for(const file of tabletPNGs){const d=await file.async('nodebuffer');const [,ew,eh]=file.name.match(/\/(\d+)x(\d+)\//);assert.equal(d.readUInt32BE(16),Number(ew));assert.equal(d.readUInt32BE(20),Number(eh));}
     await writeFile(path.join(resultDir,'ipad-'+orientation+'.png'),await tabletZip.file('review/en.png').async('nodebuffer'));
+    const full=await tabletZip.file(`ios/ipad/${w}x${h}/en/01-device-bottom.png`).async('nodebuffer');
+    await writeFile(path.join(resultDir,'ipad-'+orientation+'-full.png'),full);
+    await checkFramePixels(appleFrames['ipad-pro-13-'+orientation],full,w,h);
     console.log(`iPad ${orientation} exports passed.`);
   }
+  // Android phone uses the supplied transparent PNG in every main template and in added device elements.
+  const androidPath=await tabletAsset(1080,2340,'ANDROID');
+  testProject.device='android';testProject.orientation='portrait';
+  testProject.slidesByDevice.android=structuredClone(testProject.slidesByDevice.iphone);
+  testProject.slidesByDevice.android.forEach(slide=>slide.screenshot=androidPath);
+  testProject.slidesByDevice.android.push({id:'custom-device',layout:'no-device',headline:{en:'Browse your classes'},label:{},screenshot:'',transforms:{caption:{x:86.4,y:115.2,width:907.2,height:422.4}},elements:[{id:'samsung',kind:'device',name:'Samsung phone',opacity:100,device:'android',orientation:'portrait',src:androidPath,transform:{x:200,y:600,width:680,height:1220}}]});
+  await put(testProject);
+  await page.locator('main [data-device-frame="samsung-galaxy-s22.png"]').first().waitFor();
+  assert.equal(await page.locator('main [data-device-frame="samsung-galaxy-s22.png"]').count(),4);
+  for(const frame of await page.locator('main [data-device-frame="samsung-galaxy-s22.png"]').all()) {
+    assert.equal(await frame.locator('[data-device-bezel]').count(),1);
+    const ratio=await frame.evaluate(el=>el.getBoundingClientRect().width/el.getBoundingClientRect().height);
+    assert.ok(Math.abs(ratio-388/800)<0.001,'frame keeps its original proportions even in a saved custom box');
+  }
+  const androidPending=page.waitForEvent('download',{timeout:120000});
+  await page.getByRole('button',{name:'Export bundle',exact:true}).click();
+  const androidZip=await JSZip.loadAsync(await readFile(await(await androidPending).path()));
+  const androidPNGs=Object.values(androidZip.files).filter(f=>f.name.startsWith('android/')&&f.name.endsWith('.png'));
+  assert.equal(androidPNGs.length,4);
+  for(const file of androidPNGs){const d=await file.async('nodebuffer');assert.equal(d.readUInt32BE(16),1080);assert.equal(d.readUInt32BE(20),1920);}
+  const androidFull=await androidPNGs.find(f=>f.name.endsWith('01-device-bottom.png')).async('nodebuffer');
+  await writeFile(path.join(resultDir,'android-full.png'),androidFull);
+  await checkFramePixels(androidFrames['samsung-galaxy-s22'],androidFull,1080,1920);
+  await writeFile(path.join(resultDir,'android-review.png'),await androidZip.file('review/en.png').async('nodebuffer'));
+  const customPNG=await androidPNGs.find(f=>f.name.endsWith('04-no-device.png')).async('nodebuffer');
+  await writeFile(path.join(resultDir,'android-custom.png'),customPNG);
+  await checkFramePixels(androidFrames['samsung-galaxy-s22'],customPNG,1080,1920,{left:(1080-1220*388/800)/2,top:600,width:1220*388/800});
+  // A fresh page cannot export the Android frame if its packaged source is unavailable.
+  const frameURL='**/api/device-frames/samsung-galaxy-s22.png';
+  await page.route(frameURL,route=>route.fulfill({status:404,body:'Missing frame'}));
+  await page.reload();await page.getByRole('textbox',{name:'App name',exact:true}).waitFor();
+  await page.getByRole('button',{name:'Export bundle',exact:true}).click();
+  await page.getByText(/included Samsung Galaxy S22 frame could not load/).waitFor();
+  await page.getByRole('button',{name:'Back to editor'}).click();
+  await page.unroute(frameURL);
+  console.log('Android phone exports passed: three templates, custom device, camera, rails, transparency, and missing-frame rejection.');
   testProject.brand={background:'#1B252E',foreground:'#FFF8E8',font:'sans',alignment:'center'};
   testProject.locales=['en'];testProject.locale='en';testProject.device='android-7';testProject.orientation='landscape';
   testProject.slidesByDevice['android-7']=structuredClone(testProject.slidesByDevice.iphone);await put(testProject);
@@ -237,7 +296,7 @@ try {
   for(const f of landscape){const d=await f.async('nodebuffer');assert.equal(d.readUInt32BE(16),1920);assert.equal(d.readUInt32BE(20),1200);}
   await writeFile(path.join(resultDir,'landscape.png'),await secondZip.file('review/en.png').async('nodebuffer'));
   assert.deepEqual(errors,[]);
-  console.log('Browser checks passed: uploads, crop pixels and persistence, template switching, library add/remove, German text overflow blocked, 24 iPhone PNGs, 12 iPad PNGs, 3 Android tablet PNGs, 5 review sheets, original bezel pixels, centered larger headlines, no page errors.');
+  console.log('Browser checks passed: uploads, crop pixels and persistence, template switching, library add/remove, German text overflow blocked, 24 iPhone PNGs, 12 iPad PNGs, 4 Android phone PNGs, 3 Android tablet PNGs, 6 review sheets, original bezel pixels, centered larger headlines, no page errors.');
 } finally {
   await browser?.close();
   child.kill('SIGTERM');

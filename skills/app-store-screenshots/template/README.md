@@ -15,7 +15,7 @@ Use Node.js 22 or newer. The launcher binds to 127.0.0.1 and creates a new acces
 
 The launcher uses Node directly on Mac and Windows. In Windows PowerShell, use `npm.cmd` if policy blocks the `npm.ps1` wrapper; do not change execution policy. Quote paths with spaces. The included frame filenames work on both platforms. Repository CI runs unit tests, type checking, a production build, and local server checks on Mac and Windows. These checks do not replace a first-time operator trial.
 
-The package includes original Apple bezels for iPhone 17 Pro Max and iPad Pro 13-inch (M5), in portrait and landscape. They are the default for Apple device layouts. No separate download, import, or existing cache is needed. Copy `public/device-frames/` and `public/licenses/` with the template. The launcher and protected frame route check the file hashes. See [included Apple frames](../references/apple-frames.md) for recovery. The editor's **Credits** button identifies Apple as the image source and links to the supplied license, separate from the code's MIT license.
+The package includes original Apple bezels for iPhone 17 Pro Max and iPad Pro 13-inch (M5), in portrait and landscape. The supplied Samsung Galaxy S22 PNG is the default for Android phones. Android tablets use generic frames. No separate download, import, or existing cache is needed. Copy `public/device-frames/` and `public/licenses/` with the template. The launcher and protected frame route check the file hashes. See [included device frames](../references/apple-frames.md) for recovery. The editor's **Credits** button identifies Apple as the image source and links to the supplied license, separate from the code's MIT license.
 
 For a production build, run `npm run build` and `npm start`. Both server modes require the launcher. All editor pages, APIs, and image files require a local session. Writes also require the configured Origin and JSON content type. This tool is for one local operator, not remote hosting. Team members should each run their own copy.
 
@@ -36,7 +36,7 @@ Run `npm test`, `npm run typecheck`, `npm audit`, `npm run build`, `npm run test
 
 - **Connected canvas editor** (`src/components/editor/`) — every screen sits on one horizontal canvas, so phones, captions, and other elements can be dragged across screen boundaries and exported as split crops when Connected mode is enabled.
 - **Screen controls** — drag-to-reorder screens, click-to-edit text, screenshot drop targets, per-screen layout switcher and element controls.
-- **Device frames** (`src/components/editor/device-frames.tsx`) — included original Apple PNGs for iPhone 17 Pro Max and iPad Pro 13-inch (M5), with portrait and landscape iPad support. Android uses generic frames.
+- **Device frames** (`src/components/editor/device-frames.tsx`) — included original Apple PNGs for iPhone 17 Pro Max and iPad Pro 13-inch (M5), with portrait and landscape iPad support. Android phones use the supplied Samsung Galaxy S22 PNG. Android tablets use generic frames.
 - **Auto-save (git-trackable)** — every change is persisted within ~600ms to **`app-store-screenshots.json`** at the project root (via `/api/project`) **and** mirrored to `localStorage` as an instant-paint cache. Commit `app-store-screenshots.json` and you can `git clone` to another machine and resume exactly where you left off.
 - **Multi-device decks** — iOS and Android slide decks live side by side; switching the platform tab preserves both.
 - **One-click export** — bulk PNG export at the configured App Store / Play Store resolutions using `html-to-image`; each PNG is rendered from the current connected or isolated deck mode.
@@ -79,7 +79,7 @@ New projects use centered headlines at 13% of the canvas's shorter side. This is
 
 The starter has one empty screen per device, no marketing filler, and no saved demo transforms. It uses isolated mode. The checked-in project and the separate reset starter must match before release; a test checks this. Customer edits do not change the reset starter.
 
-Export stops for missing headlines, incomplete translations, missing or unavailable required images, mismatched Apple capture proportions, insufficient basic headline contrast, and text that exceeds its frame. Text is measured in the browser for every target language before capture. Preview fallback text does not count as a completed translation. These checks do not detect all overlaps, cropping errors, or translation errors. Inspect every PNG.
+Export stops for missing headlines, incomplete translations, missing or unavailable required images, mismatched device capture proportions, insufficient basic headline contrast, and text that exceeds its frame. Text is measured in the browser for every target language before capture. Preview fallback text does not count as a completed translation. These checks do not detect all overlaps, cropping errors, or translation errors. Inspect every PNG.
 
 The bundle includes `review/<locale>.png`, a contact sheet made from the exported images in order. Use it for review. Upload only the separate full-resolution store images.
 
@@ -93,8 +93,8 @@ For custom backgrounds, the contrast check uses the selected solid color or samp
 | `app-store-screenshots.json` | Saved project: app name, current device, connected-canvas mode, slide copy, screenshots, and transforms |
 | `src/lib/defaults.ts` | Loads `src/lib/starter-project.json` for fallback/reset state |
 | `src/components/editor/slide-canvas.tsx` | Add new layouts and connected-canvas element rendering |
-| `src/lib/apple-frames.json` | Original Apple frame dimensions, source hashes, and measured screen masks |
-| `src/components/editor/device-frames.tsx` | Place app captures below the unchanged Apple bezel |
+| `src/lib/apple-frames.json`, `src/lib/android-frames.json` | Original frame dimensions, source hashes, and measured screen masks |
+| `src/components/editor/device-frames.tsx` | Place app captures below the unchanged device bezel |
 | `src/lib/brand.ts` and `src/app/globals.css` | Configure licensed local customer fonts |
 
 ## Notes
@@ -110,7 +110,7 @@ For custom backgrounds, the contrast check uses the selected solid color or samp
 
 Run `npm run build` and `node tests/templates-browser.mjs` in an environment with the Playwright package and Google Chrome. If Playwright is supplied by an external runtime, set `PLAYWRIGHT_MODULE` to that runtime's module path. Pass an output directory as the first argument to retain test review sheets. The test uses an isolated temporary project and synthetic app images; it does not modify customer projects.
 
-The check covers photo and catalog uploads, crop changes and persistence, template changes, library add/remove, English and German export, text overflow, iPad portrait and landscape export, review sheets, frame route access, unchanged frame bytes, and camera pixels in the exported iPhone image. It does not establish design approval for a real customer.
+The check covers photo and catalog uploads, crop changes and persistence, template changes, library add/remove, English and German export, text overflow, iPad portrait and landscape export, review sheets, frame route access, unchanged frame bytes, iPad hardware pixels, and camera pixels in the exported iPhone and Android images. It also checks all three Android phone templates, an added Android device, and rejection of a missing Android frame. It does not establish design approval for a real customer.
 
 Run `node tests/backgrounds-browser.mjs` with the same setup for background controls. It checks cancellation, undo/redo, reload, gradient stops and center, image upload/crop/fit/tint, project and screen scope, export pixels, and a missing-image failure. An optional output directory retains screenshots of the picker and exported review images.
 

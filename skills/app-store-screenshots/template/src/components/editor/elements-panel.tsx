@@ -60,7 +60,7 @@ import {
 } from "@/lib/canvas-elements";
 import { nid } from "@/lib/defaults";
 import { pickText, writeLocalized } from "@/lib/locale";
-import { appleFrame } from "@/lib/apple-frames";
+import { deviceFrame, deviceFrameAspect } from "@/lib/device-frames";
 import { projectTheme } from "@/lib/brand";
 import type {
   CanvasElement,
@@ -167,7 +167,7 @@ export function ElementsPanel({
           ? "portrait"
           : state.orientation;
       e.src = slide.screenshot;
-      const frame = appleFrame(e.device, e.orientation);
+      const frame = deviceFrame(e.device, e.orientation);
       if (frame)
         e.transform.height = (e.transform.width * frame.height) / frame.width;
     }
@@ -1007,14 +1007,7 @@ function ElementSettings({
         value.width = (value.height * e.transform.width) / e.transform.height;
     }
     if (e.kind === "device") {
-      const f = appleFrame(e.device, e.orientation),
-        ratio = f
-          ? f.width / f.height
-          : e.device === "android"
-            ? 9 / 19.5
-            : e.orientation === "portrait"
-              ? 5 / 8
-              : 8 / 5;
+      const ratio = deviceFrameAspect(e.device, e.orientation);
       if (value.width) value.height = value.width / ratio;
       else if (value.height) value.width = value.height * ratio;
     }
@@ -1087,21 +1080,13 @@ function ElementSettings({
                   device === "iphone" || device === "android"
                     ? "portrait"
                     : e.orientation;
-                const f = appleFrame(device as "iphone" | "ipad", orientation);
+                const ratio = deviceFrameAspect(device as typeof e.device, orientation);
                 patch({
                   device,
                   orientation,
                   transform: {
                     ...e.transform,
-                    height:
-                      e.transform.width /
-                      (f
-                        ? f.width / f.height
-                        : device === "android"
-                          ? 9 / 19.5
-                          : orientation === "portrait"
-                            ? 5 / 8
-                            : 8 / 5),
+                    height: e.transform.width / ratio,
                   },
                 });
               }}
@@ -1115,7 +1100,7 @@ function ElementSettings({
                   : ["portrait", "landscape"]
               }
               onChange={(orientation) => {
-                const f = appleFrame(
+                const ratio = deviceFrameAspect(
                   e.device,
                   orientation as "portrait" | "landscape",
                 );
@@ -1123,13 +1108,7 @@ function ElementSettings({
                   orientation,
                   transform: {
                     ...e.transform,
-                    height:
-                      e.transform.width /
-                      (f
-                        ? f.width / f.height
-                        : orientation === "portrait"
-                          ? 5 / 8
-                          : 8 / 5),
+                    height: e.transform.width / ratio,
                   },
                 });
               }}

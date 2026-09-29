@@ -18,7 +18,7 @@ Start with one useful addition. Explain its purpose, show the result, and keep t
 | --- | --- | --- |
 | Image | Creator photo or approved artwork | Customer photo or artwork |
 | Logo | Customer identity with original proportions | Approved PNG, ideally with a transparent background |
-| Device | Another app capture in a device frame | Matching capture; Apple frames are included |
+| Device | Another app capture in a device frame | Matching capture; iPhone, iPad, and Samsung phone frames are included |
 | Screenshot detail | A larger view of a useful part of the app | Real app capture; use Crop and zoom |
 | Content cards | Two to six covers in a row, column, or grid | Approved content covers; titles are optional |
 | Shape | A color panel, border, or circle | Customer palette and a clear layout purpose |
@@ -36,7 +36,7 @@ Upload PNG or JPEG files in **Assets**. Multiple files and drag-and-drop are sup
 
 **Use** adds an image to the active screen. For an existing image or device element, use **Choose from assets** in its settings. Logos start with Fit so their edges remain visible. Other images start with Fill. Crop and zoom set the visible area without changing the original file. Screenshot details support up to 8× zoom; inspect source quality before using a large crop.
 
-A device element uses the included real iPhone or iPad frame by default. Select the matching device and orientation. Use a real tablet capture for a tablet. Keep the frame's proportions. Android devices use generic frames. Do not ask users to download Apple frames.
+A device element uses the included real iPhone, iPad, or Samsung Galaxy S22 frame by default. Select the matching device and orientation. Use a real tablet capture for a tablet. Keep the frame's proportions. Android tablets use generic frames. Do not ask users to download Apple frames.
 
 The library is local to this customer project. Removing an unused library entry does not delete the file from disk. Images used by a screen or saved group cannot be removed from the library until those references are removed. Undo can restore the entry.
 
@@ -64,7 +64,7 @@ New fields are optional in schema version 2. Old projects keep their existing ap
 
 The project stores added elements in each slide's `elements` array. It stores library metadata in `assets` and reusable layouts in `savedGroups`. Use `src/lib/types.ts` and `src/lib/project-schema.ts` for structured edits. Use the editor controls when possible. Keep image files with the saved project.
 
-Export includes visible elements. It checks their required images, Apple capture proportions, translated text and card titles, and text overflow. It does not prove that a crop, overlap, icon meaning, small text, or composition is useful. Review each exported PNG and the contact sheet. A hidden element does not require assets or translations for export.
+Export includes visible elements. It checks their required images, device capture proportions, translated text and card titles, and text overflow. It does not prove that a crop, overlap, icon meaning, small text, or composition is useful. Review each exported PNG and the contact sheet. A hidden element does not require assets or translations for export.
 
 Useful requests:
 

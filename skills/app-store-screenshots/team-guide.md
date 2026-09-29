@@ -4,7 +4,7 @@ Use one local project for each customer. The customer's brand controls the scree
 
 ## First-time users
 
-Share [Start here](https://github.com/mweisberg21/app-store-screenshots/blob/editor-elements/START-HERE.md). It has a short request to paste into Claude, a plain-language walkthrough, and examples for later use. The assistant handles setup on Mac or Windows, checks local access, opens the editor, and teaches one step at a time. It leaves a `HOW-TO-OPEN.md` note with the user's actual project location.
+Share [Start here](https://github.com/mweisberg21/app-store-screenshots/blob/main/START-HERE.md). It has a short request to paste into Claude, a plain-language walkthrough, and examples for later use. The assistant handles setup on Mac or Windows, checks local access, opens the editor, and teaches one step at a time. It leaves a `HOW-TO-OPEN.md` note with the user's actual project location.
 
 The setup steps below are for the assistant or an experienced operator. New users do not need to run these commands. The installed skill carries its own [first-run guide](references/first-run.md).
 
@@ -12,10 +12,10 @@ The setup steps below are for the assistant or an experienced operator. New user
 
 Use an agent that can read local files, run Node.js, and open a browser, such as Codex or Claude Code. See the [Codex skill documentation](https://developers.openai.com/codex/skills/) and [Claude Code skill documentation](https://code.claude.com/docs/en/skills).
 
-The new element editor is under review on the `editor-elements` branch. Use this version for the new controls:
+Use the team fork for the editor controls and included frames:
 
 ```bash
-npx skills add https://github.com/mweisberg21/app-store-screenshots/tree/editor-elements/skills/app-store-screenshots -g
+npx skills add https://github.com/mweisberg21/app-store-screenshots/tree/main/skills/app-store-screenshots -g
 ```
 
 Choose your supported agent in the installer. Use Node.js 22 or newer. The skill includes the design rules and template; no extra design plugin or image generation account is required.
@@ -54,7 +54,7 @@ For Uscreen apps, start with the customer's content, teachers, programs, playbac
 
 ## Editor workflow
 
-The package includes the original iPhone and iPad frames. They are used by default and need no separate download or import. Copy the full template, including `public/device-frames/` and `public/licenses/`. See [included Apple frames](references/apple-frames.md) for recovery if an installation is incomplete. The editor's **Credits** button shows the asset source and license notices.
+The package includes the original iPhone, iPad, and Samsung Galaxy S22 frames. They are used by default and need no separate download or import. Copy the full template, including `public/device-frames/` and `public/licenses/`. See [included device frames](references/apple-frames.md) for recovery if an installation is incomplete. The editor's **Credits** button shows the asset source and license notices.
 
 1. Start the project with `npm ci`, then `npm run dev`.
 2. Open the private link from the terminal.
@@ -68,7 +68,7 @@ The package includes the original iPhone and iPad frames. They are used by defau
 
 The asset check-ins happen in the agent conversation. They are skill instructions, not forced dialogs in the editor. Direct manual use of the editor does not run them.
 
-Use a matching iPhone or iPad capture. The automatic checks cover completeness, Apple capture proportions, headline contrast, and measured text overflow. They do not verify product claims, translation quality, element overlap, image crops, or current store rules. Keep those checks in the delivery review.
+Use a capture that matches the selected device and frame. The automatic checks cover completeness, device capture proportions, headline contrast, and measured text overflow. They do not verify product claims, translation quality, element overlap, image crops, or current store rules. Keep those checks in the delivery review.
 
 ## Using a chat interface
 

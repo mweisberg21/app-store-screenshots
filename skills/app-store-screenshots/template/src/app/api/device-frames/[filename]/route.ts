@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import path from "node:path";
-import { APPLE_FRAMES } from "@/lib/apple-frames";
+import { DEVICE_FRAMES } from "@/lib/device-frames";
 import { accessError } from "@/lib/local-access";
 
 export const dynamic = "force-dynamic";
@@ -10,7 +10,7 @@ export async function GET(req: Request, context: { params: Promise<{ filename: s
   const denied = accessError(req);
   if (denied) return denied;
   const { filename } = await context.params;
-  const frame = Object.values(APPLE_FRAMES).find((frame) => frame.filename === filename);
+  const frame = Object.values(DEVICE_FRAMES).find((frame) => frame.filename === filename);
   if (!frame) {
     return new Response("Unknown frame", { status: 404 });
   }
@@ -23,7 +23,7 @@ export async function GET(req: Request, context: { params: Promise<{ filename: s
       "Content-Type": "image/png", "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff",
     } });
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") return new Response("An included Apple frame file is missing. Repair the installation.", { status: 404 });
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") return new Response("An included device frame file is missing. Repair the installation.", { status: 404 });
     return new Response("Could not read the frame", { status: 500 });
   }
 }

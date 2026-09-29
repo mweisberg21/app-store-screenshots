@@ -23,7 +23,7 @@ import {
   textElementKey,
 } from "@/lib/elements";
 import { didFail, imageSize, preloadImages } from "@/lib/image-cache";
-import { appleFrame, framePath } from "@/lib/apple-frames";
+import { deviceFrame, framePath } from "@/lib/device-frames";
 import { applyBackground } from "@/lib/background";
 import { BackgroundSettings } from "./background-settings";
 import { pickText, resolveScreenshot, writeLocalized } from "@/lib/locale";
@@ -130,7 +130,7 @@ export function ScreenshotEditor() {
 
   const assetPaths = React.useMemo(() => {
     const paths = new Set<string>();
-    const frame = appleFrame(state.device, state.orientation);
+    const frame = deviceFrame(state.device, state.orientation);
     if (frame) paths.add(framePath(frame));
     if (state.appIcon) paths.add(state.appIcon);
     if (state.background?.kind === "image") {

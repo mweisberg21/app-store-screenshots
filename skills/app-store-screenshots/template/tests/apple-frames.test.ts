@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { appleFrame, fitFrameRect, framePath } from "../src/lib/apple-frames";
+import { deviceFrame, deviceFrameAspect } from "../src/lib/device-frames";
+import { elementPaths } from "../src/lib/canvas-elements";
 import { DEFAULT_PROJECT } from "../src/lib/defaults";
 import { reviewExport } from "../src/lib/export-review";
 
@@ -46,7 +48,7 @@ test("Apple captures must match the aperture proportions in each language and de
 
 test("legacy transform boxes preserve frame proportions, center, and bounds", () => {
   for (const rect of [{ x: 30, y: 90, width: 900, height: 1500 }, { x: 10, y: 20, width: 300, height: 1100 }]) {
-    for (const aspect of [1470 / 3000, 2300 / 3000, 3000 / 2300]) {
+    for (const aspect of [1470 / 3000, 2300 / 3000, 3000 / 2300, 388 / 800]) {
       const fit = fitFrameRect(rect, aspect);
       assert.ok(Math.abs(fit.width / fit.height - aspect) < 0.00001);
       assert.equal(fit.x + fit.width / 2, rect.x + rect.width / 2);
@@ -54,4 +56,28 @@ test("legacy transform boxes preserve frame proportions, center, and bounds", ()
       assert.ok(fit.width <= rect.width && fit.height <= rect.height + 0.00001);
     }
   }
+});
+
+
+test("Android templates and custom devices load the supplied frame and check screen proportions", () => {
+  const frame = deviceFrame("android", "portrait")!;
+  assert.equal(frame.filename, "samsung-galaxy-s22.png");
+  assert.equal(deviceFrameAspect("android", "portrait"), 388 / 800);
+  assert.equal(deviceFrame("android-7", "portrait"), undefined);
+  const state = complete();
+  state.device = "android";
+  state.slidesByDevice.android = structuredClone(state.slidesByDevice.iphone);
+  const failed = (path: string) => path === framePath(frame);
+  assert.match(reviewExport(state, failed)[0].message, /Samsung Galaxy S22/);
+  assert.deepEqual(reviewExport(state, undefined, () => ({ width: 1080, height: 2340 })), []);
+  assert.match(reviewExport(state, undefined, () => ({ width: 1080, height: 1920 }))[0].message, /355 × 769 proportions/);
+  const slide = state.slidesByDevice.android[0];
+  slide.layout = "no-device";
+  slide.elements = [{ id: "android", kind: "device", name: "Android phone", opacity: 100, device: "android", orientation: "portrait", src: slide.screenshot, transform: { x: 100, y: 300, width: 500, height: 1000 } }];
+  assert.ok(elementPaths(slide.elements[0]).includes(framePath(frame)));
+  assert.match(reviewExport(state, failed)[0].message, /included frame for/);
+  assert.deepEqual(reviewExport(state, undefined, () => ({ width: 1080, height: 2340 })), []);
+  assert.match(reviewExport(state, undefined, () => ({ width: 2064, height: 2752 }))[0].message, /355 × 769 proportions/);
+  slide.elements[0].hidden = true;
+  assert.deepEqual(reviewExport(state, failed), []);
 });
